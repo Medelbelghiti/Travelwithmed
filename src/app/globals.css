@@ -1,0 +1,207 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #0f1f1c;
+  --ink: #0f1f1c;
+  --ink-soft: #445852;
+  --ink-muted: #6b7f79;
+  --brand: #0e5e52;
+  --brand-dark: #0a423a;
+  --brand-light: #e5f1ee;
+  --accent: #e09f3e;
+  --accent-dark: #b97d22;
+  --sand: #f7f4ee;
+  --sand-dark: #efe9dd;
+  --line: #e7e4dc;
+  --card: #ffffff;
+  --success: #1f8a4c;
+  --danger: #c0392b;
+  --info: #2e6da4;
+  --warning: #b9770e;
+  --radius: 1rem;
+  --radius-lg: 1.5rem;
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-fraunces), Georgia, "Times New Roman", serif;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-ink-muted: var(--ink-muted);
+  --color-brand: var(--brand);
+  --color-brand-dark: var(--brand-dark);
+  --color-brand-light: var(--brand-light);
+  --color-accent: var(--accent);
+  --color-accent-dark: var(--accent-dark);
+  --color-sand: var(--sand);
+  --color-sand-dark: var(--sand-dark);
+  --color-line: var(--line);
+  --color-success: var(--success);
+  --color-danger: var(--danger);
+  --color-info: var(--info);
+  --color-warning: var(--warning);
+  --font-sans: var(--font-sans);
+  --font-serif: var(--font-serif);
+  --radius-lg: var(--radius);
+}
+
+/* Dark mode — automatic, follows the OS preference (cookieless, no JS needed). */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0d1513;
+    --foreground: #e6eeeb;
+    --ink: #e6eeeb;
+    --ink-soft: #b6c6c1;
+    --ink-muted: #869a94;
+    --card: #16211e;
+    --brand-light: #1c322d;
+    --sand: #121b19;
+    --sand-dark: #0d1513;
+    --line: #22302c;
+  }
+
+  /* Solid-white card surfaces become the dark card color in dark mode.
+     Opacity variants (bg-white/10, bg-white/95) and text-white are untouched. */
+  .bg-white {
+    background-color: var(--card);
+  }
+
+  body {
+    background: var(--background);
+    color: var(--ink);
+  }
+
+  /* Soften shadows on dark surfaces */
+  .shadow-sm,
+  .shadow,
+  .shadow-md,
+  .shadow-lg,
+  .shadow-xl,
+  .shadow-2xl {
+    box-shadow: 0 1px 2px rgb(0 0 0 / 0.25), 0 1px 3px rgb(0 0 0 / 0.3) !important;
+  }
+}
+
+* {
+  border-color: var(--line);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--background);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-serif);
+  font-weight: 600;
+  color: var(--ink);
+  letter-spacing: -0.01em;
+  line-height: 1.15;
+}
+
+h5,
+h6 {
+  font-family: var(--font-sans);
+  font-weight: 600;
+}
+
+::selection {
+  background: var(--brand);
+  color: #fff;
+}
+
+.container-x {
+  @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8;
+}
+
+.section-pad {
+  @apply py-14 md:py-20;
+}
+
+.prose-roamora {
+  @apply text-ink-soft leading-relaxed text-base md:text-lg;
+}
+
+.prose-roamora p {
+  @apply mb-5;
+}
+
+.prose-roamora h2 {
+  @apply text-2xl md:text-3xl mb-4 mt-10 text-ink;
+}
+
+.prose-roamora h3 {
+  @apply text-xl md:text-2xl mb-3 mt-8 text-ink;
+}
+
+.prose-roamora ul {
+  @apply list-disc pl-6 mb-5 space-y-2;
+}
+
+.prose-roamora ol {
+  @apply list-decimal pl-6 mb-5 space-y-2;
+}
+
+.prose-roamora a {
+  @apply text-brand underline underline-offset-4 decoration-brand/40 hover:decoration-brand;
+}
+
+.prose-roamora blockquote {
+  @apply border-l-4 border-accent pl-5 italic text-ink-soft mb-5;
+}
+
+.prose-roamora img {
+  @apply rounded-2xl my-6;
+}
+
+.prose-roamora table {
+  @apply w-full text-left text-sm mb-6 border-collapse;
+}
+
+.prose-roamora th {
+  @apply bg-brand-light font-semibold px-4 py-3 text-ink;
+}
+
+.prose-roamora td {
+  @apply border-b border-line px-4 py-3 align-top;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@media print {
+  header,
+  footer,
+  .no-print {
+    display: none !important;
+  }
+  body {
+    background: #fff !important;
+  }
+  main {
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+  }
+}

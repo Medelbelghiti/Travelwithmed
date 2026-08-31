@@ -1,0 +1,667 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ========== USERS & AUTH ==========
+
+model User {
+  id            String           @id @default(cuid())
+  email         String           @unique
+  passwordHash  String?
+  name          String?
+  role          Role             @default(USER)
+  bio           String?
+  image         String?
+  emailVerified DateTime?
+  isActive      Boolean          @default(true)
+  lastLoginAt   DateTime?
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+
+  reviews       Review[]
+  savedTrips    SavedTrip[]
+  analytics     AnalyticsEvent[]
+  sessions      Session[]
+  settingEdits  SettingEdit[]
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String   @unique
+  userAgent String?
+  ip        String?
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+enum Role {
+  ADMIN
+  EDITOR
+  AUTHOR
+  USER
+}
+
+// ========== CONTENT ==========
+
+model Author {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  bio         String?
+  avatar      String?
+  role        String?
+  expertise   String?
+  location    String?
+  socialLinks Json?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  articles        Article[]
+  itineraries     Itinerary[]
+  media           Media[]
+  reviews         Review[]
+  verifiedCount   Int      @default(0)
+  articleCount    Int      @default(0)
+}
+
+enum ArticleStatus {
+  DRAFT
+  REVIEW
+  PUBLISHED
+  SCHEDULED
+  ARCHIVED
+}
+
+enum ArticleType {
+  DESTINATION_GUIDE
+  THINGS_TO_DO
+  HOTEL_GUIDE
+  HOTEL_COMPARISON
+  ACTIVITY_GUIDE
+  ITINERARY
+  COMPARISON
+  LISTICLE
+  TRAVEL_TIPS
+  PRODUCT_GUIDE
+  RESOURCE_GUIDE
+  NEWS
+}
+
+model Article {
+  id                 String        @id @default(cuid())
+  title              String
+  slug               String        @unique
+  excerpt            String?
+  content            String
+  coverImage         String?
+  type               ArticleType
+  status             ArticleStatus @default(DRAFT)
+  publishedAt        DateTime?
+  scheduledAt        DateTime?
+  focusKeyword       String?
+  metaTitle          String?
+  metaDescription    String?
+  canonicalUrl       String?
+  ogImage            String?
+  schemaType         String?
+  allowIndexing      Boolean       @default(true)
+  tableOfContents    Json?
+  wordCount          Int           @default(0)
+  readingTimeMinutes Int           @default(1)
+  viewCount          Int           @default(0)
+  updatedAt          DateTime      @updatedAt
+  createdAt          DateTime      @default(now())
+  updatedDate        DateTime?
+  lastReviewedAt     DateTime?
+
+  authorId   String?
+  author     Author?           @relation(fields: [authorId], references: [id])
+  authorName String? // display name if no linked author
+
+  destinationId String?
+  destination   Destination?   @relation(fields: [destinationId], references: [id])
+
+  categories       ArticleCategory[]
+  faqItems         FaqItem[]
+  reviews          Review[]
+  seoMetadata      SeoMetadata?
+  affiliateLinks   AffiliateLink[]
+  relatedArticlesA RelatedArticle[]  @relation("RelatedA")
+  relatedArticlesB RelatedArticle[]  @relation("RelatedB")
+  analytics        AnalyticsEvent[]
+  media            Media[]
+  itinerary        Itinerary?
+  affiliateClicks  AffiliateClick[]
+
+  @@index([status])
+  @@index([type])
+  @@index([destinationId])
+  @@index([publishedAt])
+  @@index([authorId])
+}
+
+model ArticleCategory {
+  articleId  String
+  categoryId String
+
+  article  Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  category Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@id([articleId, categoryId])
+  @@index([categoryId])
+}
+
+model Category {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  description String?
+  type        String   @default("category")
+  parentId    String?
+  parent      Category? @relation("CategoryTree", fields: [parentId], references: [id])
+  children    Category[] @relation("CategoryTree")
+  sortOrder   Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  media       Media[]
+
+  articles  ArticleCategory[]
+}
+
+model FaqItem {
+  id        String   @id @default(cuid())
+  question  String
+  answer    String
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  articleId String?
+  article   Article? @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  destinationId String?
+  destination   Destination? @relation(fields: [destinationId], references: [id], onDelete: Cascade)
+
+  @@index([articleId])
+  @@index([destinationId])
+}
+
+model Review {
+  id          String   @id @default(cuid())
+  title       String?
+  content     String?
+  rating      Int?
+  author      String?
+  userId      String?
+  user        User?    @relation(fields: [userId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  articleId String?
+  article   Article? @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  hotelId   String?
+  hotel     Hotel?   @relation(fields: [hotelId], references: [id], onDelete: Cascade)
+  productId String?
+  product   Product? @relation(fields: [productId], references: [id], onDelete: Cascade)
+  authorId  String?
+  authorRef Author?  @relation(fields: [authorId], references: [id])
+
+  @@index([articleId])
+  @@index([hotelId])
+  @@index([productId])
+  @@index([authorId])
+}
+
+model RelatedArticle {
+  articleId        String
+  relatedArticleId String
+  relevanceScore   Int   @default(50)
+
+  article      Article @relation("RelatedA", fields: [articleId], references: [id], onDelete: Cascade)
+  relatedArticle Article @relation("RelatedB", fields: [relatedArticleId], references: [id], onDelete: Cascade)
+
+  @@id([articleId, relatedArticleId])
+  @@index([relatedArticleId])
+}
+
+// ========== DESTINATIONS ==========
+
+enum DestinationType {
+  REGION
+  COUNTRY
+  CITY
+}
+
+model Destination {
+  id              String          @id @default(cuid())
+  name            String
+  slug            String          @unique
+  type            DestinationType
+  tagline         String?
+  overview        String?
+  coverImage      String?
+  heroImage       String?
+  bestTimeToVisit String?
+  howToGetThere   String?
+  transportation  String?
+  budget          String?
+  safety          String?
+  visaInfo        String?
+  esimInfo        String?
+  currency        String?
+  language        String?
+  timezone        String?
+  capital         String?
+  population      String?
+  sortOrder       Int             @default(0)
+  isActive        Boolean         @default(true)
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  parentId String?
+  parent   Destination? @relation("DestinationTree", fields: [parentId], references: [id])
+  children Destination[] @relation("DestinationTree")
+
+  articles    Article[]
+  itineraries Itinerary[]
+  hotels      Hotel[]
+  activities  Activity[]
+  products    Product[]
+  affiliateLinks AffiliateLink[]
+  media       Media[]
+  faqItems    FaqItem[]
+  seoMetadata SeoMetadata?
+  analytics   AnalyticsEvent[]
+
+  @@index([parentId])
+  @@index([type])
+}
+
+// ========== ITINERARIES ==========
+
+model Itinerary {
+  id             String          @id @default(cuid())
+  title          String
+  slug           String          @unique
+  summary        String?
+  coverImage     String?
+  days           Int
+  budgetLevel    String?
+  travelStyle    String?
+  totalEstimatedCost Int?
+  currency       String          @default("USD")
+  publishedAt    DateTime?
+  isActive       Boolean         @default(true)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  authorId String?
+  author   Author?      @relation(fields: [authorId], references: [id])
+  destinationId String?
+  destination Destination? @relation(fields: [destinationId], references: [id])
+  articleId   String?   @unique
+  article     Article?    @relation(fields: [articleId], references: [id])
+
+  daysList ItineraryDay[]
+  media    Media[]
+
+  @@index([destinationId])
+  @@index([publishedAt])
+}
+
+model ItineraryDay {
+  id           String   @id @default(cuid())
+  dayNumber    Int
+  title        String?
+  location     String?
+  description  String?
+  activities   Json?
+  restaurants  Json?
+  hotel        String?
+  transportation String?
+  estimatedCost Int?
+  affiliateLinks Json?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  itineraryId String
+  itinerary   Itinerary @relation(fields: [itineraryId], references: [id], onDelete: Cascade)
+
+  @@index([itineraryId])
+}
+
+// ========== COMMERCE ENTITIES ==========
+
+model Hotel {
+  id            String   @id @default(cuid())
+  name          String
+  slug          String   @unique
+  description   String?
+  address       String?
+  city          String?
+  country       String?
+  starRating    Int?
+  guestRating   Float?
+  reviewCount   Int?
+  priceRange    String?
+  currency      String   @default("USD")
+  image         String?
+  bestFor       String?
+  pros          Json?
+  cons          Json?
+  amenities     Json?
+  roomOptions   Json?
+  nearbyAttractions Json?
+  bookingUrl    String?
+  affiliateLinkId String?
+  sorts         Int      @default(0)
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  destinationId String?
+  destination   Destination? @relation(fields: [destinationId], references: [id])
+  reviews       Review[]
+  affiliateLinks AffiliateLink[]
+  media         Media[]
+
+  @@index([destinationId])
+  @@index([isActive])
+}
+
+model Activity {
+  id            String   @id @default(cuid())
+  name          String
+  slug          String   @unique
+  description   String?
+  duration      String?
+  priceRange    String?
+  currency      String   @default("USD")
+  rating        Float?
+  reviewCount   Int?
+  image         String?
+  category      String?
+  bestFor       String?
+  bookingUrl    String?
+  affiliateLinkId String?
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  destinationId String?
+  destination   Destination? @relation(fields: [destinationId], references: [id])
+  affiliateLinks AffiliateLink[]
+  media         Media[]
+
+  @@index([destinationId])
+  @@index([category])
+  @@index([isActive])
+}
+
+model Product {
+  id            String   @id @default(cuid())
+  name          String
+  slug          String   @unique
+  description   String?
+  brand         String?
+  category      String?
+  priceRange    String?
+  currency      String   @default("USD")
+  rating        Float?
+  reviewCount   Int?
+  image         String?
+  bestFor       String?
+  pros          Json?
+  cons          Json?
+  specs         Json?
+  buyUrl        String?
+  affiliateLinkId String?
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  destinationId String?
+  destination   Destination? @relation(fields: [destinationId], references: [id])
+  reviews       Review[]
+  affiliateLinks AffiliateLink[]
+  media         Media[]
+
+  @@index([destinationId])
+  @@index([category])
+  @@index([isActive])
+}
+
+// ========== AFFILIATE SYSTEM ==========
+
+enum AffiliateCategory {
+  HOTELS
+  FLIGHTS
+  ACTIVITIES
+  CAR_RENTAL
+  INSURANCE
+  ESIM
+  TRAVEL_GEAR
+  AIRPORT_TRANSFERS
+  TRAVEL_CARDS
+  OTHER
+}
+
+model AffiliateLink {
+  id                 String       @id @default(cuid())
+  partnerName        String
+  category           AffiliateCategory
+  productName        String
+  destinationText    String?
+  targetUrl          String
+  trackingParameter  String?
+  utmSource          String       @default("roamora")
+  utmMedium          String       @default("affiliate")
+  utmCampaign        String?
+  utmContent         String?
+  disclosureRequired Boolean      @default(true)
+  active             Boolean      @default(true)
+  priority           Int          @default(0)
+  clickCount         Int          @default(0)
+  conversionCount    Int          @default(0)
+  dealTitle          String?
+  promoCode          String?
+  dealExpiresAt      DateTime?
+  featuredDeal       Boolean      @default(false)
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
+
+  articleId   String?
+  article     Article?     @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  destinationId String?
+  destination Destination? @relation(fields: [destinationId], references: [id])
+  hotelId     String?
+  hotel       Hotel?       @relation(fields: [hotelId], references: [id])
+  activityId  String?
+  activity    Activity?    @relation(fields: [activityId], references: [id])
+  productId   String?
+  product     Product?     @relation(fields: [productId], references: [id])
+
+  clicks AffiliateClick[]
+
+  @@index([category])
+  @@index([active])
+  @@index([articleId])
+  @@index([destinationId])
+}
+
+model AffiliateClick {
+  id         String   @id @default(cuid())
+  clickId    String   @unique @default(cuid())
+  url        String
+  referrer   String?
+  ip         String?
+  userAgent  String?
+  deviceType String?
+  country    String?
+  placement  String?
+  ctaLabel   String?
+  createdAt  DateTime @default(now())
+
+  affiliateLinkId String
+  affiliateLink   AffiliateLink @relation(fields: [affiliateLinkId], references: [id], onDelete: Cascade)
+  articleId     String?
+  article       Article?      @relation(fields: [articleId], references: [id])
+
+  @@index([affiliateLinkId])
+  @@index([articleId])
+  @@index([createdAt])
+  @@index([placement])
+}
+
+// ========== NEWSLETTER ==========
+
+model NewsletterSubscriber {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  firstName     String?
+  interests     Json?
+  status        String    @default("SUBSCRIBED")
+  source        String?
+  optInAt       DateTime  @default(now())
+  unsubscribedAt DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([status])
+}
+
+// ========== MEDIA ==========
+
+model Media {
+  id            String   @id @default(cuid())
+  url           String
+  altText       String?
+  caption       String?
+  credit        String?
+  source        String?
+  license       String?
+  width         Int?
+  height        Int?
+  format        String?
+  sizeBytes     Int?
+  blurHash      String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  destinationId String?
+  destination   Destination? @relation(fields: [destinationId], references: [id])
+  articleId     String?
+  article       Article?     @relation(fields: [articleId], references: [id])
+  authorId      String?
+  author        Author?      @relation(fields: [authorId], references: [id])
+  hotelId       String?
+  hotel         Hotel?       @relation(fields: [hotelId], references: [id])
+  activityId    String?
+  activity      Activity?    @relation(fields: [activityId], references: [id])
+  productId     String?
+  product       Product?     @relation(fields: [productId], references: [id])
+  itineraryId   String?
+  itinerary     Itinerary?   @relation(fields: [itineraryId], references: [id])
+  categoryId    String?
+  category      Category?    @relation(fields: [categoryId], references: [id])
+  tags          Json?
+
+  @@index([destinationId])
+  @@index([articleId])
+}
+
+// ========== SEO ==========
+
+model SeoMetadata {
+  id              String   @id @default(cuid())
+  title           String?
+  description     String?
+  keywords        String?
+  canonicalUrl    String?
+  ogTitle         String?
+  ogDescription   String?
+  ogImage         String?
+  twitterTitle    String?
+  twitterImage    String?
+  robots          String?
+  schema          Json?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  articleId     String?   @unique
+  article       Article?  @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  destinationId String?   @unique
+  destination   Destination? @relation(fields: [destinationId], references: [id], onDelete: Cascade)
+}
+
+// ========== ANALYTICS ==========
+
+model AnalyticsEvent {
+  id          String   @id @default(cuid())
+  type        String
+  pagePath    String?
+  referrer    String?
+  ip          String?
+  userAgent   String?
+  deviceType  String?
+  country     String?
+  meta        Json?
+  articleId   String?
+  article     Article?    @relation(fields: [articleId], references: [id])
+  destinationId String?
+  destination Destination? @relation(fields: [destinationId], references: [id])
+  userId      String?
+  user        User?       @relation(fields: [userId], references: [id])
+  createdAt   DateTime    @default(now())
+
+  @@index([type])
+  @@index([pagePath])
+  @@index([articleId])
+  @@index([createdAt])
+}
+
+// ========== SAVED TRIPS ==========
+
+model SavedTrip {
+  id          String   @id @default(cuid())
+  name        String
+  destination String?
+  data        Json?
+  isPublic    Boolean  @default(false)
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([userId])
+}
+
+// ========== SETTINGS ==========
+
+model Setting {
+  key       String   @id
+  value     Json?
+  isSecret  Boolean  @default(false)
+  updatedAt DateTime @updatedAt
+}
+
+model SettingEdit {
+  id        String   @id @default(cuid())
+  key       String
+  oldValue  Json?
+  newValue  Json?
+  userId    String?
+  createdAt DateTime @default(now())
+  user      User?    @relation(fields: [userId], references: [id])
+}

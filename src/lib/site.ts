@@ -1,0 +1,78 @@
+export const siteConfig = {
+  name: "Roamora",
+  shortName: "Roamora",
+  description:
+    "Discover destinations, plan unforgettable trips, compare hotels and activities, and find smart travel recommendations with Roamora.",
+  tagline: "Plan smarter. Travel better.",
+  url: process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000",
+  ogImage: "/images/og-default.jpg",
+  keywords: [
+    "travel guides",
+    "destination guides",
+    "hotel recommendations",
+    "travel itineraries",
+    "best places to visit",
+    "travel tips",
+    "budget travel",
+    "luxury travel",
+  ],
+  contactEmail: "hello@roamora.com",
+  socials: {
+    instagram: "https://instagram.com/roamora",
+    pinterest: "https://pinterest.com/roamora",
+    youtube: "https://youtube.com/@roamora",
+    facebook: "https://facebook.com/roamora",
+  },
+  locales: ["en-US"],
+  defaultLocale: "en-US",
+  nav: {
+    primary: [
+      { label: "Home", href: "/" },
+      { label: "Destinations", href: "/destinations" },
+      { label: "Travel Guides", href: "/guides" },
+      { label: "Itineraries", href: "/itineraries" },
+      { label: "Deals", href: "/deals" },
+      { label: "Hotels", href: "/hotels" },
+      { label: "Flights", href: "/flights" },
+      { label: "Activities", href: "/activities" },
+      { label: "Travel Gear", href: "/travel-gear" },
+      { label: "Travel Tips", href: "/travel-tips" },
+      { label: "Travel Resources", href: "/resources" },
+      { label: "About", href: "/about" },
+    ],
+    footer: {
+      explore: [
+        { label: "Destinations", href: "/destinations" },
+        { label: "Travel Guides", href: "/guides" },
+        { label: "Itineraries", href: "/itineraries" },
+        { label: "Travel Tips", href: "/travel-tips" },
+      ],
+      plan: [
+        { label: "Deals & Promo Codes", href: "/deals" },
+        { label: "Hotels", href: "/hotels" },
+        { label: "Flights", href: "/flights" },
+        { label: "Activities", href: "/activities" },
+        { label: "Travel Insurance", href: "/resources/travel-insurance" },
+        { label: "eSIM", href: "/resources/esim" },
+        { label: "Car Rental", href: "/resources/car-rental" },
+      ],
+      resources: [
+        { label: "Travel Gear", href: "/travel-gear" },
+        { label: "Packing", href: "/travel-tips/packing" },
+        { label: "Travel Budget", href: "/budget-calculator" },
+        { label: "Visa Information", href: "/resources/visas" },
+      ],
+      company: [
+        { label: "About", href: "/about" },
+        { label: "Contact", href: "/contact" },
+        { label: "Editorial Policy", href: "/editorial-policy" },
+        { label: "Affiliate Disclosure", href: "/affiliate-disclosure" },
+        { label: "Privacy Policy", href: "/privacy-policy" },
+        { label: "Terms", href: "/terms" },
+        { label: "Cookie Policy", href: "/cookie-policy" },
+      ],
+    },
+  },
+} as const;
+
+export type SiteConfig = typeof siteConfig;
