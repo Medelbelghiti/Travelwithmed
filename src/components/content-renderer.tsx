@@ -9,8 +9,8 @@ import { HotelCard } from "@/components/affiliate/hotel-card";
 import { ActivityCard } from "@/components/affiliate/activity-card";
 import { GearCard } from "@/components/affiliate/gear-card";
 import { AffiliateDisclosure } from "@/components/affiliate/disclosure";
-import { getProducts, isShopEnabled } from "@/lib/fourthwall";
-import { ShopCard } from "@/components/shop/shop-card";
+import { getProducts, isShopEnabled, formatMoney } from "@/lib/fourthwall";
+import { PosterLeadMagnet, type PosterProduct } from "@/components/shop/poster-lead-magnet";
 
 interface RendererProps {
   content: string;
@@ -273,14 +273,23 @@ export async function ContentRenderer({ content, articleId, destinationId }: Ren
               .filter((p) => !q || p.name.toLowerCase().includes(q) || (p.description ?? "").toLowerCase().includes(q))
               .slice(0, block.limit ?? 4);
             if (available.length > 0) {
+              const products: PosterProduct[] = available.map((product) => ({
+                id: product.id,
+                name: product.name,
+                imageUrl: product.imageUrl,
+                priceLabel: formatMoney(product.price, product.currency) || null,
+                url: product.url,
+                soldOut: product.soldOut,
+                description: product.description,
+              }));
+              const placeSlug = (block.query ?? "").trim().toLowerCase() || "travel";
               rendered.push(
-                <div key={key} className="my-8 rounded-2xl border border-line bg-white p-6">
-                  {block.title && <h3>{block.title}</h3>}
-                  <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-                    {available.map((product) => (
-                      <ShopCard key={product.id} product={product} />
-                    ))}
-                  </div>
+                <div key={key} className="my-8">
+                  <PosterLeadMagnet
+                    query={placeSlug}
+                    downloadPath={`/printables/poster/${encodeURIComponent(placeSlug)}`}
+                    products={products}
+                  />
                 </div>,
               );
             }

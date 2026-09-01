@@ -9,9 +9,11 @@ const INTERESTS = ["Budget", "Luxury", "Family", "Solo", "Adventure", "Europe", 
 export function NewsletterForm({
   variant = "full",
   downloadPath,
+  onSuccess,
 }: {
   variant?: "full" | "compact" | "lead";
   downloadPath?: string;
+  onSuccess?: () => void;
 }) {
   const [firstName, setFirstName] = useState("");
   const [email, setEmail] = useState("");
@@ -37,6 +39,7 @@ export function NewsletterForm({
       if (res.ok) {
         setStatus("success");
         setMessage("Thanks for subscribing! Welcome to smarter travel.");
+        onSuccess?.();
       } else {
         const data = await res.json().catch(() => null);
         setStatus("error");
