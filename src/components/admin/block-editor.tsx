@@ -24,6 +24,7 @@ const ADDABLE: { type: ContentBlock["type"]; label: string }[] = [
   { type: "hotels", label: "Hotels grid" },
   { type: "activities", label: "Activities grid" },
   { type: "products", label: "Products grid" },
+  { type: "shop", label: "Shop prints" },
   { type: "affiliate_link", label: "Affiliate button" },
   { type: "faq", label: "FAQ block" },
 ];
@@ -49,8 +50,9 @@ export function BlockEditor({ initialBlocks, onChange }: BlockEditorProps) {
       cta: { type: "cta", category: "HOTELS", label: "Check prices", placement: "article" },
       hotels: { type: "hotels", title: "Where to stay" },
       activities: { type: "activities", title: "Book these experiences" },
-      products: { type: "products", title: "Recommended gear" },
-      affiliate_link: { type: "affiliate_link", linkId: "", label: "Check prices" },
+  products: { type: "products", title: "Recommended gear" },
+  shop: { type: "shop", title: "Shop travel prints", query: "" },
+  affiliate_link: { type: "affiliate_link", linkId: "", label: "Check prices" },
       faq: { type: "faq", items: [{ question: "", answer: "" }] },
     };
     commit([...blocks, defaults[type]]);
@@ -349,6 +351,30 @@ function BlockFields({
               <input value={block.category ?? ""} onChange={(e) => onChange({ category: e.target.value })} placeholder="e.g. Backpacks, Luggage" className={inputClass} />
             </div>
           )}
+        </div>
+      );
+    case "shop":
+      return (
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div className="sm:col-span-2">
+            <SmallLabel>Section title</SmallLabel>
+            <input value={block.title ?? ""} onChange={(e) => onChange({ title: e.target.value })} className={inputClass} />
+          </div>
+          <div>
+            <SmallLabel>Filter (optional)</SmallLabel>
+            <input value={block.query ?? ""} onChange={(e) => onChange({ query: e.target.value })} placeholder="e.g. Paris, Bali, Tokyo…" className={inputClass} />
+          </div>
+          <div>
+            <SmallLabel>Max products</SmallLabel>
+            <input
+              type="number"
+              min={1}
+              max={8}
+              value={block.limit ?? 4}
+              onChange={(e) => onChange({ limit: Number(e.target.value) || 4 })}
+              className={inputClass}
+            />
+          </div>
         </div>
       );
     case "affiliate_link":

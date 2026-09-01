@@ -9,6 +9,8 @@ import { HotelCard } from "@/components/affiliate/hotel-card";
 import { ActivityCard } from "@/components/affiliate/activity-card";
 import { GearCard } from "@/components/affiliate/gear-card";
 import { AffiliateDisclosure } from "@/components/affiliate/disclosure";
+import { getProducts, isShopEnabled } from "@/lib/fourthwall";
+import { ShopCard } from "@/components/shop/shop-card";
 
 interface RendererProps {
   content: string;
@@ -258,6 +260,33 @@ export async function ContentRenderer({ content, articleId, destinationId }: Ren
               </div>
             </div>,
           );
+        }
+        break;
+      }
+      case "shop": {
+        if (isShopEnabled()) {
+          try {
+            const all = await getProducts();
+            const q = (block.query ?? "").toLowerCase();
+            const available = all
+              .filter((p) => !p.soldOut)
+              .filter((p) => !q || p.name.toLowerCase().includes(q) || (p.description ?? "").toLowerCase().includes(q))
+              .slice(0, block.limit ?? 4);
+            if (available.length > 0) {
+              rendered.push(
+                <div key={key} className="my-8 rounded-2xl border border-line bg-white p-6">
+                  {block.title && <h3>{block.title}</h3>}
+                  <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+                    {available.map((product) => (
+                      <ShopCard key={product.id} product={product} />
+                    ))}
+                  </div>
+                </div>,
+              );
+            }
+          } catch {
+            // Swallow shop failures so articles still render.
+          }
         }
         break;
       }

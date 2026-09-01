@@ -13,6 +13,7 @@ export type ContentBlock =
   | { type: "hotels"; title?: string; destinationId?: string }
   | { type: "activities"; title?: string; destinationId?: string }
   | { type: "products"; title?: string; category?: string }
+  | { type: "shop"; title?: string; query?: string; limit?: number }
   | { type: "affiliate_link"; linkId: string; label?: string }
   | { type: "faq"; items: { question: string; answer: string }[] };
 
