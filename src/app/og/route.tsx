@@ -18,9 +18,9 @@ export async function GET(request: Request) {
           width: "100%",
           height: "100%",
           padding: "72px 80px",
-          background: "linear-gradient(135deg, #0a423a 0%, #0e5e52 60%, #13705f 100%)",
+          background: "linear-gradient(135deg, #0c2b4d 0%, #123c66 55%, #17497d 100%)",
           color: "#ffffff",
-          fontFamily: "Georgia, 'Times New Roman', serif",
+          fontFamily: "system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif",
         }}
       >
         {/* decorative accent */}
@@ -32,7 +32,7 @@ export async function GET(request: Request) {
             width: 420,
             height: 420,
             borderRadius: 9999,
-            background: "rgba(224,159,62,0.28)",
+            background: "rgba(47,108,173,0.30)",
           }}
         />
 
@@ -47,7 +47,7 @@ export async function GET(request: Request) {
               alignItems: "center",
               justifyContent: "center",
               background: "#ffffff",
-              color: "#0a423a",
+              color: "#0c2b4d",
               fontSize: 30,
               fontWeight: 800,
             }}

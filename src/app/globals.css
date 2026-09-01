@@ -1,19 +1,19 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #0f1f1c;
-  --ink: #0f1f1c;
-  --ink-soft: #445852;
-  --ink-muted: #6b7f79;
-  --brand: #0e5e52;
-  --brand-dark: #0a423a;
-  --brand-light: #e5f1ee;
-  --accent: #e09f3e;
-  --accent-dark: #b97d22;
-  --sand: #f7f4ee;
-  --sand-dark: #efe9dd;
-  --line: #e7e4dc;
+  --background: #fafbfc;
+  --foreground: #171f2c;
+  --ink: #171f2c;
+  --ink-soft: #42536b;
+  --ink-muted: #6b7c92;
+  --brand: #123c66;
+  --brand-dark: #0c2b4d;
+  --brand-light: #e8eef6;
+  --accent: #2f6cad;
+  --accent-dark: #245587;
+  --sand: #f3f6f9;
+  --sand-dark: #e8ecf2;
+  --line: #e3e8ef;
   --card: #ffffff;
   --success: #1f8a4c;
   --danger: #c0392b;
@@ -22,7 +22,7 @@
   --radius: 1rem;
   --radius-lg: 1.5rem;
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
-  --font-serif: var(--font-fraunces), Georgia, "Times New Roman", serif;
+  --font-serif: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
 }
 
 @theme inline {
@@ -51,16 +51,16 @@
 /* Dark mode — automatic, follows the OS preference (cookieless, no JS needed). */
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0d1513;
-    --foreground: #e6eeeb;
-    --ink: #e6eeeb;
-    --ink-soft: #b6c6c1;
-    --ink-muted: #869a94;
-    --card: #16211e;
-    --brand-light: #1c322d;
-    --sand: #121b19;
-    --sand-dark: #0d1513;
-    --line: #22302c;
+    --background: #0e1626;
+    --foreground: #e8eef6;
+    --ink: #e8eef6;
+    --ink-soft: #b6c4d6;
+    --ink-muted: #8293a8;
+    --card: #17223a;
+    --brand-light: #1b2b47;
+    --sand: #131d33;
+    --sand-dark: #0c1322;
+    --line: #24314a;
   }
 
   /* Solid-white card surfaces become the dark card color in dark mode.

@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, Fraunces } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
@@ -11,12 +11,6 @@ import { absoluteUrl } from "@/lib/utils";
 
 const inter = Inter({
   variable: "--font-inter",
-  subsets: ["latin"],
-  display: "swap",
-});
-
-const fraunces = Fraunces({
-  variable: "--font-fraunces",
   subsets: ["latin"],
   display: "swap",
 });
@@ -63,14 +57,14 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: "#0e5e52",
+  themeColor: "#123c66",
 };
 
 const jsonLd = [websiteSchema(), organizationSchema()];
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${inter.variable} ${fraunces.variable} h-full antialiased`}>
+    <html lang="en" className={`${inter.variable} h-full antialiased`}>
       <body className="flex min-h-full flex-col">
         <meta {...({ name: "impact-site-verification", value: "d5fe8a36-5fa2-4d62-bfc2-8539a534229c" } as Record<string, string>)} />{" "}
         <a
