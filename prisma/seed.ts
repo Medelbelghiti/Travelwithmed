@@ -177,17 +177,17 @@ async function main() {
     { partnerName: "Booking.com", category: Cat.HOTELS, productName: "Booking.com search", destinationText: "paris", targetUrl: "https://www.booking.com/searchresults.en.html?ss=Paris", dealTitle: "Up to 15% off member deals", promoCode: "ROAMORA15", featuredDeal: true, priority: 90 },
     { partnerName: "Booking.com", category: Cat.HOTELS, productName: "Booking.com search", destinationText: "tokyo", targetUrl: "https://www.booking.com/searchresults.en.html?ss=Tokyo", dealTitle: "Member prices on stays", featuredDeal: false },
     { partnerName: "Booking.com", category: Cat.HOTELS, productName: "Booking.com search", destinationText: "marrakech", targetUrl: "https://www.booking.com/searchresults.en.html?ss=Marrakech", dealTitle: "Member prices on stays", featuredDeal: false },
-    { partnerName: "SkyScanner", category: Cat.FLIGHTS, productName: "Flight search", destinationText: "paris", targetUrl: "https://www.skyscanner.net/", dealTitle: "Compare 1,200+ airlines in one search", featuredDeal: true, priority: 80 },
-    { partnerName: "GetYourGuide", category: Cat.ACTIVITIES, productName: "Tours & experiences", destinationText: "paris", targetUrl: "https://www.getyourguide.com/paris-l16/", dealTitle: "Free cancellation on most tours", featuredDeal: true },
-    { partnerName: "GetYourGuide", category: Cat.ACTIVITIES, productName: "Tours & experiences", destinationText: "kyoto", targetUrl: "https://www.getyourguide.com/kyoto-l204/", dealTitle: "Book ahead, skip the queues", featuredDeal: false },
-    { partnerName: "DiscoverCars", category: Cat.CAR_RENTAL, productName: "Car rentals", destinationText: null, targetUrl: "https://www.discovercars.com/", dealTitle: "Free cancellation car hire", promoCode: "ROAMORA", featuredDeal: true },
-    { partnerName: "SafetyWing", category: Cat.INSURANCE, productName: "Travel medical insurance", destinationText: null, targetUrl: "https://www.safetywing.com/", dealTitle: "Pay-as-you-go travel insurance", featuredDeal: true, priority: 70 },
+    { partnerName: "SkyScanner", category: Cat.FLIGHTS, productName: "Flight search", destinationText: "paris", targetUrl: "https://www.skyscanner.net/?AID=7707607&PID=8058953&associateid=roamora", dealTitle: "Compare 1,200+ airlines in one search", featuredDeal: true, priority: 80 },
+    { partnerName: "GetYourGuide", category: Cat.ACTIVITIES, productName: "Tours & experiences", destinationText: "paris", targetUrl: "https://www.getyourguide.com/paris-l16/?partner_id=K0KEBIE", dealTitle: "Free cancellation on most tours", featuredDeal: true },
+    { partnerName: "GetYourGuide", category: Cat.ACTIVITIES, productName: "Tours & experiences", destinationText: "kyoto", targetUrl: "https://www.getyourguide.com/kyoto-l204/?partner_id=K0KEBIE", dealTitle: "Book ahead, skip the queues", featuredDeal: false },
+    { partnerName: "DiscoverCars", category: Cat.CAR_RENTAL, productName: "Car rentals", destinationText: null, targetUrl: "https://www.discovercars.com/?a_aid=med1996", dealTitle: "Free cancellation car hire", promoCode: "ROAMORA", featuredDeal: true },
+    { partnerName: "SafetyWing", category: Cat.INSURANCE, productName: "Travel medical insurance", destinationText: null, targetUrl: "https://safetywing.com/nomad-insurance/?referenceID=26591197", dealTitle: "Pay-as-you-go travel insurance", featuredDeal: true, priority: 70 },
     { partnerName: "Airalo", category: Cat.ESIM, productName: "Global eSIM store", destinationText: null, targetUrl: "https://www.airalo.com/", dealTitle: "eSIMs for 200+ countries", promoCode: "ROAMORA10", featuredDeal: true },
-    { partnerName: "Amazon", category: Cat.TRAVEL_GEAR, productName: "Travel gear storefront", destinationText: null, targetUrl: "https://www.amazon.com/", dealTitle: "Packing essentials storefront", featuredDeal: false },
+    { partnerName: "Amazon", category: Cat.TRAVEL_GEAR, productName: "Travel gear storefront", destinationText: null, targetUrl: "https://www.amazon.com/?tag=medelbelghiti-20", dealTitle: "Packing essentials storefront", featuredDeal: false },
   ];
   for (const l of affiliateLinks) {
     const existingLink = await prisma.affiliateLink.findFirst({
-      where: { partnerName: l.partnerName, productName: l.productName },
+      where: { category: l.category, partnerName: l.partnerName, productName: l.productName },
     });
     const { destinationText, ...linkData } = l;
     const row = existingLink
