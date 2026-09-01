@@ -1,13 +1,13 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 import { Compass, ShieldCheck, Sparkles, HeartHandshake } from "lucide-react";
 import { Breadcrumbs, buildCrumbs } from "@/components/ui/breadcrumbs";
 import { buildMetadata } from "@/lib/seo";
 import { siteConfig } from "@/lib/site";
 
 export const metadata = buildMetadata({
-  title: "About Roamora",
+  title: "About Riversmag",
   description:
-    "Roamora is an independent travel media brand helping people plan smarter and travel better.",
+    "Riversmag is an independent travel media brand helping people plan smarter and travel better.",
   canonicalPath: "/about",
 });
 
@@ -16,7 +16,7 @@ const VALUES = [
     icon: Compass,
     title: "Plan smarter",
     description:
-      "We distil the noise down to clear, practical guidance — so you spend less time researching and more time travelling.",
+      "We distil the noise down to clear, practical guidance â€” so you spend less time researching and more time travelling.",
   },
   {
     icon: ShieldCheck,
@@ -34,7 +34,7 @@ const VALUES = [
     icon: HeartHandshake,
     title: "People over pixels",
     description:
-      "Every guide is written to help a real person plan a real trip — never to chase clicks or commissions.",
+      "Every guide is written to help a real person plan a real trip â€” never to chase clicks or commissions.",
   },
 ];
 
@@ -51,7 +51,7 @@ export default function AboutPage() {
         <p className="mt-5 text-lg leading-relaxed text-ink-soft">
           {siteConfig.name} is an independent travel media platform on a mission to make trip planning
           simpler, smarter and more transparent. We combine destination journalism, honest reviews and
-          practical tools — so you can plan with confidence, whatever kind of traveller you are.
+          practical tools â€” so you can plan with confidence, whatever kind of traveller you are.
         </p>
       </div>
 
@@ -73,8 +73,8 @@ export default function AboutPage() {
           <h2 className="text-2xl">How we stay independent</h2>
           <p className="mt-3 leading-relaxed text-ink-soft">
             We are reader-funded through transparent affiliate partnerships and never accept payment for
-            positive coverage. When you book through our links we may earn a commission — at no extra cost to
-            you — and that commitment is documented in our{" "}
+            positive coverage. When you book through our links we may earn a commission â€” at no extra cost to
+            you â€” and that commitment is documented in our{" "}
             <Link href="/affiliate-disclosure" className="text-brand underline underline-offset-2">
               Affiliate Disclosure
             </Link>{" "}

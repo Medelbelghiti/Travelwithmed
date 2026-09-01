@@ -1,4 +1,4 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 import type { Prisma } from "@prisma/client";
 import {
   Calendar,
@@ -134,7 +134,7 @@ export async function DestinationDetail({ destination }: DestinationDetailProps)
           <h2 className="text-3xl">Overview</h2>
           <p className="mt-4 text-lg leading-relaxed text-ink-soft">
             {destination.overview ||
-              `Explore ${destination.name} with Roamora's in-depth destination guide — from the best areas to stay to the top things to do, tours, food, budgets and practical travel tips.`}
+              `Explore ${destination.name} with Riversmag's in-depth destination guide â€” from the best areas to stay to the top things to do, tours, food, budgets and practical travel tips.`}
           </p>
         </section>
 
@@ -345,7 +345,7 @@ export async function DestinationDetail({ destination }: DestinationDetailProps)
 
         <NewsletterCta
           title={`Love ${destination.name}? Get more guides like this`}
-          description="Join the Roamora newsletter and get refreshed destination guides, money-saving travel deals and practical planning advice in your inbox."
+          description="Join the Riversmag newsletter and get refreshed destination guides, money-saving travel deals and practical planning advice in your inbox."
         />
       </div>
     </main>

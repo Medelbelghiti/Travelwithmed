@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/prisma";
+﻿import { prisma } from "@/lib/prisma";
 import { buildMetadata } from "@/lib/seo";
 import { ArticleCard } from "@/components/article-card";
 import { Card, SectionHeading } from "@/components/ui/card";
@@ -27,7 +27,7 @@ export async function generateMetadata({ searchParams }: { searchParams: Promise
   const { q } = await searchParams;
   return buildMetadata({
     title: q ? `Search: ${q}` : "Search",
-    description: "Search destinations, travel guides, hotels, itineraries and resources on Roamora.",
+    description: "Search destinations, travel guides, hotels, itineraries and resources on Riversmag.",
     canonicalPath: `/search${q ? `?q=${encodeURIComponent(q)}` : ""}`,
     noindex: true,
   });
@@ -41,7 +41,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
     return (
       <div className="container-x section-pad">
         <Breadcrumbs items={buildCrumbs([{ name: "Search", href: "/search" }])} />
-        <SectionHeading title="Search Roamora" description="Search destinations, travel guides, hotels, itineraries and more." />
+        <SectionHeading title="Search Riversmag" description="Search destinations, travel guides, hotels, itineraries and more." />
         <Card className="p-10 text-center">
           <p className="text-ink-muted">Enter at least two characters to start searching.</p>
         </Card>
@@ -99,13 +99,13 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
     <div className="container-x section-pad">
       <Breadcrumbs items={buildCrumbs([{ name: "Search", href: "/search" }])} />
       <SectionHeading
-        title={total > 0 ? `${total} result${total > 1 ? "s" : ""} for “${query}”` : `No results for “${query}”`}
+        title={total > 0 ? `${total} result${total > 1 ? "s" : ""} for â€œ${query}â€` : `No results for â€œ${query}â€`}
         description={total === 0 ? "Try a different search term or browse our destination guides." : undefined}
       />
 
       {total === 0 ? (
         <Card className="p-10 text-center">
-          <p className="text-ink-muted">Try searching for a city like “Paris”, “Tokyo” or “Marrakech”.</p>
+          <p className="text-ink-muted">Try searching for a city like â€œParisâ€, â€œTokyoâ€ or â€œMarrakechâ€.</p>
         </Card>
       ) : (
         <div className="space-y-12">

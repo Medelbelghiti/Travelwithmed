@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -35,7 +35,7 @@ export function LoginForm() {
           <span className="flex h-14 w-14 items-center justify-center rounded-full bg-brand text-white">
             <Mountain className="h-7 w-7" aria-hidden />
           </span>
-          <h1 className="mt-4 font-serif text-3xl font-semibold text-ink">Roamora Admin</h1>
+          <h1 className="mt-4 font-serif text-3xl font-semibold text-ink">Riversmag Admin</h1>
           <p className="mt-1 text-sm text-ink-muted">Sign in to manage your content</p>
         </div>
 
@@ -44,13 +44,13 @@ export function LoginForm() {
             <label htmlFor="login-email" className="mb-1.5 block text-sm font-medium text-ink-soft">
               Email
             </label>
-            <input id="login-email" name="email" type="email" required className={inputClass} placeholder="you@roamora.com" autoComplete="email" />
+            <input id="login-email" name="email" type="email" required className={inputClass} placeholder="you@riversmag.com" autoComplete="email" />
           </div>
           <div className="mt-4">
             <label htmlFor="login-password" className="mb-1.5 block text-sm font-medium text-ink-soft">
               Password
             </label>
-            <input id="login-password" name="password" type="password" required className={inputClass} placeholder="••••••••" autoComplete="current-password" />
+            <input id="login-password" name="password" type="password" required className={inputClass} placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢" autoComplete="current-password" />
           </div>
           {error && <p className="mt-3 text-sm text-danger">{error}</p>}
           <button
@@ -59,7 +59,7 @@ export function LoginForm() {
             className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-brand px-5 py-3.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-brand-dark disabled:opacity-60"
           >
             <Lock className="h-4 w-4" aria-hidden />
-            {loading ? "Signing in…" : "Sign in"}
+            {loading ? "Signing inâ€¦" : "Sign in"}
           </button>
         </form>
       </div>

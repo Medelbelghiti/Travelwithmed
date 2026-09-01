@@ -1,4 +1,4 @@
-import Image from "next/image";
+﻿import Image from "next/image";
 import Link from "next/link";
 import { formatDate } from "@/lib/utils";
 import type { ArticleType } from "@prisma/client";
@@ -48,7 +48,7 @@ export function ArticleCard({ article }: { article: ArticleCardData }) {
           />
         ) : (
           <div className="flex h-full items-center justify-center">
-            <span className="font-serif text-2xl text-ink-muted">Roamora</span>
+            <span className="font-serif text-2xl text-ink-muted">Riversmag</span>
           </div>
         )}
         <span className="absolute left-3 top-3 rounded-full bg-white/95 px-2.5 py-1 text-xs font-semibold text-ink shadow-sm">
@@ -66,7 +66,7 @@ export function ArticleCard({ article }: { article: ArticleCardData }) {
           {article.authorName && <span>{article.authorName}</span>}
           {article.publishedAt && (
             <span>
-              {article.authorName ? " · " : ""}
+              {article.authorName ? " Â· " : ""}
               {formatDate(article.publishedAt)}
             </span>
           )}

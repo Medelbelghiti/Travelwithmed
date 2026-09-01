@@ -1,9 +1,9 @@
-import { LegalPage } from "@/components/legal-page";
+﻿import { LegalPage } from "@/components/legal-page";
 import { buildMetadata } from "@/lib/seo";
 
 export const metadata = buildMetadata({
   title: "Cookie Policy",
-  description: "How Roamora uses cookies and how you can control them.",
+  description: "How Riversmag uses cookies and how you can control them.",
   canonicalPath: "/cookie-policy",
 });
 
@@ -45,7 +45,7 @@ export default function CookiePolicyPage() {
 
       <h2>4. Contact</h2>
       <p>
-        Questions about cookies? Contact us at <a href="mailto:privacy@roamora.com">privacy@roamora.com</a>.
+        Questions about cookies? Contact us at <a href="mailto:privacy@riversmag.com">privacy@riversmag.com</a>.
       </p>
     </LegalPage>
   );

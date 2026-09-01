@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -55,7 +55,7 @@ export function AdminSidebar({ user }: { user: Pick<User, "email" | "name" | "ro
       <div className="fixed inset-x-0 top-0 z-40 flex items-center justify-between border-b border-line bg-white px-4 py-3 lg:hidden">
         <Link href="/admin/dashboard" className="flex items-center gap-2 font-serif text-xl font-semibold text-ink">
           <Mountain className="h-5 w-5 text-brand" aria-hidden />
-          Roamora
+          Riversmag
         </Link>
         <details className="relative">
           <summary className="flex h-10 w-10 cursor-pointer list-none items-center justify-center rounded-full hover:bg-sand [&::-webkit-details-marker]:hidden">
@@ -81,7 +81,7 @@ function SidebarContent({ user, pathname, mobile }: { user: Pick<User, "email" |
           <Mountain className="h-5 w-5" aria-hidden />
         </span>
         <div>
-          <p className="font-serif text-lg font-semibold leading-tight text-ink">Roamora</p>
+          <p className="font-serif text-lg font-semibold leading-tight text-ink">Riversmag</p>
           <p className="text-xs text-ink-muted">Admin CMS</p>
         </div>
       </div>

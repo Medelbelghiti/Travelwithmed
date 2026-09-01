@@ -1,4 +1,4 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 import { Download, FileText, Map, Sparkles } from "lucide-react";
 import { buildMetadata } from "@/lib/seo";
 import { NewsletterForm } from "@/components/newsletter-form";
@@ -7,14 +7,14 @@ import { Breadcrumbs, buildCrumbs } from "@/components/ui/breadcrumbs";
 export const metadata = buildMetadata({
   title: "Free Travel Printables & Guides",
   description:
-    "Download free Roamora printables — printable itineraries, packing checklists and travel planning worksheets. Free forever, created by our editors.",
+    "Download free Riversmag printables â€” printable itineraries, packing checklists and travel planning worksheets. Free forever, created by our editors.",
   canonicalPath: "/free-guides",
 });
 
 const GUIDES = [
   {
     slug: "paris-in-4-days",
-    title: "Paris in 4 Days — Printable Itinerary",
+    title: "Paris in 4 Days â€” Printable Itinerary",
     blurb: "A day-by-day plan for first-timers: what to see, where to eat and how to side-step the crowds.",
     points: ["4 day-by-day plans", "Metro-friendly route map", "Budget quick-reference", "Print-ready A4 & Letter"],
     tag: "Itinerary",

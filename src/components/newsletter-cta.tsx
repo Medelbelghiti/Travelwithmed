@@ -1,8 +1,8 @@
-import { NewsletterForm } from "@/components/newsletter-form";
+﻿import { NewsletterForm } from "@/components/newsletter-form";
 
 export function NewsletterCta({
   title = "Planning a trip? Get it right",
-  description = "Join the Roamora newsletter for destination guides, packing hacks and editor-picked travel deals in your inbox. No spam, unsubscribe anytime.",
+  description = "Join the Riversmag newsletter for destination guides, packing hacks and editor-picked travel deals in your inbox. No spam, unsubscribe anytime.",
 }: {
   title?: string;
   description?: string;

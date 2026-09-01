@@ -1,11 +1,11 @@
-import { Mail, MessageSquare, Globe } from "lucide-react";
+﻿import { Mail, MessageSquare, Globe } from "lucide-react";
 import { Breadcrumbs, buildCrumbs } from "@/components/ui/breadcrumbs";
 import { ContactForm } from "@/components/contact-form";
 import { buildMetadata } from "@/lib/seo";
 
 export const metadata = buildMetadata({
   title: "Contact Us",
-  description: "Get in touch with the Roamora editorial team.",
+  description: "Get in touch with the Riversmag editorial team.",
   canonicalPath: "/contact",
 });
 
@@ -23,7 +23,7 @@ export default function ContactPage() {
 
           <div className="mt-8 space-y-4">
             <a
-              href="mailto:hello@roamora.com"
+              href="mailto:hello@riversmag.com"
               className="flex items-center gap-4 rounded-2xl border border-line bg-white p-5 shadow-sm transition-colors hover:border-brand"
             >
               <span className="flex h-11 w-11 items-center justify-center rounded-full bg-brand-light text-brand-dark">
@@ -31,12 +31,12 @@ export default function ContactPage() {
               </span>
               <div>
                 <p className="font-semibold text-ink">General enquiries</p>
-                <p className="text-sm text-ink-muted">hello@roamora.com</p>
+                <p className="text-sm text-ink-muted">hello@riversmag.com</p>
               </div>
             </a>
 
             <a
-              href="mailto:editors@roamora.com"
+              href="mailto:editors@riversmag.com"
               className="flex items-center gap-4 rounded-2xl border border-line bg-white p-5 shadow-sm transition-colors hover:border-brand"
             >
               <span className="flex h-11 w-11 items-center justify-center rounded-full bg-brand-light text-brand-dark">
@@ -44,12 +44,12 @@ export default function ContactPage() {
               </span>
               <div>
                 <p className="font-semibold text-ink">Editorial corrections</p>
-                <p className="text-sm text-ink-muted">editors@roamora.com</p>
+                <p className="text-sm text-ink-muted">editors@riversmag.com</p>
               </div>
             </a>
 
             <a
-              href="mailto:partners@roamora.com"
+              href="mailto:partners@riversmag.com"
               className="flex items-center gap-4 rounded-2xl border border-line bg-white p-5 shadow-sm transition-colors hover:border-brand"
             >
               <span className="flex h-11 w-11 items-center justify-center rounded-full bg-brand-light text-brand-dark">
@@ -57,7 +57,7 @@ export default function ContactPage() {
               </span>
               <div>
                 <p className="font-semibold text-ink">Partnerships & press</p>
-                <p className="text-sm text-ink-muted">partners@roamora.com</p>
+                <p className="text-sm text-ink-muted">partners@riversmag.com</p>
               </div>
             </a>
           </div>

@@ -1,4 +1,4 @@
-import { notFound } from "next/navigation";
+﻿import { notFound } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { Calendar, Clock, User } from "lucide-react";
@@ -89,8 +89,8 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
       mainEntityOfPage: { "@type": "WebPage", "@id": `/articles/${article.slug}` },
       author: article.author?.name
         ? { "@type": "Person", name: article.author.name }
-        : { "@type": "Organization", name: "Roamora" },
-      publisher: { "@type": "Organization", name: "Roamora", logo: { "@type": "ImageObject", url: "/images/logo.png" } },
+        : { "@type": "Organization", name: "Riversmag" },
+      publisher: { "@type": "Organization", name: "Riversmag", logo: { "@type": "ImageObject", url: "/images/logo.png" } },
       datePublished: article.publishedAt?.toISOString(),
       dateModified: article.updatedAt.toISOString(),
     },
@@ -172,7 +172,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
           <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-ink-muted">
             <span className="inline-flex items-center gap-1.5">
               <User className="h-4 w-4" aria-hidden />
-              {article.author?.name ?? article.authorName ?? "Roamora Editors"}
+              {article.author?.name ?? article.authorName ?? "Riversmag Editors"}
             </span>
             {article.publishedAt && (
               <span className="inline-flex items-center gap-1.5">
@@ -273,7 +273,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
                   Compare prices across booking platforms for {article.destination?.name}.
                 </p>
                 <a
-                  href={`/go/${recommendedHotelLinks[0].id}?placement=article-sidebar`}
+                  href={`/out/${recommendedHotelLinks[0].id}?placement=article-sidebar`}
                   rel="nofollow sponsored"
                   className="mt-4 inline-flex rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-white hover:bg-accent-dark"
                 >

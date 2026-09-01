@@ -1,9 +1,9 @@
-import { LegalPage } from "@/components/legal-page";
+﻿import { LegalPage } from "@/components/legal-page";
 import { buildMetadata } from "@/lib/seo";
 
 export const metadata = buildMetadata({
   title: "Terms of Service",
-  description: "The terms that apply when you use the Roamora website.",
+  description: "The terms that apply when you use the Riversmag website.",
   canonicalPath: "/terms",
 });
 
@@ -12,7 +12,7 @@ export default function TermsPage() {
     <LegalPage crumb="Terms" title="Terms of Service" updated="August 30, 2026">
       <h2>1. Acceptance of terms</h2>
       <p>
-        By accessing or using Roamora (&quot;the Site&quot;), you agree to these Terms of Service. If you do not agree,
+        By accessing or using Riversmag (&quot;the Site&quot;), you agree to these Terms of Service. If you do not agree,
         please do not use the Site.
       </p>
 
@@ -24,7 +24,7 @@ export default function TermsPage() {
 
       <h2>3. Accuracy of information</h2>
       <p>
-        We work hard to keep our content accurate and up to date, but travel information changes quickly —
+        We work hard to keep our content accurate and up to date, but travel information changes quickly â€”
         prices, opening hours, visa rules and availability can change without notice. You confirm that you
         understand and accept this, and that you rely on the information at your own judgment.
       </p>
@@ -32,7 +32,7 @@ export default function TermsPage() {
       <h2>4. Affiliate links and advertising</h2>
       <p>
         The Site contains affiliate links. When you click these links and make a booking or purchase, we may
-        receive a commission at no additional cost to you. This does not influence our editorial recommendations —
+        receive a commission at no additional cost to you. This does not influence our editorial recommendations â€”
         see our{" "}
         <a href="/affiliate-disclosure">Affiliate Disclosure</a>.
       </p>
@@ -51,13 +51,13 @@ export default function TermsPage() {
 
       <h2>7. Limitation of liability</h2>
       <p>
-        To the maximum extent permitted by law, Roamora shall not be liable for any indirect, incidental or
+        To the maximum extent permitted by law, Riversmag shall not be liable for any indirect, incidental or
         consequential damages arising from your use of the Site or reliance on its content.
       </p>
 
       <h2>8. Intellectual property</h2>
       <p>
-        The Roamora name, logo and original content are our intellectual property and may not be used without
+        The Riversmag name, logo and original content are our intellectual property and may not be used without
         permission.
       </p>
 
@@ -69,7 +69,7 @@ export default function TermsPage() {
 
       <h2>10. Contact</h2>
       <p>
-        Questions about these terms? Contact us at <a href="mailto:legal@roamora.com">legal@roamora.com</a>.
+        Questions about these terms? Contact us at <a href="mailto:legal@riversmag.com">legal@riversmag.com</a>.
       </p>
     </LegalPage>
   );

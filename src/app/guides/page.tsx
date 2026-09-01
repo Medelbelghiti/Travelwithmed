@@ -1,10 +1,10 @@
-import { CategoryListing } from "@/components/category-listing";
+﻿import { CategoryListing } from "@/components/category-listing";
 import { Breadcrumbs, buildCrumbs } from "@/components/ui/breadcrumbs";
 
 export const metadata = {
   title: "Travel Guides",
   description:
-    "In-depth travel guides covering destinations, hotels, itineraries, travel gear and practical advice — from the Roamora editorial team.",
+    "In-depth travel guides covering destinations, hotels, itineraries, travel gear and practical advice â€” from the Riversmag editorial team.",
 };
 
 export const dynamic = "force-dynamic";

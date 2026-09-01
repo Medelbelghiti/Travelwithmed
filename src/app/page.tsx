@@ -1,4 +1,4 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 import { ArrowRight, BadgePercent } from "lucide-react";
 import { Hero } from "@/components/home/hero";
 import { DestinationCard } from "@/components/destination-card";
@@ -123,7 +123,7 @@ export default async function HomePage() {
           <SectionHeading
             eyebrow="Trending now"
             title="Trending destinations"
-            description="Where the Roamora community is dreaming about right now."
+            description="Where the Riversmag community is dreaming about right now."
           />
           <div className="grid grid-cols-2 gap-4 md:gap-6 lg:grid-cols-4">
             {trendingDestinations.map((d) => (
@@ -326,7 +326,7 @@ export default async function HomePage() {
             <SectionHeading
               eyebrow="Pack right"
               title="Travel gear recommendations"
-              description="Tested picks for every traveller — from cabin carry-ons to packing cubes."
+              description="Tested picks for every traveller â€” from cabin carry-ons to packing cubes."
             />
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {gear.map((product) => (
@@ -335,7 +335,7 @@ export default async function HomePage() {
                     <h3 className="font-serif text-lg font-semibold text-ink">{product.name}</h3>
                     {product.rating ? (
                       <span className="rounded-full bg-brand-light px-2 py-0.5 text-xs font-bold text-brand-dark">
-                        ★ {product.rating.toFixed(1)}
+                        â˜… {product.rating.toFixed(1)}
                       </span>
                     ) : null}
                   </div>

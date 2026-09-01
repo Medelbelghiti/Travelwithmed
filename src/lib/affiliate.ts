@@ -1,4 +1,4 @@
-import type { Prisma } from "@prisma/client";
+﻿import type { Prisma } from "@prisma/client";
 import { AffiliateCategory } from "@prisma/client";
 import { prisma } from "./prisma";
 
@@ -53,8 +53,8 @@ function buildUtmUrl(
     placement?: string | null;
   },
 ): string {
-  const url = new URL(targetUrl, "https://roamora.com");
-  const utmSource = params.utmSource || "roamora";
+  const url = new URL(targetUrl, "https://riversmag.com");
+  const utmSource = params.utmSource || "riversmag";
   const utmMedium = params.utmMedium || "affiliate";
   const utmCampaign = params.utmCampaign || "general";
   const utmContent = params.utmContent || params.placement || "default";
@@ -211,7 +211,7 @@ export function ctaForCategory(category: AffiliateCategory, index = 0): string {
 }
 
 export const DISCLOSURE_TEXT =
-  "Roamora may earn a commission when you book through the links on this page, at no extra cost to you. This helps keep our content free. We only recommend products and services we genuinely believe in.";
+  "Riversmag may earn a commission when you book through the links on this page, at no extra cost to you. This helps keep our content free. We only recommend products and services we genuinely believe in.";
 
 export const SHORT_DISCLOSURE =
   "As an affiliate partner we may earn a commission from qualifying purchases.";

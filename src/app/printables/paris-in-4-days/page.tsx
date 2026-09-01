@@ -1,4 +1,4 @@
-import { notFound } from "next/navigation";
+﻿import { notFound } from "next/navigation";
 import { Calendar, Wallet } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { buildMetadata } from "@/lib/seo";
@@ -8,9 +8,9 @@ import { formatDate } from "@/lib/utils";
 export const dynamic = "force-dynamic";
 
 export const metadata = buildMetadata({
-  title: "Paris in 4 Days — Free Printable Itinerary",
+  title: "Paris in 4 Days â€” Free Printable Itinerary",
   description:
-    "Download and print the free Roamora Paris itinerary: 4 days, day-by-day plans, metro-friendly routing, and a budget quick-reference.",
+    "Download and print the free Riversmag Paris itinerary: 4 days, day-by-day plans, metro-friendly routing, and a budget quick-reference.",
   canonicalPath: "/printables/paris-in-4-days",
   noindex: true,
 });
@@ -32,7 +32,7 @@ export default async function PrintableParisPage() {
       <div className="mx-auto max-w-3xl">
         <div className="no-print mb-8 flex items-center justify-between gap-4">
           <p className="text-sm font-semibold uppercase tracking-wider text-ink-muted">
-            Roamora free printable
+            Riversmag free printable
           </p>
           <PrintButton />
         </div>
@@ -121,8 +121,8 @@ export default async function PrintableParisPage() {
 
           <footer className="mt-8 border-t border-line pt-6 text-xs text-ink-muted">
             <p>
-              © {new Date().getFullYear()} Roamora. Free to print and share for personal use. This itinerary
-              reflects editorial guidance at time of writing — always double-check opening hours and entry
+              Â© {new Date().getFullYear()} Riversmag. Free to print and share for personal use. This itinerary
+              reflects editorial guidance at time of writing â€” always double-check opening hours and entry
               rules before you go.
             </p>
           </footer>

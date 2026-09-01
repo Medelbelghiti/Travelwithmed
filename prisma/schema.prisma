@@ -465,7 +465,7 @@ model AffiliateLink {
   destinationText    String?
   targetUrl          String
   trackingParameter  String?
-  utmSource          String       @default("roamora")
+  utmSource          String       @default("riversmag")
   utmMedium          String       @default("affiliate")
   utmCampaign        String?
   utmContent         String?
