@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { rateLimit, getClientIp } from "@/lib/rate-limit";
+import { isEmailEnabled, sendEmail, escapeHtml } from "@/lib/email";
 
 export async function POST(request: NextRequest) {
   try {
@@ -32,6 +33,20 @@ export async function POST(request: NextRequest) {
         unsubscribedAt: null,
       },
     });
+
+    if (isEmailEnabled()) {
+      const greeting = firstName ? `Hi ${escapeHtml(firstName)},` : "Hi there,";
+      await sendEmail({
+        to: email,
+        subject: "Welcome to Riversmag",
+        html: `
+          <p>${greeting}</p>
+          <p>Welcome to Riversmag — hand-crafted itineraries, honest planning guides and the exact links we'd book ourselves.</p>
+          <p>You're in. Expect one useful email per week, never spam, and the occasional free printable before everyone else gets it.</p>
+          <p>Happy travels,<br/>The Riversmag team</p>
+        `,
+      });
+    }
 
     return NextResponse.json({ success: true }, { status: 201 });
   } catch (error) {

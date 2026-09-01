@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { rateLimit, getClientIp } from "@/lib/rate-limit";
+import { isEmailEnabled, sendEmail, escapeHtml } from "@/lib/email";
 
 export async function POST(request: NextRequest) {
   try {
@@ -19,9 +20,29 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Please enter a valid email address." }, { status: 400 });
     }
 
-    // For V1, contact messages are accepted and logged. Configure an email
-    // provider (e.g. Resend) in a future integration.
-    console.info("Contact message received", { name, email, subject, messageLength: message.length });
+    if (isEmailEnabled()) {
+      const to = process.env.CONTACT_TO_EMAIL ?? "hello@riversmag.com";
+      await sendEmail({
+        to,
+        subject: `[Contact form] ${subject || "New message from riversmag.com"}`,
+        html: `
+          <h2>New contact message from riversmag.com</h2>
+          <p><strong>Name:</strong> ${escapeHtml(name)}</p>
+          <p><strong>Email:</strong> ${escapeHtml(email)}</p>
+          <p><strong>Subject:</strong> ${escapeHtml(subject)}</p>
+          <hr />
+          <p style="white-space:pre-wrap">${escapeHtml(message)}</p>
+        `,
+        replyTo: email,
+      });
+    } else {
+      console.info("Contact message received (email disabled)", {
+        name,
+        email,
+        subject,
+        messageLength: message.length,
+      });
+    }
 
     return NextResponse.json({ success: true }, { status: 200 });
   } catch (error) {

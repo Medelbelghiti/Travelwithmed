@@ -7,25 +7,45 @@ import { Breadcrumbs, buildCrumbs } from "@/components/ui/breadcrumbs";
 export const metadata = buildMetadata({
   title: "Free Travel Printables & Guides",
   description:
-    "Download free Riversmag printables â€” printable itineraries, packing checklists and travel planning worksheets. Free forever, created by our editors.",
+    "Download free Riversmag printables — printable itineraries, packing checklists and travel planning worksheets. Free forever, created by our editors.",
   canonicalPath: "/free-guides",
 });
 
 const GUIDES = [
   {
     slug: "paris-in-4-days",
-    title: "Paris in 4 Days â€” Printable Itinerary",
+    title: "Paris in 4 Days — Printable Itinerary",
     blurb: "A day-by-day plan for first-timers: what to see, where to eat and how to side-step the crowds.",
     points: ["4 day-by-day plans", "Metro-friendly route map", "Budget quick-reference", "Print-ready A4 & Letter"],
+    tag: "Itinerary",
+  },
+  {
+    slug: "rome-in-4-days",
+    title: "Rome in 4 Days — Printable Itinerary",
+    blurb: "Ancient Rome, the Vatican and baroque piazzas — routed to keep your feet and budget happy.",
+    points: ["4 day-by-day plans", "Skip-the-line tips", "Walking-time estimates", "Print-ready"],
+    tag: "Itinerary",
+  },
+  {
+    slug: "bali-in-7-days",
+    title: "7 Days in Bali — Printable Itinerary",
+    blurb: "Beaches, Ubud and the Uluwatu cliffs in one week — without racing across the island.",
+    points: ["7 day-by-day plans", "Island routing by region", "Budget per day", "Print-ready"],
+    tag: "Itinerary",
+  },
+  {
+    slug: "tokyo-in-4-days",
+    title: "Tokyo in 4 Days — Printable Itinerary",
+    blurb: "Asakusa, Shibuya, Shinjuku and one bold finale — the essentials without the sensory overload.",
+    points: ["4 day-by-day plans", "Neighborhood routes", "Budget per day", "Print-ready"],
     tag: "Itinerary",
   },
   {
     slug: "free-packing-checklist",
     title: "The Ultimate Carry-On Packing Checklist",
     blurb: "Never over-pack again. A field-tested checklist built for one-bag and carry-on travellers.",
-    points: ["110+ item checklist", "Weather variants included", "Both cabin + checked", "Print-ready"],
+    points: ["Docs & wallet", "Carry-on essentials", "Clothing by climate", "Print-ready"],
     tag: "Checklist",
-    soon: true,
   },
 ];
 
@@ -58,16 +78,9 @@ export default function FreeGuidesPage() {
                 <Map className="h-6 w-6" aria-hidden />
               </span>
               <div>
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="rounded-full bg-accent/15 px-2.5 py-0.5 text-xs font-semibold text-accent-dark">
-                    {guide.tag}
-                  </span>
-                  {guide.soon && (
-                    <span className="rounded-full bg-sand px-2.5 py-0.5 text-xs font-semibold text-ink-muted">
-                      Coming soon
-                    </span>
-                  )}
-                </div>
+                <span className="rounded-full bg-accent/15 px-2.5 py-0.5 text-xs font-semibold text-accent-dark">
+                  {guide.tag}
+                </span>
                 <h2 className="mt-2 font-serif text-2xl font-semibold text-ink">{guide.title}</h2>
                 <p className="mt-2 text-sm leading-relaxed text-ink-soft">{guide.blurb}</p>
               </div>
@@ -82,19 +95,10 @@ export default function FreeGuidesPage() {
               ))}
             </ul>
 
-            {guide.soon ? (
-              <div className="mt-6 rounded-2xl border border-dashed border-line p-5 text-center">
-                <p className="inline-flex items-center gap-2 text-sm font-medium text-ink-muted">
-                  <Download className="h-4 w-4" aria-hidden />
-                  Drop your email to be first to get it
-                </p>
-              </div>
-            ) : (
-              <div className="mt-6 rounded-2xl bg-sand p-5">
-                <p className="mb-3 text-sm font-semibold text-ink">Enter your email to unlock it free:</p>
-                <NewsletterForm variant="lead" downloadPath={`/printables/${guide.slug}`} />
-              </div>
-            )}
+            <div className="mt-6 rounded-2xl bg-sand p-5">
+              <p className="mb-3 text-sm font-semibold text-ink">Enter your email to unlock it free:</p>
+              <NewsletterForm variant="lead" downloadPath={`/printables/${guide.slug}`} />
+            </div>
           </article>
         ))}
       </div>
