@@ -165,7 +165,7 @@ function DealCard({
 
       <div className="p-5 pt-0">
         <Link
-          href={`/go/${deal.id}?placement=deals`}
+          href={`/out/${deal.id}?placement=deals`}
           rel="nofollow sponsored"
           className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-brand px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-brand-dark"
         >

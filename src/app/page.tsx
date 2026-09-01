@@ -92,7 +92,7 @@ export default async function HomePage() {
                 {deals.map((deal) => (
                   <Link
                     key={deal.id}
-                    href={`/go/${deal.id}?placement=home-deals`}
+                    href={`/out/${deal.id}?placement=home-deals`}
                     rel="nofollow sponsored"
                     className="inline-flex items-center gap-2 rounded-full border border-line bg-white px-4 py-2 text-sm font-medium text-ink-soft transition-colors hover:border-brand hover:text-brand"
                   >
@@ -345,7 +345,7 @@ export default async function HomePage() {
                     {product.priceRange && <span className="text-sm font-semibold text-ink">{product.priceRange}</span>}
                     {product.affiliateLinks[0] && (
                       <Link
-                        href={`/go/${product.affiliateLinks[0].id}?placement=home-gear`}
+                        href={`/out/${product.affiliateLinks[0].id}?placement=home-gear`}
                         className="inline-flex items-center rounded-full bg-brand px-4 py-2 text-xs font-semibold text-white hover:bg-brand-dark"
                         rel="nofollow sponsored"
                       >

@@ -37,7 +37,7 @@ export function AffiliateButton({
   className,
   external = false,
 }: AffiliateButtonProps) {
-  const href = `/go/${linkId}${placement ? `?placement=${encodeURIComponent(placement)}` : ""}`;
+  const href = `/out/${linkId}${placement ? `?placement=${encodeURIComponent(placement)}` : ""}`;
   const rel = external ? "nofollow sponsored noopener" : undefined;
   const target = external ? "_blank" : undefined;
 
