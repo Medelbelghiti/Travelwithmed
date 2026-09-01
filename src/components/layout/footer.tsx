@@ -1,13 +1,15 @@
 import Link from "next/link";
 import { siteConfig } from "@/lib/site";
+import { isShopEnabled } from "@/lib/fourthwall";
 import { Logo } from "./header";
 import { NewsletterForm } from "@/components/newsletter-form";
 
 export function Footer() {
   const { footer } = siteConfig.nav;
+  const plan = isShopEnabled() ? [{ label: "Shop Travel Prints", href: "/shop" }, ...footer.plan] : footer.plan;
   const columns = [
     { title: "Explore", links: footer.explore },
-    { title: "Plan Your Trip", links: footer.plan },
+    { title: "Plan Your Trip", links: plan },
     { title: "Resources", links: footer.resources },
     { title: "Company", links: footer.company },
   ];

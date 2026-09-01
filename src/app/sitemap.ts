@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 import { prisma } from "@/lib/prisma";
 import { siteConfig } from "@/lib/site";
+import { isShopEnabled } from "@/lib/fourthwall";
 
 export const dynamic = "force-dynamic";
 
@@ -40,6 +41,7 @@ async function collectPaths() {
     "/terms",
     "/cookie-policy",
   ];
+  if (isShopEnabled()) staticPaths.push("/shop");
   const staticPaths2 = staticPaths.map((p) => ({ path: p, lastModified: undefined as undefined }));
 
   return {

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Mountain, Menu } from "lucide-react";
 import { siteConfig } from "@/lib/site";
+import { isShopEnabled } from "@/lib/fourthwall";
 import { SearchDialog } from "./search-dialog";
 
 export function Logo({ className = "h-8 w-auto" }: { className?: string }) {
@@ -17,6 +18,9 @@ export function Logo({ className = "h-8 w-auto" }: { className?: string }) {
 }
 
 export function Header() {
+  const navItems = isShopEnabled()
+    ? [...siteConfig.nav.primary, { label: "Shop", href: "/shop" }]
+    : siteConfig.nav.primary;
   return (
     <header className="sticky top-0 z-50 border-b border-line bg-background/90 backdrop-blur-md">
       <div className="container-x flex h-16 items-center justify-between gap-4">
@@ -24,7 +28,7 @@ export function Header() {
 
         <nav className="hidden lg:block" aria-label="Primary">
           <ul className="flex items-center gap-1">
-            {siteConfig.nav.primary.map((item) => (
+            {navItems.map((item) => (
               <li key={item.href}>
                 <Link
                   href={item.href}
@@ -47,6 +51,9 @@ export function Header() {
 }
 
 function MobileNav() {
+  const navItems = isShopEnabled()
+    ? [...siteConfig.nav.primary, { label: "Shop", href: "/shop" }]
+    : siteConfig.nav.primary;
   return (
     <div className="lg:hidden">
       <details className="group relative">
@@ -57,7 +64,7 @@ function MobileNav() {
 
         <div className="absolute right-0 top-12 max-h-[80vh] w-72 overflow-y-auto rounded-2xl border border-line bg-white p-3 shadow-xl">
           <ul className="space-y-1">
-            {siteConfig.nav.primary.map((item) => (
+            {navItems.map((item) => (
               <li key={item.href}>
                 <Link
                   href={item.href}
