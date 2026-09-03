@@ -30,6 +30,7 @@ function readAll(): LocalReview[] {
 }
 
 function subscribe(callback: () => void) {
+  refreshSnapshot();
   window.addEventListener(CHANGE_EVENT, callback);
   window.addEventListener("storage", callback);
   return () => {
@@ -38,12 +39,21 @@ function subscribe(callback: () => void) {
   };
 }
 
-function getSnapshot(): LocalReview[] {
-  return readAll();
+let cachedSnapshot: LocalReview[] = [];
+
+function refreshSnapshot(): LocalReview[] {
+  cachedSnapshot = readAll();
+  return cachedSnapshot;
 }
 
+function getSnapshot(): LocalReview[] {
+  return cachedSnapshot;
+}
+
+const EMPTY_SNAPSHOT: LocalReview[] = [];
+
 function getServerSnapshot(): LocalReview[] {
-  return [];
+  return EMPTY_SNAPSHOT;
 }
 
 function Stars({ rating }: { rating: number }) {

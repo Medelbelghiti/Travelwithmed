@@ -17,19 +17,30 @@ export interface TripItem {
 const STORAGE_KEY = "riversmag-trip";
 const CHANGE_EVENT = "riversmag-trip-change";
 
+// Cached snapshot so useSyncExternalStore sees a stable reference between
+// change events. A fresh array on every call would trigger an infinite
+// re-render loop ("Maximum update depth exceeded") and unmount the app.
+let cachedSnapshot: TripItem[] = [];
+
 function readStorage(): TripItem[] {
   if (typeof window === "undefined") return [];
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY);
     if (!raw) return [];
     const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed : [];
+    return Array.isArray(parsed) ? (parsed as TripItem[]) : [];
   } catch {
     return [];
   }
 }
 
+function refreshSnapshot(): TripItem[] {
+  cachedSnapshot = readStorage();
+  return cachedSnapshot;
+}
+
 function subscribe(callback: () => void) {
+  refreshSnapshot();
   window.addEventListener(CHANGE_EVENT, callback);
   window.addEventListener("storage", callback);
   return () => {
@@ -38,8 +49,10 @@ function subscribe(callback: () => void) {
   };
 }
 
+// Stable cached snapshot: returns the same array reference until the cache is
+// refreshed by the change/storage events above.
 function getSnapshot(): TripItem[] {
-  return readStorage();
+  return cachedSnapshot;
 }
 
 function getServerSnapshot(): TripItem[] {
@@ -52,23 +65,23 @@ function writeStorage(next: TripItem[]) {
   } catch {
     /* ignore quota errors */
   }
+  refreshSnapshot();
   window.dispatchEvent(new Event(CHANGE_EVENT));
 }
 
 /** Returns trip items plus helpers. Hydrates safely for SSR via useSyncExternalStore. */
 export function useTrip() {
   const items = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
-  const count = items.length;
 
-  const inTrip = useCallback((id: string) => (getSnapshot() ?? []).some((i) => i.id === id), []);
+  const inTrip = useCallback((id: string) => cachedSnapshot.some((i) => i.id === id), []);
   const toggle = useCallback((item: TripItem) => {
-    const prev = getSnapshot();
+    const prev = cachedSnapshot;
     const exists = prev.some((i) => i.id === item.id);
     const next = exists ? prev.filter((i) => i.id !== item.id) : [...prev, item];
     writeStorage(next);
   }, []);
   const remove = useCallback((id: string) => {
-    const next = getSnapshot().filter((i) => i.id !== id);
+    const next = cachedSnapshot.filter((i) => i.id !== id);
     writeStorage(next);
   }, []);
   const clear = useCallback(() => {
@@ -77,16 +90,11 @@ export function useTrip() {
     } catch {
       /* ignore */
     }
+    refreshSnapshot();
     window.dispatchEvent(new Event(CHANGE_EVENT));
   }, []);
 
-  // On first client render, whether we've hydrated from storage yet.
-  const hasHydrated = useSyncExternalStore(
-    subscribe,
-    () => true,
-    () => false,
-  );
-  const ready = hasHydrated;
+  const count = items.length;
 
-  return { items, inTrip, toggle, remove, clear, count, ready };
+  return { items, inTrip, toggle, remove, clear, count, ready: true };
 }
