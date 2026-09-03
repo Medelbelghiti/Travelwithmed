@@ -36,7 +36,7 @@ export function Hero() {
 
           <form
             action="/search"
-            className="mx-auto mt-10 flex max-w-2xl items-center gap-2 rounded-2xl border border-white/20 bg-white/95 p-2.5 shadow-2xl shadow-black/40 backdrop-blur-sm"
+            className="mx-auto mt-10 flex max-w-2xl items-center gap-2 rounded-2xl border border-white/20 bg-black/50 p-2.5 shadow-2xl shadow-black/40 backdrop-blur-sm"
             role="search"
           >
             <Search className="ml-3 h-5 w-5 shrink-0 text-brand" aria-hidden />
