@@ -1,30 +1,63 @@
-import Image from "next/image";
-import Link from "next/link";
-import { Compass, Clock, Star, ArrowRight } from "lucide-react";
 import { Breadcrumbs, buildCrumbs } from "@/components/ui/breadcrumbs";
 import { prisma } from "@/lib/prisma";
+import { ActivitiesFilter } from "@/components/activities-filter";
+import { SectionHeading } from "@/components/ui/card";
 
 export const metadata = {
   title: "Activities & Tours",
   description:
-    "Discover the best tours and experiences worldwide — from food tours to day trips and adventure activities.",
+    "Discover the best tours and experiences worldwide — from food tours to day trips and adventure activities. Filter by category, duration, price and rating.",
 };
 
 export const dynamic = "force-dynamic";
 
-export default async function ActivitiesPage() {
+export default async function ActivitiesPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ category?: string }>;
+}) {
+  const { category: categoryParam } = await searchParams;
+
   const activities = await prisma.activity.findMany({
     where: { isActive: true },
-    include: { destination: { select: { name: true, slug: true } } },
+    include: {
+      destination: { select: { name: true, slug: true } },
+      affiliateLinks: { where: { active: true }, take: 1 },
+    },
     orderBy: [{ rating: "desc" }, { name: "asc" }],
     take: 60,
   });
 
   const crumbs = buildCrumbs([{ name: "Activities", href: "/activities" }]);
 
+  const filterData = activities.map((a) => ({
+    id: a.id,
+    name: a.name,
+    slug: a.slug,
+    image: a.image,
+    description: a.description,
+    duration: a.duration,
+    priceRange: a.priceRange,
+    rating: a.rating,
+    reviewCount: a.reviewCount,
+    category: a.category,
+    bestFor: a.bestFor,
+    destinationId: a.destinationId,
+    destinationName: a.destination?.name ?? null,
+    destinationSlug: a.destination?.slug ?? null,
+    affiliateLinkId: a.affiliateLinks?.[0]?.id ?? a.affiliateLinkId ?? null,
+  }));
+
+  const categories = [...new Set(activities.map((a) => a.category).filter(Boolean))] as string[];
+  categories.sort();
+
+  const topRated = activities.filter((a) => a.rating && a.rating >= 4.5).slice(0, 6);
+
   return (
     <main className="container-x section-pad">
       <Breadcrumbs items={crumbs} />
+
+      {/* Hero */}
       <header className="mb-10">
         <span className="text-xs font-bold uppercase tracking-[0.2em] text-brand">Book unforgettable experiences</span>
         <h1 className="mt-2 text-4xl font-semibold md:text-5xl">Tours & activities</h1>
@@ -34,65 +67,68 @@ export default async function ActivitiesPage() {
         </p>
       </header>
 
-      {activities.length === 0 && <p className="text-sm text-ink-muted">Experiences coming soon.</p>}
-
-      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {activities.map((activity) => (
-          <Link
-            key={activity.id}
-            href={`/activities/${activity.slug}`}
-            className="group flex flex-col overflow-hidden rounded-2xl border border-line bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg"
-          >
-            <div className="relative aspect-[16/10] overflow-hidden bg-sand">
-              {activity.image ? (
-                <Image
-                  src={activity.image}
-                  alt={activity.name}
-                  fill
-                  sizes="(max-width: 768px) 100vw, 400px"
-                  className="object-cover transition-transform duration-500 group-hover:scale-105"
-                  loading="lazy"
-                />
-              ) : (
-                <div className="flex h-full items-center justify-center text-ink-muted">
-                  <Compass className="h-10 w-10" aria-hidden />
+      {/* Top rated strip */}
+      {topRated.length > 0 && (
+        <section className="mb-12">
+          <SectionHeading eyebrow="Most popular" title="Top-rated experiences" />
+          <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {topRated.map((a) => (
+              <a
+                key={a.id}
+                href={`/activities/${a.slug}`}
+                className="flex items-center gap-4 rounded-xl border border-line bg-white p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:border-brand hover:shadow-md"
+              >
+                <div className="h-14 w-14 shrink-0 overflow-hidden rounded-lg bg-sand">
+                  {a.image ? (
+                    <img src={a.image} alt={a.name} className="h-full w-full object-cover" />
+                  ) : (
+                    <div className="flex h-full items-center justify-center text-ink-muted">★</div>
+                  )}
                 </div>
-              )}
-              {activity.category && (
-                <span className="absolute left-3 top-3 rounded-full bg-white/95 px-2.5 py-1 text-xs font-semibold text-ink shadow-sm">
-                  {activity.category}
-                </span>
-              )}
-              {activity.rating != null && (
-                <span className="absolute right-3 top-3 inline-flex items-center gap-1 rounded-full bg-white/95 px-2.5 py-1 text-xs font-bold text-ink shadow-sm">
-                  <Star className="h-3.5 w-3.5 fill-accent text-accent" aria-hidden />
-                  {activity.rating.toFixed(1)}
-                </span>
-              )}
-            </div>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate font-semibold text-ink">{a.name}</p>
+                  <p className="text-xs text-ink-muted">{a.destination?.name}</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm font-bold text-accent">★ {a.rating?.toFixed(1)}</p>
+                  {a.priceRange && <p className="text-xs text-ink-muted">{a.priceRange}</p>}
+                </div>
+              </a>
+            ))}
+          </div>
+        </section>
+      )}
 
-            <div className="flex flex-1 flex-col p-5">
-              <h2 className="font-serif text-lg font-semibold text-ink leading-snug group-hover:text-brand">{activity.name}</h2>
-              {activity.description && <p className="mt-2 line-clamp-2 text-sm text-ink-soft">{activity.description}</p>}
-              <div className="mt-3 flex items-center gap-4 text-sm text-ink-muted">
-                {activity.duration && (
-                  <span className="inline-flex items-center gap-1">
-                    <Clock className="h-3.5 w-3.5" aria-hidden />
-                    {activity.duration}
-                  </span>
-                )}
-                {activity.priceRange && <span className="font-semibold text-ink">{activity.priceRange}</span>}
-              </div>
-              <div className="mt-auto flex items-center justify-between pt-4">
-                {activity.destination && <span className="text-sm text-ink-muted">{activity.destination.name}</span>}
-                <span className="inline-flex items-center gap-1 text-sm font-semibold text-brand">
-                  Details <ArrowRight className="h-3.5 w-3.5" aria-hidden />
-                </span>
-              </div>
-            </div>
-          </Link>
-        ))}
-      </div>
+      {/* Filter + grid */}
+      <section>
+        <ActivitiesFilter activities={filterData} initialCategory={categoryParam} />
+      </section>
+
+      {/* Category quick links */}
+      {categories.length > 0 && (
+        <section className="mt-16">
+          <SectionHeading
+            eyebrow="Browse by type"
+            title="Popular categories"
+            description="Find the experience that matches your travel style."
+          />
+          <div className="mt-6 flex flex-wrap gap-3">
+            {categories.map((cat) => {
+              const count = activities.filter((a) => a.category === cat).length;
+              return (
+                <a
+                  key={cat}
+                  href={`/activities?category=${encodeURIComponent(cat)}`}
+                  className="group flex items-center gap-2 rounded-xl border border-line bg-white px-5 py-3 shadow-sm transition-all hover:-translate-y-0.5 hover:border-brand hover:shadow-md"
+                >
+                  <span className="font-medium text-ink group-hover:text-brand">{cat}</span>
+                  <span className="rounded-full bg-sand px-2 py-0.5 text-xs font-semibold text-ink-muted">{count}</span>
+                </a>
+              );
+            })}
+          </div>
+        </section>
+      )}
     </main>
   );
 }

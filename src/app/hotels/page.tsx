@@ -1,8 +1,7 @@
-import Image from "next/image";
-import Link from "next/link";
-import { Building2, MapPin, Star, ArrowRight } from "lucide-react";
 import { Breadcrumbs, buildCrumbs } from "@/components/ui/breadcrumbs";
 import { prisma } from "@/lib/prisma";
+import { HotelsFilter } from "@/components/hotels-filter";
+import { SectionHeading } from "@/components/ui/card";
 
 export const metadata = {
   title: "Hotels",
@@ -15,16 +14,41 @@ export const dynamic = "force-dynamic";
 export default async function HotelsPage() {
   const hotels = await prisma.hotel.findMany({
     where: { isActive: true },
-    include: { destination: { select: { name: true, slug: true } } },
-    orderBy: [{ starRating: "desc" }, { name: "asc" }],
+    include: {
+      destination: { select: { name: true, slug: true } },
+      affiliateLinks: { where: { active: true }, take: 1 },
+    },
+    orderBy: [{ starRating: "desc" }, { guestRating: "desc" }],
     take: 60,
   });
 
   const crumbs = buildCrumbs([{ name: "Hotels", href: "/hotels" }]);
 
+  const filterData = hotels.map((h) => ({
+    id: h.id,
+    name: h.name,
+    slug: h.slug,
+    image: h.image,
+    description: h.description,
+    city: h.city,
+    country: h.country,
+    starRating: h.starRating,
+    guestRating: h.guestRating,
+    reviewCount: h.reviewCount,
+    priceRange: h.priceRange,
+    bestFor: h.bestFor,
+    destinationId: h.destinationId,
+    destinationName: h.destination?.name ?? null,
+    destinationSlug: h.destination?.slug ?? null,
+    affiliateLinkId: h.affiliateLinks?.[0]?.id ?? null,
+  }));
+
+  const topRated = hotels.filter((h) => h.guestRating && h.guestRating >= 9).slice(0, 6);
+
   return (
     <main className="container-x section-pad">
       <Breadcrumbs items={crumbs} />
+
       <header className="mb-10">
         <span className="text-xs font-bold uppercase tracking-[0.2em] text-brand">Stay well</span>
         <h1 className="mt-2 text-4xl font-semibold md:text-5xl">Hotel reviews & stays</h1>
@@ -34,66 +58,41 @@ export default async function HotelsPage() {
         </p>
       </header>
 
-      {hotels.length === 0 && <p className="text-sm text-ink-muted">Hotel reviews coming soon.</p>}
-
-      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {hotels.map((hotel) => (
-          <Link
-            key={hotel.id}
-            href={`/hotels/${hotel.slug}`}
-            className="group flex flex-col overflow-hidden rounded-2xl border border-line bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg"
-          >
-            <div className="relative aspect-[4/3] overflow-hidden bg-sand">
-              {hotel.image ? (
-                <Image
-                  src={hotel.image}
-                  alt={hotel.name}
-                  fill
-                  sizes="(max-width: 768px) 100vw, 400px"
-                  className="object-cover transition-transform duration-500 group-hover:scale-105"
-                  loading="lazy"
-                />
-              ) : (
-                <div className="flex h-full items-center justify-center text-ink-muted">
-                  <Building2 className="h-10 w-10" aria-hidden />
+      {/* Top rated strip */}
+      {topRated.length > 0 && (
+        <section className="mb-12">
+          <SectionHeading eyebrow="Guest favourites" title="Top-rated hotels" />
+          <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {topRated.map((h) => (
+              <a
+                key={h.id}
+                href={`/hotels/${h.slug}`}
+                className="flex items-center gap-4 rounded-xl border border-line bg-white p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:border-brand hover:shadow-md"
+              >
+                <div className="h-14 w-14 shrink-0 overflow-hidden rounded-lg bg-sand">
+                  {h.image ? (
+                    <img src={h.image} alt={h.name} className="h-full w-full object-cover" />
+                  ) : (
+                    <div className="flex h-full items-center justify-center text-ink-muted text-lg">★</div>
+                  )}
                 </div>
-              )}
-              {hotel.guestRating != null && (
-                <span className="absolute left-3 top-3 inline-flex items-center gap-1 rounded-full bg-white/95 px-2.5 py-1 text-xs font-bold text-ink shadow-sm">
-                  <Star className="h-3.5 w-3.5 fill-accent text-accent" aria-hidden />
-                  {hotel.guestRating.toFixed(1)}
-                </span>
-              )}
-            </div>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate font-semibold text-ink">{h.name}</p>
+                  <p className="text-xs text-ink-muted">{[h.city, h.country].filter(Boolean).join(", ")}</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm font-bold text-accent">★ {h.guestRating?.toFixed(1)}</p>
+                  {h.priceRange && <p className="text-xs text-ink-muted">{h.priceRange}</p>}
+                </div>
+              </a>
+            ))}
+          </div>
+        </section>
+      )}
 
-            <div className="flex flex-1 flex-col p-5">
-              <div className="flex items-center justify-between gap-2">
-                <h2 className="font-serif text-lg font-semibold text-ink leading-snug group-hover:text-brand">{hotel.name}</h2>
-                {hotel.starRating != null && (
-                  <span className="inline-flex shrink-0 items-center gap-0.5 text-accent" aria-label={`${hotel.starRating} star hotel`}>
-                    {Array.from({ length: hotel.starRating }).map((_, i) => (
-                      <Star key={i} className="h-3.5 w-3.5 fill-accent text-accent" aria-hidden />
-                    ))}
-                  </span>
-                )}
-              </div>
-              {(hotel.city || hotel.destination) && (
-                <p className="mt-1 flex items-center gap-1 text-sm text-ink-muted">
-                  <MapPin className="h-3.5 w-3.5" aria-hidden />
-                  {[hotel.city, hotel.country].filter(Boolean).join(", ") || hotel.destination?.name}
-                </p>
-              )}
-              {hotel.bestFor && <p className="mt-2 text-sm text-ink-soft">{hotel.bestFor}</p>}
-              <div className="mt-auto flex items-center justify-between pt-4">
-                {hotel.priceRange && <span className="text-sm font-semibold text-ink">{hotel.priceRange}</span>}
-                <span className="inline-flex items-center gap-1 text-sm font-semibold text-brand">
-                  Read review <ArrowRight className="h-3.5 w-3.5" aria-hidden />
-                </span>
-              </div>
-            </div>
-          </Link>
-        ))}
-      </div>
+      <section>
+        <HotelsFilter hotels={filterData} />
+      </section>
     </main>
   );
 }
