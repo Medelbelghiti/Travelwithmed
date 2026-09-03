@@ -4,7 +4,7 @@ import { buildMetadata } from "@/lib/seo";
 export const metadata = buildMetadata({
   title: "Editorial Policy",
   description:
-    "Our editorial standards â€” how we research, write and review travel content at Riversmag.",
+    "Our editorial standards — how we research, write and review travel content at Riversmag.",
   canonicalPath: "/editorial-policy",
 });
 
@@ -27,7 +27,7 @@ export default function EditorialPolicyPage() {
       <h2>2. Accuracy</h2>
       <p>
         We verify information where we can (prices, hours, visas, transport) and clearly date our articles so
-        readers know when guidance was last updated. When travel information changes â€” and it changes often â€”
+        readers know when guidance was last updated. When travel information changes — and it changes often —
         we update our content.
       </p>
 
@@ -63,7 +63,7 @@ export default function EditorialPolicyPage() {
 
       <h2>8. Transparency</h2>
       <p>
-        We disclose our affiliate relationships openly â€” see our{" "}
+        We disclose our affiliate relationships openly — see our{" "}
         <a href="/affiliate-disclosure">Affiliate Disclosure</a>. Our readers&apos; trust matters more than any
         single commission, and we&apos;d rather recommend nothing than recommend something we don&apos;t believe in.
       </p>

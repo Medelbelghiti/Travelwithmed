@@ -7,7 +7,7 @@ import { Pagination } from "@/components/pagination";
 export const metadata = {
   title: "All Travel Guides",
   description:
-    "Browse every Riversmag travel guide â€” destination guides, hotel picks, itineraries, gear reviews and practical travel advice.",
+    "Browse every Riversmag travel guide — destination guides, hotel picks, itineraries, gear reviews and practical travel advice.",
 };
 
 export const dynamic = "force-dynamic";
@@ -52,7 +52,7 @@ export default async function ArticlesIndex({
       <SectionHeading
         eyebrow="The library"
         title="All travel guides"
-        description="Destination deep-dives, hotel roundups, itineraries and practical advice â€” all in one place."
+        description="Destination deep-dives, hotel roundups, itineraries and practical advice — all in one place."
       />
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {articles.map((a) => (

@@ -326,7 +326,7 @@ export default async function HomePage() {
             <SectionHeading
               eyebrow="Pack right"
               title="Travel gear recommendations"
-              description="Tested picks for every traveller â€” from cabin carry-ons to packing cubes."
+              description="Tested picks for every traveller — from cabin carry-ons to packing cubes."
             />
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {gear.map((product) => (

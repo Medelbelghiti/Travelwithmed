@@ -22,7 +22,7 @@ export default function PrivacyPolicyPage() {
       <h3>Information you give us</h3>
       <p>
         When you subscribe to our newsletter, contact us, or create an account, we collect the details you
-        provide â€” such as your name, email address and travel preferences.
+        provide — such as your name, email address and travel preferences.
       </p>
       <h3>Information we collect automatically</h3>
       <p>

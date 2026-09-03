@@ -50,7 +50,7 @@ export function LoginForm() {
             <label htmlFor="login-password" className="mb-1.5 block text-sm font-medium text-ink-soft">
               Password
             </label>
-            <input id="login-password" name="password" type="password" required className={inputClass} placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢" autoComplete="current-password" />
+            <input id="login-password" name="password" type="password" required className={inputClass} placeholder="••••••••" autoComplete="current-password" />
           </div>
           {error && <p className="mt-3 text-sm text-danger">{error}</p>}
           <button
@@ -59,7 +59,7 @@ export function LoginForm() {
             className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-brand px-5 py-3.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-brand-dark disabled:opacity-60"
           >
             <Lock className="h-4 w-4" aria-hidden />
-            {loading ? "Signing inâ€¦" : "Sign in"}
+            {loading ? "Signing in…" : "Sign in"}
           </button>
         </form>
       </div>

@@ -4,7 +4,7 @@ import { buildMetadata } from "@/lib/seo";
 export const metadata = buildMetadata({
   title: "Affiliate Disclosure",
   description:
-    "How Riversmag makes money through affiliate partnerships â€” and why you can trust our recommendations.",
+    "How Riversmag makes money through affiliate partnerships — and why you can trust our recommendations.",
   canonicalPath: "/affiliate-disclosure",
 });
 
@@ -20,14 +20,14 @@ export default function AffiliateDisclosurePage() {
 
       <h2>What this means for you</h2>
       <p>
-        When you click an affiliate link on our site â€” for example to a hotel, tour, insurance provider or eSIM
-        store â€” and then make a booking or purchase, we may receive a commission from our partner. This comes at{" "}
+        When you click an affiliate link on our site — for example to a hotel, tour, insurance provider or eSIM
+        store — and then make a booking or purchase, we may receive a commission from our partner. This comes at{" "}
         <strong>no additional cost to you</strong>.
       </p>
 
       <h2>Does this affect our recommendations?</h2>
       <p>
-        No. We choose which products, hotels and services to recommend based on editorial judgment â€” quality,
+        No. We choose which products, hotels and services to recommend based on editorial judgment — quality,
         value and fit for your trip. We never recommend something solely because it pays a commission, and we
         are transparent about the pros and cons of everything we feature.
       </p>

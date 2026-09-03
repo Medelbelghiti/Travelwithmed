@@ -66,7 +66,7 @@ export function ArticleCard({ article }: { article: ArticleCardData }) {
           {article.authorName && <span>{article.authorName}</span>}
           {article.publishedAt && (
             <span>
-              {article.authorName ? " Â· " : ""}
+              {article.authorName ? " · " : ""}
               {formatDate(article.publishedAt)}
             </span>
           )}

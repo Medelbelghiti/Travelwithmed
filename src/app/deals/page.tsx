@@ -38,7 +38,7 @@ export default async function DealsPage() {
         <h1 className="text-4xl md:text-5xl">Travel deals worth your time</h1>
         <p className="mt-4 text-lg text-ink-soft">
           Every deal below is checked by our team for value and availability. When you book through our links
-          we may earn a commission â€” at no extra cost to you.
+          we may earn a commission — at no extra cost to you.
         </p>
       </div>
 
@@ -60,7 +60,7 @@ export default async function DealsPage() {
           <Tags className="mx-auto h-8 w-8 text-ink-muted" aria-hidden />
           <p className="mt-3 font-medium text-ink">No active deals right now</p>
           <p className="mt-1 text-sm text-ink-muted">
-            New offers land regularly â€” check back soon, or browse our guides in the meantime.
+            New offers land regularly — check back soon, or browse our guides in the meantime.
           </p>
           <Link
             href="/guides"

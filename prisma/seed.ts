@@ -5,7 +5,7 @@ import type { ContentBlock } from "@/lib/content";
 import { AffiliateCategory as Cat } from "@prisma/client";
 
 async function main() {
-  console.log("Seeding Riversmagâ€¦");
+  console.log("Seeding Riversmag…");
 
   // ---------- Admin user ----------
   const adminEmail = process.env.ADMIN_EMAILS?.split(",")[0]?.trim() ?? "admin@riversmag.com";
@@ -50,7 +50,7 @@ async function main() {
       name: "Maya Chen",
       slug: "maya-chen",
       role: "Senior Travel Editor",
-      bio: "Maya writes practical, information-first travel guides with a focus on real planning details â€” logistics, budgets and the questions most guides skip.",
+      bio: "Maya writes practical, information-first travel guides with a focus on real planning details — logistics, budgets and the questions most guides skip.",
       expertise: "Europe, Japan, planning & budgets",
       location: "Lisbon, Portugal",
     },
@@ -59,9 +59,9 @@ async function main() {
 
   // ---------- Destinations ----------
   const regions = [
-    { name: "Europe", slug: "europe", overview: "Compact, connected and endlessly varied â€” a first-timer favourite and a returner's playground." },
+    { name: "Europe", slug: "europe", overview: "Compact, connected and endlessly varied — a first-timer favourite and a returner's playground." },
     { name: "Asia", slug: "asia", overview: "From megacities to island escapes, Asia spans every budget and travel style." },
-    { name: "Africa", slug: "africa", overview: "Cities, deserts, coastlines and wildlife â€” Africa rewards slow, thoughtful itineraries." },
+    { name: "Africa", slug: "africa", overview: "Cities, deserts, coastlines and wildlife — Africa rewards slow, thoughtful itineraries." },
     { name: "Americas", slug: "americas", overview: "Two continents of road trips, cities and natural wonders." },
     { name: "Middle East", slug: "middle-east", overview: "Ancient cities, dramatic desert and a fast-growing hospitality scene." },
   ];
@@ -100,7 +100,7 @@ async function main() {
     { name: "Marrakech", slug: "marrakech", country: "morocco", tagline: "A walled city of souks, courtyards and rooftop terraces." },
     { name: "Rome", slug: "rome", country: "italy", tagline: "Three thousand years of history on a walkable scale." },
     { name: "Bali", slug: "bali", country: "indonesia", tagline: "Temples, terraced rice and island time." },
-    { name: "Barcelona", slug: "barcelona", country: "spain", tagline: "GaudÃ­, tapas and a city built around the sea." },
+    { name: "Barcelona", slug: "barcelona", country: "spain", tagline: "Gaudí, tapas and a city built around the sea." },
     { name: "Osaka", slug: "osaka", country: "japan", tagline: "Japan's street-food capital." },
     { name: "Kyoto", slug: "kyoto", country: "japan", tagline: "Temples, gardens and traditional teahouses." },
   ];
@@ -118,9 +118,9 @@ async function main() {
 
   // ---------- Hotels ----------
   const hotels = [
-    { name: "HÃ´tel du Petit Moulin", slug: "hotel-du-petit-moulin", city: "Paris", country: "France", destinationId: cityIds.paris, starRating: 4, priceRange: "$$$", bestFor: "Boutique stays in Le Marais", image: "" },
+    { name: "Hôtel du Petit Moulin", slug: "hotel-du-petit-moulin", city: "Paris", country: "France", destinationId: cityIds.paris, starRating: 4, priceRange: "$$$", bestFor: "Boutique stays in Le Marais", image: "" },
     { name: "Le Meurice", slug: "le-meurice", city: "Paris", country: "France", destinationId: cityIds.paris, starRating: 5, priceRange: "$$$$", bestFor: "Statement luxury near the Tuileries", image: "" },
-    { name: "HÃ´tel Joke Astotel", slug: "hotel-joke-astotel", city: "Paris", country: "France", destinationId: cityIds.paris, starRating: 4, priceRange: "$$", bestFor: "Design-forward value in the 9th", image: "" },
+    { name: "Hôtel Joke Astotel", slug: "hotel-joke-astotel", city: "Paris", country: "France", destinationId: cityIds.paris, starRating: 4, priceRange: "$$", bestFor: "Design-forward value in the 9th", image: "" },
     { name: "SHIBUYA HOTEL EN", slug: "shibuya-hotel-en", city: "Tokyo", country: "Japan", destinationId: cityIds.tokyo, starRating: 4, priceRange: "$$$", bestFor: "Mid-century design near Shibuya Station", image: "" },
     { name: "Ryokan Tsubaki", slug: "ryokan-tsubaki", city: "Tokyo", country: "Japan", destinationId: cityIds.tokyo, starRating: 4, priceRange: "$$$$", bestFor: "A classic ryokan stay in the city", image: "" },
     { name: "Riad Al Badia", slug: "riad-al-badia", city: "Marrakech", country: "Morocco", destinationId: cityIds.marrakech, starRating: 4, priceRange: "$$$", bestFor: "A courtyard escape in the medina", image: "" },
@@ -132,7 +132,7 @@ async function main() {
     await prisma.hotel.upsert({
       where: { slug: h.slug },
       update: { ...rest },
-      create: { ...rest, city, country, description: `${h.name} â€” ${h.bestFor}. ${h.starRating}-star city hotel featured in our ${h.city} guides.`, isActive: true },
+      create: { ...rest, city, country, description: `${h.name} — ${h.bestFor}. ${h.starRating}-star city hotel featured in our ${h.city} guides.`, isActive: true },
     });
   }
   console.log(`Hotels: ${hotels.length}`);
@@ -205,16 +205,16 @@ async function main() {
     { type: "p", text: "Paris rewards a little homework. This guide covers the practical decisions that shape a first trip: which neighbourhood to stay in, how to use the metro, what to book ahead and how to avoid the biggest rookie mistakes." },
     { type: "h2", text: "Where to stay in Paris" },
     { type: "p", text: "Base your choice on the kind of trip you want. For a first visit, staying central between the Louvre and the Marais keeps almost everything within a 30-minute walk or a short metro ride." },
-    { type: "ul", items: ["Le Marais â€” boutiques, cafÃ©s and historic streets, lively day and night", "Saint-Germain-des-PrÃ©s â€” classic Parisian elegance near the Seine", "The 9th â€” better value, with the OpÃ©ra and great brasseries nearby", "Latin Quarter â€” student energy, bookshops and affordable eats"] },
+    { type: "ul", items: ["Le Marais — boutiques, cafés and historic streets, lively day and night", "Saint-Germain-des-Prés — classic Parisian elegance near the Seine", "The 9th — better value, with the Opéra and great brasseries nearby", "Latin Quarter — student energy, bookshops and affordable eats"] },
     { type: "hotels", title: "Hotels we feature in Paris", destinationId: cityIds.paris },
     { type: "h2", text: "Getting around" },
-    { type: "p", text: "The metro is fast, frequent and covers everything you'll want to see. Buy a Navigo Easy card at any station and load tickets onto it â€” cheaper than single paper tickets and much faster at the gates." },
-    { type: "ul", items: ["Metro & RER: single ticket â‚¬2.15; a carnet of 10 is cheaper", "Buses: scenic and slower, but excellent for the boulevards", "Walking: the real way to see Paris â€” bring comfortable shoes", "Bike share: the VÃ©lib' network is great for flat routes along the Seine"] },
+    { type: "p", text: "The metro is fast, frequent and covers everything you'll want to see. Buy a Navigo Easy card at any station and load tickets onto it — cheaper than single paper tickets and much faster at the gates." },
+    { type: "ul", items: ["Metro & RER: single ticket â‚¬2.15; a carnet of 10 is cheaper", "Buses: scenic and slower, but excellent for the boulevards", "Walking: the real way to see Paris — bring comfortable shoes", "Bike share: the Vélib' network is great for flat routes along the Seine"] },
     { type: "h2", text: "What to book ahead" },
-    { type: "ol", items: ["Must-see timed museums (Louvre, Orsay, Orangerie) â€” reserved slots sell out", "Popular restaurants â€” Paris still books well in advance for dinner", "Day trips (Versailles) â€” the train and skip-the-line tickets go quickly", "Shows and river cruises in the evenings"] },
+    { type: "ol", items: ["Must-see timed museums (Louvre, Orsay, Orangerie) — reserved slots sell out", "Popular restaurants — Paris still books well in advance for dinner", "Day trips (Versailles) — the train and skip-the-line tickets go quickly", "Shows and river cruises in the evenings"] },
     { type: "cta", label: "Browse hotels in Paris", category: Cat.HOTELS, destinationSlug: "paris", placement: "seed-article" },
     { type: "faq", items: [
-      { question: "How many days do I need in Paris?", answer: "Four full days is a comfortable first-trip minimum â€” enough for the headline museums, a Marais afternoon and a day trip or a slow day along the Seine." },
+      { question: "How many days do I need in Paris?", answer: "Four full days is a comfortable first-trip minimum — enough for the headline museums, a Marais afternoon and a day trip or a slow day along the Seine." },
       { question: "Is Paris expensive?", answer: "Compared with other European capitals it's mid-range. Accommodation is the biggest cost; food, transport and most museums are reasonably priced if you plan ahead." },
       { question: "Do I need to speak French?", answer: "No, but a handful of phrases go a long way. Most people in the city centre will meet you in English." },
     ] },
@@ -231,15 +231,15 @@ async function main() {
   }, categoryIds);
 
   const tokyoBlocks: ContentBlock[] = [
-    { type: "p", text: "Tokyo is less overwhelming than it first appears â€” once you know how to use the trains and which neighbourhood fits your trip, the city opens up quickly." },
+    { type: "p", text: "Tokyo is less overwhelming than it first appears — once you know how to use the trains and which neighbourhood fits your trip, the city opens up quickly." },
     { type: "h2", text: "Neighbourhoods at a glance" },
-    { type: "ul", items: ["Shinjuku â€” the classic Tokyo: neon, izakayas and incredible logistics", "Shibuya â€” the crossing, fashion and young energy", "Asakusa â€” temples, crafts and old-Tokyo atmosphere", "Ginza â€” department stores, galleries and high-end dining"] },
+    { type: "ul", items: ["Shinjuku — the classic Tokyo: neon, izakayas and incredible logistics", "Shibuya — the crossing, fashion and young energy", "Asakusa — temples, crafts and old-Tokyo atmosphere", "Ginza — department stores, galleries and high-end dining"] },
     { type: "h2", text: "Moving around" },
-    { type: "p", text: "The JR Yamanote loop line connects nearly everything you'll want. An IC card (Suica or Pasmo) is the easiest way to pay â€” tap on and off, reloadable at any station." },
+    { type: "p", text: "The JR Yamanote loop line connects nearly everything you'll want. An IC card (Suica or Pasmo) is the easiest way to pay — tap on and off, reloadable at any station." },
     { type: "hotels", title: "Featured hotels in Tokyo", destinationId: cityIds.tokyo },
     { type: "cta", label: "Find tours around Tokyo", category: Cat.ACTIVITIES, destinationSlug: "tokyo", placement: "seed-article" },
     { type: "faq", items: [
-      { question: "Is cash or card better in Tokyo?", answer: "Both. Cards are widely accepted now, but many small restaurants, market stalls and temples remain cash-only â€” keep Â¥10,000 handy." },
+      { question: "Is cash or card better in Tokyo?", answer: "Both. Cards are widely accepted now, but many small restaurants, market stalls and temples remain cash-only — keep ¥10,000 handy." },
       { question: "How do I get from Narita to the city?", answer: "The Narita Express takes about an hour to Tokyo Station. The cheaper Skyliner is convenient if you're staying in the east of the city." },
     ] },
   ];
@@ -256,18 +256,18 @@ async function main() {
 
   const marrakechBlocks: ContentBlock[] = [
     { type: "p", text: "A few half-day experiences in Marrakech will shape your whole trip. Prioritise the medina in the morning, the gardens at midday and sunset from a rooftop." },
-    { type: "ul", items: ["Jardin Majorelle and the YSL Museum â€” book an early slot", "The medina souks â€” start at Jemaa el-Fnaa and get lost on purpose", "Bahia Palace â€” a quiet gem with intricate courtyards", "Rooftop tea at sunset over the Koutoubia mosque"] },
+    { type: "ul", items: ["Jardin Majorelle and the YSL Museum — book an early slot", "The medina souks — start at Jemaa el-Fnaa and get lost on purpose", "Bahia Palace — a quiet gem with intricate courtyards", "Rooftop tea at sunset over the Koutoubia mosque"] },
     { type: "activities", title: "Experiences we feature in Marrakech", destinationId: cityIds.marrakech },
     { type: "cta", label: "Compare stays in Marrakech", category: Cat.HOTELS, destinationSlug: "marrakech", placement: "seed-article" },
     { type: "faq", items: [
       { question: "Should I hire a guide for the medina?", answer: "Not mandatory, but a local guide for the first afternoon helps you read the souks and the negotiating culture." },
-      { question: "What do I wear in Marrakech?", answer: "Dress modestly â€” shoulders and knees covered â€” to avoid unwanted attention and to respect local norms. The heat makes breathable fabrics essential." },
+      { question: "What do I wear in Marrakech?", answer: "Dress modestly — shoulders and knees covered — to avoid unwanted attention and to respect local norms. The heat makes breathable fabrics essential." },
     ] },
   ];
   const marrakechArticle = await upsertArticle({
     title: "Best Things to Do in Marrakech",
     slug: "best-things-to-do-in-marrakech",
-    excerpt: "A shortlist of the Marrakech experiences worth your time â€” and the planning details that make them work.",
+    excerpt: "A shortlist of the Marrakech experiences worth your time — and the planning details that make them work.",
     type: "THINGS_TO_DO",
     destinationId: cityIds.marrakech,
     focusKeyword: "things to do in marrakech",
@@ -277,15 +277,15 @@ async function main() {
 
   // ---------- Itinerary (linked to its article) ----------
   const itineraryBlocks: ContentBlock[] = [
-    { type: "p", text: "A relaxed 4-day Paris itinerary that fits a first visit â€” the headline museums, a Marais afternoon, a day trip and lots of walks along the Seine." },
+    { type: "p", text: "A relaxed 4-day Paris itinerary that fits a first visit — the headline museums, a Marais afternoon, a day trip and lots of walks along the Seine." },
     { type: "h2", text: "Who this itinerary is for" },
     { type: "p", text: "First-time visitors who want a balanced trip: culture, food, a little shopping and time to wander. It assumes you're staying central and happy to use the metro." },
-    { type: "ul", items: ["Day 1 â€” Arrival and the Latin Quarter", "Day 2 â€” The Louvre and the Marais", "Day 3 â€” Versailles day trip", "Day 4 â€” Montmartre and a river cruise"] },
+    { type: "ul", items: ["Day 1 — Arrival and the Latin Quarter", "Day 2 — The Louvre and the Marais", "Day 3 — Versailles day trip", "Day 4 — Montmartre and a river cruise"] },
   ];
   const itineraryArticle = await upsertArticle({
     title: "Paris in 4 Days: A Complete Itinerary",
     slug: "paris-in-4-days-itinerary",
-    excerpt: "A relaxed four-day Paris plan covering the Louvre, the Marais, Versailles and Montmartre â€” with budget notes for first-timers.",
+    excerpt: "A relaxed four-day Paris plan covering the Louvre, the Marais, Versailles and Montmartre — with budget notes for first-timers.",
     type: "ITINERARY",
     destinationId: cityIds.paris,
     focusKeyword: "paris 4 day itinerary",
@@ -323,10 +323,10 @@ async function main() {
       transportation: string;
       estimatedCost: number;
     }[] = [
-      { dayNumber: 1, description: "Land, drop bags, and ease in with a walk along the Seine and dinner in the Latin Quarter.", activities: ["Walk the Latin Quarter", "Dinner near the PanthÃ©on"], restaurants: ["Bouillon Racine (classic), nearby brasseries"], hotel: "HÃ´tel Joke Astotel", transportation: "Metro from Gare du Nord", estimatedCost: 80 },
-      { dayNumber: 2, description: "A timed morning at the Louvre, then a slow afternoon in the Marais with a picnic from a boulangerie.", activities: ["Louvre morning slot", "Marais walk", "Place des Vosges"], restaurants: ["Boulangerie breakfast", "Falafel in the Marais"], hotel: "HÃ´tel Joke Astotel", transportation: "Metro + walking", estimatedCost: 60 },
-      { dayNumber: 3, description: "Early RER to Versailles, tour the palace and gardens, then dinner back in the city.", activities: ["Versailles palace & gardens"], restaurants: ["Lunch near Versailles", "Dinner in the 7th"], hotel: "HÃ´tel Joke Astotel", transportation: "RER C to Versailles", estimatedCost: 120 },
-      { dayNumber: 4, description: "Morning on the hill, lunch in Pigalle, then a sunset cruise along the Seine before departure.", activities: ["Montmartre & SacrÃ©-CÅ“ur", "Seine evening cruise"], restaurants: ["Lunch in Pigalle"], hotel: "HÃ´tel Joke Astotel", transportation: "Metro + cruise", estimatedCost: 90 },
+      { dayNumber: 1, description: "Land, drop bags, and ease in with a walk along the Seine and dinner in the Latin Quarter.", activities: ["Walk the Latin Quarter", "Dinner near the Panthéon"], restaurants: ["Bouillon Racine (classic), nearby brasseries"], hotel: "Hôtel Joke Astotel", transportation: "Metro from Gare du Nord", estimatedCost: 80 },
+      { dayNumber: 2, description: "A timed morning at the Louvre, then a slow afternoon in the Marais with a picnic from a boulangerie.", activities: ["Louvre morning slot", "Marais walk", "Place des Vosges"], restaurants: ["Boulangerie breakfast", "Falafel in the Marais"], hotel: "Hôtel Joke Astotel", transportation: "Metro + walking", estimatedCost: 60 },
+      { dayNumber: 3, description: "Early RER to Versailles, tour the palace and gardens, then dinner back in the city.", activities: ["Versailles palace & gardens"], restaurants: ["Lunch near Versailles", "Dinner in the 7th"], hotel: "Hôtel Joke Astotel", transportation: "RER C to Versailles", estimatedCost: 120 },
+      { dayNumber: 4, description: "Morning on the hill, lunch in Pigalle, then a sunset cruise along the Seine before departure.", activities: ["Montmartre & Sacré-CÅ“ur", "Seine evening cruise"], restaurants: ["Lunch in Pigalle"], hotel: "Hôtel Joke Astotel", transportation: "Metro + cruise", estimatedCost: 90 },
     ];
     for (const d of days) {
       const existingDay = await prisma.itineraryDay.findFirst({ where: { itineraryId: itineraryRow.id, dayNumber: d.dayNumber } });

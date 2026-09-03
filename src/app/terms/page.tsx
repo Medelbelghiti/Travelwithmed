@@ -24,7 +24,7 @@ export default function TermsPage() {
 
       <h2>3. Accuracy of information</h2>
       <p>
-        We work hard to keep our content accurate and up to date, but travel information changes quickly â€”
+        We work hard to keep our content accurate and up to date, but travel information changes quickly —
         prices, opening hours, visa rules and availability can change without notice. You confirm that you
         understand and accept this, and that you rely on the information at your own judgment.
       </p>
@@ -32,7 +32,7 @@ export default function TermsPage() {
       <h2>4. Affiliate links and advertising</h2>
       <p>
         The Site contains affiliate links. When you click these links and make a booking or purchase, we may
-        receive a commission at no additional cost to you. This does not influence our editorial recommendations â€”
+        receive a commission at no additional cost to you. This does not influence our editorial recommendations —
         see our{" "}
         <a href="/affiliate-disclosure">Affiliate Disclosure</a>.
       </p>
