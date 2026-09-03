@@ -18,9 +18,13 @@ function subscribe() {
   return () => {};
 }
 
+function getServerSnapshot() {
+  return false;
+}
+
 export function CookieBanner() {
   const [dismissed, setDismissed] = useState(false);
-  const showBanner = useSyncExternalStore(subscribe, getSnapshot, () => false);
+  const showBanner = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 
   if (!showBanner || dismissed) return null;
 
