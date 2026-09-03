@@ -1,26 +1,26 @@
 @import "tailwindcss";
 
 :root {
-  --background: #fafbfc;
-  --foreground: #171f2c;
-  --ink: #171f2c;
-  --ink-soft: #42536b;
-  --ink-muted: #6b7c92;
-  --brand: #123c66;
-  --brand-dark: #0c2b4d;
-  --brand-light: #e8eef6;
-  --accent: #2f6cad;
-  --accent-dark: #245587;
-  --sand: #f3f6f9;
-  --sand-dark: #e8ecf2;
-  --line: #e3e8ef;
+  --background: #ffffff;
+  --foreground: #101828;
+  --ink: #101828;
+  --ink-soft: #344054;
+  --ink-muted: #667085;
+  --brand: #1570ef;
+  --brand-dark: #1456d0;
+  --brand-light: #eff8ff;
+  --accent: #00a8e8;
+  --accent-dark: #0086c4;
+  --sand: #f7f9fc;
+  --sand-dark: #edf2f7;
+  --line: #e7ecf3;
   --card: #ffffff;
-  --success: #1f8a4c;
-  --danger: #c0392b;
-  --info: #2e6da4;
-  --warning: #b9770e;
-  --radius: 1rem;
-  --radius-lg: 1.5rem;
+  --success: #12b76a;
+  --danger: #f04438;
+  --info: #2e90fa;
+  --warning: #f79009;
+  --radius: 1.25rem;
+  --radius-lg: 1.75rem;
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   --font-serif: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
 }
@@ -51,16 +51,16 @@
 /* Dark mode — automatic, follows the OS preference (cookieless, no JS needed). */
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0e1626;
-    --foreground: #e8eef6;
-    --ink: #e8eef6;
-    --ink-soft: #b6c4d6;
-    --ink-muted: #8293a8;
-    --card: #17223a;
-    --brand-light: #1b2b47;
-    --sand: #131d33;
-    --sand-dark: #0c1322;
-    --line: #24314a;
+    --background: #0f1420;
+    --foreground: #eef2f7;
+    --ink: #eef2f7;
+    --ink-soft: #cbd5e1;
+    --ink-muted: #8fa3b8;
+    --card: #1a2233;
+    --brand-light: #172a44;
+    --sand: #141c2b;
+    --sand-dark: #0f1420;
+    --line: #26324a;
   }
 
   /* Solid-white card surfaces become the dark card color in dark mode.

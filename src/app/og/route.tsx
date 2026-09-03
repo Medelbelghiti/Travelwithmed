@@ -18,7 +18,7 @@ export async function GET(request: Request) {
           width: "100%",
           height: "100%",
           padding: "72px 80px",
-          background: "linear-gradient(135deg, #0c2b4d 0%, #123c66 55%, #17497d 100%)",
+          background: "linear-gradient(135deg, #1456d0 0%, #1570ef 55%, #00a8e8 100%)",
           color: "#ffffff",
           fontFamily: "system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif",
         }}
@@ -47,7 +47,7 @@ export async function GET(request: Request) {
               alignItems: "center",
               justifyContent: "center",
               background: "#ffffff",
-              color: "#0c2b4d",
+              color: "#1456d0",
               fontSize: 30,
               fontWeight: 800,
             }}
