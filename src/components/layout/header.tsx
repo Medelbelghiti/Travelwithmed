@@ -32,7 +32,7 @@ export function Header() {
               <li key={item.href}>
                 <Link
                   href={item.href}
-                  className="rounded-full px-3 py-2 text-sm font-medium text-ink-soft transition-colors hover:bg-brand-light hover:text-brand-dark"
+                  className="rounded-full px-3 py-2 text-sm font-medium text-ink-soft transition-colors hover:bg-brand/20 hover:text-white"
                 >
                   {item.label}
                 </Link>
@@ -57,7 +57,7 @@ function MobileNav() {
   return (
     <div className="lg:hidden">
       <details className="group relative">
-        <summary className="flex h-10 w-10 cursor-pointer list-none items-center justify-center rounded-full text-ink-soft transition-colors hover:bg-brand-light hover:text-brand-dark [&::-webkit-details-marker]:hidden">
+        <summary className="flex h-10 w-10 cursor-pointer list-none items-center justify-center rounded-full text-ink-soft transition-colors hover:bg-brand/20 hover:text-white [&::-webkit-details-marker]:hidden">
           <Menu className="h-5 w-5" aria-hidden />
           <span className="sr-only">Open menu</span>
         </summary>
@@ -68,7 +68,7 @@ function MobileNav() {
               <li key={item.href}>
                 <Link
                   href={item.href}
-                  className="block rounded-xl px-4 py-2.5 text-sm font-medium text-ink-soft transition-colors hover:bg-brand-light hover:text-brand-dark"
+                  className="block rounded-xl px-4 py-2.5 text-sm font-medium text-ink-soft transition-colors hover:bg-brand/20 hover:text-white"
                 >
                   {item.label}
                 </Link>

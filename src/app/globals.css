@@ -1,24 +1,27 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #101828;
-  --ink: #101828;
-  --ink-soft: #344054;
-  --ink-muted: #667085;
-  --brand: #1570ef;
-  --brand-dark: #1456d0;
-  --brand-light: #eff8ff;
-  --accent: #00a8e8;
-  --accent-dark: #0086c4;
-  --sand: #f7f9fc;
-  --sand-dark: #edf2f7;
-  --line: #e7ecf3;
-  --card: #ffffff;
-  --success: #12b76a;
-  --danger: #f04438;
-  --info: #2e90fa;
-  --warning: #f79009;
+  --background: #0a0910;
+  --foreground: #f4f1f7;
+  --ink: #f4f1f7;
+  --ink-soft: #cbc4d6;
+  --ink-muted: #8d859e;
+  --brand: #8b5cf6;
+  --brand-dark: #7c3aed;
+  --brand-deep: #4c1d95;
+  --brand-light: #241a3d;
+  --brand-soft: #c4b5fd;
+  --accent: #ff2d78;
+  --accent-dark: #e01e63;
+  --sand: #14111c;
+  --sand-dark: #0e0c15;
+  --line: #262033;
+  --card: #181422;
+  --card-hover: #201a2e;
+  --success: #34d399;
+  --danger: #f87171;
+  --info: #60a5fa;
+  --warning: #fbbf24;
   --radius: 1.25rem;
   --radius-lg: 1.75rem;
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
@@ -33,7 +36,10 @@
   --color-ink-muted: var(--ink-muted);
   --color-brand: var(--brand);
   --color-brand-dark: var(--brand-dark);
+  --color-brand-deep: var(--brand-deep);
   --color-brand-light: var(--brand-light);
+  --color-brand-soft: var(--brand-soft);
+  --color-card-hover: var(--card-hover);
   --color-accent: var(--accent);
   --color-accent-dark: var(--accent-dark);
   --color-sand: var(--sand);
@@ -48,41 +54,29 @@
   --radius-lg: var(--radius);
 }
 
-/* Dark mode — automatic, follows the OS preference (cookieless, no JS needed). */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0f1420;
-    --foreground: #eef2f7;
-    --ink: #eef2f7;
-    --ink-soft: #cbd5e1;
-    --ink-muted: #8fa3b8;
-    --card: #1a2233;
-    --brand-light: #172a44;
-    --sand: #141c2b;
-    --sand-dark: #0f1420;
-    --line: #26324a;
-  }
+/* Dark / night theme is the default for the whole site (premium look).
+   Light surfaces are intentionally not restored: the brand is dark-first. */
 
-  /* Solid-white card surfaces become the dark card color in dark mode.
-     Opacity variants (bg-white/10, bg-white/95) and text-white are untouched. */
-  .bg-white {
-    background-color: var(--card);
-  }
+/* Solid white card surfaces become the dark card color.
+   Opacity variants (bg-white/10, bg-white/95) and text-white are untouched. */
+.bg-white {
+  background-color: var(--card);
+}
 
-  body {
-    background: var(--background);
-    color: var(--ink);
-  }
+/* Badges / icon chips that pair a dark brand-light tint with dark text:
+   lift the text to a bright soft violet so it stays readable on the night theme. */
+.bg-brand-light.text-brand-dark {
+  color: var(--brand-soft);
+}
 
-  /* Soften shadows on dark surfaces */
-  .shadow-sm,
-  .shadow,
-  .shadow-md,
-  .shadow-lg,
-  .shadow-xl,
-  .shadow-2xl {
-    box-shadow: 0 1px 2px rgb(0 0 0 / 0.25), 0 1px 3px rgb(0 0 0 / 0.3) !important;
-  }
+/* Soften shadows on dark surfaces */
+.shadow-sm,
+.shadow,
+.shadow-md,
+.shadow-lg,
+.shadow-xl,
+.shadow-2xl {
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.35), 0 1px 3px rgb(0 0 0 / 0.45) !important;
 }
 
 * {

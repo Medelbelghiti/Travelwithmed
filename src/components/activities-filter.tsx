@@ -98,7 +98,7 @@ function ActivityCardItem({ activity }: { activity: Activity }) {
   return (
     <Link
       href={`/activities/${activity.slug}`}
-      className="group flex flex-col overflow-hidden rounded-2xl border border-line bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg"
+      className="group flex flex-col overflow-hidden rounded-2xl border border-line bg-card shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-brand/50 hover:bg-card-hover hover:shadow-xl"
     >
       <div className="relative aspect-[16/10] overflow-hidden bg-sand">
         {activity.image ? (
@@ -115,17 +115,18 @@ function ActivityCardItem({ activity }: { activity: Activity }) {
             <Compass className="h-8 w-8" aria-hidden />
           </div>
         )}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/35 to-transparent" aria-hidden />
         {activity.category && (
-          <span className="absolute left-3 top-3 rounded-full bg-white/95 px-2.5 py-1 text-xs font-semibold text-ink shadow-sm backdrop-blur-sm">
+          <span className="absolute left-3 top-3 rounded-full bg-black/45 px-2.5 py-1 text-xs font-semibold text-white shadow-sm backdrop-blur-sm">
             {activity.category}
           </span>
         )}
         {activity.rating != null && (
-          <span className="absolute right-3 top-3 inline-flex items-center gap-1 rounded-full bg-white/95 px-2.5 py-1 text-xs font-bold text-ink shadow-sm backdrop-blur-sm">
+          <span className="absolute right-3 top-3 inline-flex items-center gap-1 rounded-full bg-black/55 px-2.5 py-1 text-xs font-bold text-white shadow-sm backdrop-blur-sm">
             <Star className="h-3.5 w-3.5 fill-accent text-accent" aria-hidden />
             {activity.rating.toFixed(1)}
             {activity.reviewCount != null && (
-              <span className="text-ink-muted font-normal">({activity.reviewCount})</span>
+              <span className="font-normal text-white/75">({activity.reviewCount})</span>
             )}
           </span>
         )}
@@ -142,7 +143,7 @@ function ActivityCardItem({ activity }: { activity: Activity }) {
         <div className="mt-3 flex flex-wrap items-center gap-3 text-sm text-ink-muted">
           {activity.duration && (
             <span className="inline-flex items-center gap-1">
-              <Clock className="h-3.5 w-3.5" aria-hidden />
+              <Clock className="h-3.5 w-3.5 text-brand" aria-hidden />
               {activity.duration}
             </span>
           )}
@@ -154,10 +155,10 @@ function ActivityCardItem({ activity }: { activity: Activity }) {
           )}
         </div>
 
-        <div className="mt-auto pt-4 flex items-center justify-between border-t border-line/50">
+        <div className="mt-auto pt-4 flex items-center justify-between border-t border-line/60">
           <div>
             {activity.priceRange ? (
-              <span className="text-sm font-bold text-ink">from {activity.priceRange}</span>
+              <span className="text-base font-bold text-brand">from {activity.priceRange}</span>
             ) : (
               <span className="text-xs text-ink-muted">Price on request</span>
             )}

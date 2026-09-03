@@ -9,11 +9,11 @@ const base =
   "inline-flex items-center justify-center gap-2 font-sans font-semibold rounded-full transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 disabled:opacity-60 disabled:pointer-events-none cursor-pointer";
 
 const variants: Record<Variant, string> = {
-  primary: "bg-brand text-white hover:bg-brand-dark shadow-sm shadow-brand/20 hover:shadow-md",
-  secondary: "bg-brand-light text-brand-dark hover:bg-brand/15",
-  outline: "border border-line bg-white text-ink hover:border-brand hover:text-brand",
+  primary: "bg-brand text-white hover:bg-brand-dark shadow-sm shadow-brand/30 hover:shadow-md",
+  secondary: "bg-brand-light text-white hover:bg-brand/40",
+  outline: "border border-line bg-card text-ink hover:border-brand hover:text-brand",
   ghost: "text-ink-soft hover:text-brand hover:bg-brand-light",
-  accent: "bg-accent text-white hover:bg-accent-dark shadow-sm",
+  accent: "bg-accent text-white hover:bg-accent-dark shadow-sm shadow-accent/20",
   white: "bg-white text-brand-dark hover:bg-sand shadow-md",
 };
 

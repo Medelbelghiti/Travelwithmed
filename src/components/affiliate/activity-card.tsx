@@ -35,7 +35,7 @@ export function ActivityCard({
   const cardContent = (
     <div
       className={cn(
-        "group flex flex-col overflow-hidden rounded-2xl border border-line bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg",
+        "group flex flex-col overflow-hidden rounded-2xl border border-line bg-card shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-brand/50 hover:bg-card-hover hover:shadow-xl",
         linked && "cursor-pointer",
         className,
       )}
@@ -55,16 +55,17 @@ export function ActivityCard({
             <Compass className="h-8 w-8" aria-hidden />
           </div>
         )}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/35 to-transparent" aria-hidden />
         {category && (
-          <span className="absolute left-3 top-3 rounded-full bg-white/95 px-2.5 py-1 text-xs font-semibold text-ink shadow-sm backdrop-blur-sm">
+          <span className="absolute left-3 top-3 rounded-full bg-black/45 px-2.5 py-1 text-xs font-semibold text-white shadow-sm backdrop-blur-sm">
             {category}
           </span>
         )}
         {rating != null && (
-          <span className="absolute right-3 top-3 inline-flex items-center gap-1 rounded-full bg-white/95 px-2.5 py-1 text-xs font-bold text-ink shadow-sm backdrop-blur-sm">
+          <span className="absolute right-3 top-3 inline-flex items-center gap-1 rounded-full bg-black/55 px-2.5 py-1 text-xs font-bold text-white shadow-sm backdrop-blur-sm">
             <Star className="h-3.5 w-3.5 fill-accent text-accent" aria-hidden />
             {rating.toFixed(1)}
-            {reviewCount != null && <span className="text-ink-muted font-normal">({reviewCount})</span>}
+            {reviewCount != null && <span className="font-normal text-white/75">({reviewCount})</span>}
           </span>
         )}
       </div>
@@ -76,7 +77,7 @@ export function ActivityCard({
         <div className="mt-3 flex flex-wrap items-center gap-3 text-sm text-ink-muted">
           {duration && (
             <span className="inline-flex items-center gap-1">
-              <Clock className="h-3.5 w-3.5" aria-hidden />
+              <Clock className="h-3.5 w-3.5 text-brand" aria-hidden />
               {duration}
             </span>
           )}
@@ -88,8 +89,8 @@ export function ActivityCard({
           )}
         </div>
 
-        <div className="mt-auto pt-4 flex items-center justify-between gap-3 border-t border-line/50">
-          {priceRange && <span className="text-sm font-semibold text-ink">{priceRange}</span>}
+        <div className="mt-auto pt-4 flex items-center justify-between gap-3 border-t border-line/60">
+          {priceRange && <span className="text-lg font-bold text-brand">{priceRange}</span>}
           {affiliateLinkId && (
             <AffiliateButton
               linkId={affiliateLinkId}
