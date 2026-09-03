@@ -358,6 +358,43 @@ async function main() {
     await prisma.article.update({ where: { id: parisArticle.id }, data: { relatedArticlesA: { create: [{ relatedArticleId: marrakechArticle.id, relevanceScore: 40 }] } } });
   }
 
+  // ---------- eSIM articles ----------
+  const esimDestinations = [
+    { slug: "paris", name: "Paris" },
+    { slug: "tokyo", name: "Tokyo" },
+    { slug: "new-york", name: "New York" },
+    { slug: "bangkok", name: "Bangkok" },
+    { slug: "barcelona", name: "Barcelona" },
+    { slug: "rome", name: "Rome" },
+    { slug: "marrakech", name: "Marrakech" },
+    { slug: "lisbon", name: "Lisbon" },
+    { slug: "cairo", name: "Cairo" },
+    { slug: "rio-de-janeiro", name: "Rio de Janeiro" },
+    { slug: "miami", name: "Miami" },
+    { slug: "los-angeles", name: "Los Angeles" },
+    { slug: "bali", name: "Bali" },
+    { slug: "athens", name: "Athens" },
+  ];
+  let esimCount = 0;
+  for (const d of esimDestinations) {
+    const dest = await prisma.destination.findUnique({ where: { slug: d.slug } });
+    if (!dest) { console.log(`  Skipping ${d.slug} — not found`); continue; }
+    const existingEsim = await prisma.affiliateLink.findFirst({ where: { category: Cat.ESIM, destinationId: dest.id } });
+    if (!existingEsim) {
+      await prisma.affiliateLink.create({ data: { partnerName: "Airalo", category: Cat.ESIM, productName: `eSIM for ${d.name}`, destinationText: d.name, destinationId: dest.id, targetUrl: "https://www.airalo.com/?referenceID=26591197", dealTitle: "eSIM data plans for travel", promoCode: "ROAMORA10", active: true, priority: 85, utmCampaign: "destination-esim", featuredDeal: false } });
+    }
+    const blocks: ContentBlock[] = [
+      { type: "p", text: `Stay connected in ${d.name} with an eSIM. Avoid roaming charges and keep your usual number while exploring the city.` },
+      { type: "h2", text: `Why use an eSIM in ${d.name}` },
+      { type: "ul", items: ["No physical SIM card needed — activate before you arrive", "Keep your home number while using local data", "Instant activation with QR code", "Usually cheaper than roaming plans"] },
+      { type: "cta", label: `Get an eSIM for ${d.name}`, category: Cat.ESIM, destinationSlug: d.slug, placement: "seed-article" },
+      { type: "faq", items: [{ question: `Does my phone support eSIM in ${d.name}?`, answer: "Most modern smartphones support eSIM. Check your device settings for 'Add cellular plan' or 'eSIM'." }, { question: `How to activate an eSIM in ${d.name}?`, answer: "Purchase before your trip, download the profile, and follow the activation instructions. The eSIM activates upon arrival." }] },
+    ];
+    await upsertArticle({ title: `eSIM in ${d.name}: Stay Connected Without Roaming`, slug: `${d.slug}-esim`, excerpt: `How to use an eSIM in ${d.name}: buy, activate, and stay connected without roaming charges.`, type: "DESTINATION_GUIDE", destinationId: dest.id, focusKeyword: `eSIM ${d.name}`, categorySlugs: ["destination-guides", "travel-tips"], blocks }, categoryIds);
+    esimCount++;
+  }
+  console.log(`eSIM articles: ${esimCount}`);
+
   console.log("Seed complete.");
 }
 
