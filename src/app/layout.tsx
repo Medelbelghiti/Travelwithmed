@@ -5,6 +5,7 @@ import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { CookieBanner } from "@/components/cookie-banner";
 import { PlausibleAnalytics } from "@/components/plausible-analytics";
+import { TripBadge } from "@/components/trip/add-to-trip";
 import { siteConfig } from "@/lib/site";
 import { websiteSchema, organizationSchema } from "@/lib/seo";
 import { absoluteUrl } from "@/lib/utils";
@@ -80,6 +81,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Footer />
         <CookieBanner />
         <PlausibleAnalytics />
+        <TripBadge />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}

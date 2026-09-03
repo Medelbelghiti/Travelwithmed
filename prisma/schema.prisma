@@ -214,12 +214,15 @@ model Review {
   hotel     Hotel?   @relation(fields: [hotelId], references: [id], onDelete: Cascade)
   productId String?
   product   Product? @relation(fields: [productId], references: [id], onDelete: Cascade)
+  activityId String?
+  activity  Activity? @relation(fields: [activityId], references: [id], onDelete: Cascade)
   authorId  String?
   authorRef Author?  @relation(fields: [authorId], references: [id])
 
   @@index([articleId])
   @@index([hotelId])
   @@index([productId])
+  @@index([activityId])
   @@index([authorId])
 }
 
@@ -403,6 +406,7 @@ model Activity {
   destination   Destination? @relation(fields: [destinationId], references: [id])
   affiliateLinks AffiliateLink[]
   media         Media[]
+  reviews       Review[]
 
   @@index([destinationId])
   @@index([category])
