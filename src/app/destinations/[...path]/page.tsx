@@ -7,16 +7,19 @@ export const dynamic = "force-dynamic";
 
 export async function generateMetadata({ params }: { params: Promise<{ path: string[] }> }) {
   const { path } = await params;
-  const destination = await prisma.destination.findUnique({ where: { slug: path[path.length - 1] } });
+  const destination = await prisma.destination.findUnique({
+    where: { slug: path[path.length - 1] },
+    include: { seoMetadata: true },
+  });
   if (!destination) return { title: "Destination not found" };
+  const seo = destination.seoMetadata;
   return buildMetadata({
-    title: `${destination.name} Travel Guide`,
-    description:
-      destination.tagline ??
-      `The complete guide to ${destination.name}: best places to visit, where to stay, tours, itineraries, travel tips and practical advice.`,
-    canonicalPath: `/destinations/${path.join("/")}`,
-    ogImage: destination.coverImage ?? undefined,
+    title: seo?.title ?? `${destination.name} Travel Guide`,
+    description: seo?.description ?? (destination.tagline ?? `The complete guide to ${destination.name}: best places to visit, where to stay, tours, itineraries, travel tips and practical advice.`),
+    canonicalPath: seo?.canonicalUrl ?? `/destinations/${path.join("/")}`,
+    ogImage: seo?.ogImage ?? destination.coverImage ?? undefined,
     ogType: "website",
+    keywords: seo?.keywords ? seo.keywords.split(",").map((k) => k.trim()) : undefined,
   });
 }
 

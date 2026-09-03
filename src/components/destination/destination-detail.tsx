@@ -20,7 +20,7 @@ import { AffiliateButton } from "@/components/affiliate/affiliate-button";
 import { AffiliateDisclosure } from "@/components/affiliate/disclosure";
 import { NewsletterCta } from "@/components/newsletter-cta";
 import { prisma } from "@/lib/prisma";
-import { breadcrumbSchema, faqSchema } from "@/lib/seo";
+import { breadcrumbSchema, faqSchema, touristAttractionSchema } from "@/lib/seo";
 import { absoluteUrl } from "@/lib/utils";
 
 type DestinationWithRelations = Prisma.DestinationGetPayload<{
@@ -94,6 +94,7 @@ export async function DestinationDetail({ destination }: DestinationDetailProps)
   if (destination.faqItems.length > 0) {
     jsonLd.push(faqSchema(destination.faqItems.map((f) => ({ question: f.question, answer: f.answer }))));
   }
+  jsonLd.push(touristAttractionSchema({ name: destination.name, description: destination.tagline ?? destination.overview ?? `Discover ${destination.name} with Riversmag's guide`, url: absoluteUrl(`/destinations/${destination.slug}`), image: destination.coverImage ?? undefined }));
 
   return (
     <main>
