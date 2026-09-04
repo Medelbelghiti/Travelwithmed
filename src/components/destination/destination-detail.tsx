@@ -40,6 +40,14 @@ export interface DestinationDetailProps {
   destination: DestinationWithRelations;
 }
 
+async function fetchRelated(parentId: string | null) {
+  return prisma.destination.findMany({
+    where: { isActive: true, parentId: parentId ?? undefined },
+    orderBy: { sortOrder: "asc" },
+    take: 8,
+  });
+}
+
 function buildParentChain(destination: DestinationWithRelations) {
   const chain: { name: string; slug: string }[] = [];
   let current: { name: string; slug: string; parent?: { name: string; slug: string } | null } | null = destination;
@@ -59,11 +67,12 @@ export async function DestinationDetail({ destination }: DestinationDetailProps)
   ]);
 
   // Related destinations = siblings + parent level
-  const related = await prisma.destination.findMany({
-    where: { isActive: true, parentId: destination.parentId ?? undefined },
-    orderBy: { sortOrder: "asc" },
-    take: 8,
-  });
+  let related: Awaited<ReturnType<typeof fetchRelated>> = [];
+  try {
+    related = await fetchRelated(destination.parentId);
+  } catch {
+    related = [];
+  }
 
   // Category-based affiliate links for planning sections
   const categoryLinks = {

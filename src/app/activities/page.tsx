@@ -13,14 +13,8 @@ export const metadata = buildMetadata({
 
 export const dynamic = "force-dynamic";
 
-export default async function ActivitiesPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ category?: string }>;
-}) {
-  const { category: categoryParam } = await searchParams;
-
-  const activities = await prisma.activity.findMany({
+async function fetchActivities() {
+  return prisma.activity.findMany({
     where: { isActive: true },
     include: {
       destination: { select: { name: true, slug: true } },
@@ -29,6 +23,22 @@ export default async function ActivitiesPage({
     orderBy: [{ rating: "desc" }, { name: "asc" }],
     take: 60,
   });
+}
+
+export default async function ActivitiesPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ category?: string }>;
+}) {
+  const { category: categoryParam } = await searchParams;
+
+  let activities: Awaited<ReturnType<typeof fetchActivities>> = [];
+
+  try {
+    activities = await fetchActivities();
+  } catch {
+    activities = [];
+  }
 
   const crumbs = buildCrumbs([{ name: "Activities", href: "/activities" }]);
 

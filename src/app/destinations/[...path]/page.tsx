@@ -7,10 +7,16 @@ export const dynamic = "force-dynamic";
 
 export async function generateMetadata({ params }: { params: Promise<{ path: string[] }> }) {
   const { path } = await params;
-  const destination = await prisma.destination.findUnique({
-    where: { slug: path[path.length - 1] },
-    include: { seoMetadata: true },
-  });
+  const slug = path[path.length - 1];
+  let destination: { name: string; tagline: string | null; coverImage: string | null; seoMetadata: { title: string | null; description: string | null; canonicalUrl: string | null; ogImage: string | null; keywords: string | null } | null } | null = null;
+  try {
+    destination = await prisma.destination.findUnique({
+      where: { slug },
+      include: { seoMetadata: true },
+    });
+  } catch {
+    destination = null;
+  }
   if (!destination) return { title: "Destination not found" };
   const seo = destination.seoMetadata;
   return buildMetadata({
@@ -31,7 +37,20 @@ export default async function DestinationCatchAll({
   const { path } = await params;
   const slug = path[path.length - 1];
 
-  const destination = await prisma.destination.findUnique({
+  let destination: Awaited<ReturnType<typeof fetchDestination>> | null = null;
+  try {
+    destination = await fetchDestination(slug);
+  } catch {
+    destination = null;
+  }
+
+  if (!destination || !destination.isActive) notFound();
+
+  return <DestinationDetail destination={destination} />;
+}
+
+async function fetchDestination(slug: string) {
+  return prisma.destination.findUnique({
     where: { slug },
     include: {
       parent: {
@@ -52,8 +71,4 @@ export default async function DestinationCatchAll({
       seoMetadata: true,
     },
   });
-
-  if (!destination || !destination.isActive) notFound();
-
-  return <DestinationDetail destination={destination} />;
 }

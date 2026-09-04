@@ -4,7 +4,7 @@ export const siteConfig = {
   description:
     "Discover destinations, plan unforgettable trips, compare hotels and activities, and find smart travel recommendations with Riversmag.",
   tagline: "Plan smarter. Travel better.",
-  url: process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000",
+  url: process.env.NEXT_PUBLIC_SITE_URL || "https://riversmag.com",
   ogImage: "/images/og-default.jpg",
   keywords: [
     "travel guides",
