@@ -5,6 +5,8 @@ import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { CookieBanner } from "@/components/cookie-banner";
 import { PlausibleAnalytics } from "@/components/plausible-analytics";
+import { GoogleAnalytics } from "@/components/google-analytics";
+import { AffiliateClickTracker } from "@/components/affiliate-click-tracker";
 import { TripBadge } from "@/components/trip/add-to-trip";
 import { siteConfig } from "@/lib/site";
 import { websiteSchema, organizationSchema } from "@/lib/seo";
@@ -81,6 +83,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Footer />
         <CookieBanner />
         <PlausibleAnalytics />
+        <GoogleAnalytics />
+        <AffiliateClickTracker />
         <TripBadge />
         <script
           type="application/ld+json"
