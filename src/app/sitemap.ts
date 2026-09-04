@@ -10,7 +10,7 @@ type PathEntry = { path: string; lastModified?: Date };
 const firstDefined = (...values: (Date | null | undefined)[]): Date | undefined =>
   values.find((v): v is Date => v instanceof Date);
 
-async function collectPaths() {
+async function fetchDynamicPaths(): Promise<{ destinations: PathEntry[]; articles: PathEntry[]; itineraries: PathEntry[]; hotels: PathEntry[]; activities: PathEntry[] }> {
   const [destinations, articles, itineraries, hotels, activities] = await Promise.all([
     prisma.destination.findMany({
       where: { isActive: true },
@@ -34,10 +34,36 @@ async function collectPaths() {
     }),
   ]);
 
-  // Static paths: indexable canonical URLs only.
-  // Excluded (deliberately not indexed / not useful in the sitemap):
-  //   /search (query params), /trip (personal), /printables/* (noindex),
-  //   /admin/* and /api/* (auth, disallowed in robots.txt), /out/* (redirect tracker).
+  return {
+    destinations: destinations.map((d): PathEntry => ({
+      path: `/destinations/${d.slug}`,
+      lastModified: d.updatedAt,
+    })),
+    articles: articles.map((a): PathEntry => ({
+      path: `/articles/${a.slug}`,
+      lastModified: firstDefined(a.updatedAt, a.updatedDate, a.publishedAt),
+    })),
+    itineraries: itineraries.map((i): PathEntry => ({
+      path: `/itineraries/${i.slug}`,
+      lastModified: firstDefined(i.updatedAt, i.publishedAt),
+    })),
+    hotels: hotels.map((h): PathEntry => ({
+      path: `/hotels/${h.slug}`,
+      lastModified: h.updatedAt,
+    })),
+    activities: activities.map((a): PathEntry => ({
+      path: `/activities/${a.slug}`,
+      lastModified: a.updatedAt,
+    })),
+  };
+}
+
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  let destinations: PathEntry[] = [];
+  let articles: PathEntry[] = [];
+  let itineraries: PathEntry[] = [];
+  let hotels: PathEntry[] = [];
+  let activities: PathEntry[] = [];
   const staticPaths: PathEntry[] = [
     { path: "" },
     { path: "/destinations" },
@@ -67,33 +93,16 @@ async function collectPaths() {
   ];
   if (isShopEnabled()) staticPaths.push({ path: "/shop" });
 
-  return {
-    destinations: destinations.map((d): PathEntry => ({
-      path: `/destinations/${d.slug}`,
-      lastModified: d.updatedAt,
-    })),
-    articles: articles.map((a): PathEntry => ({
-      path: `/articles/${a.slug}`,
-      lastModified: firstDefined(a.updatedAt, a.updatedDate, a.publishedAt),
-    })),
-    itineraries: itineraries.map((i): PathEntry => ({
-      path: `/itineraries/${i.slug}`,
-      lastModified: firstDefined(i.updatedAt, i.publishedAt),
-    })),
-    hotels: hotels.map((h): PathEntry => ({
-      path: `/hotels/${h.slug}`,
-      lastModified: h.updatedAt,
-    })),
-    activities: activities.map((a): PathEntry => ({
-      path: `/activities/${a.slug}`,
-      lastModified: a.updatedAt,
-    })),
-    staticPaths,
-  };
-}
-
-export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const { destinations, articles, itineraries, hotels, activities, staticPaths } = await collectPaths();
+  try {
+    const result = await fetchDynamicPaths();
+    destinations = result.destinations;
+    articles = result.articles;
+    itineraries = result.itineraries;
+    hotels = result.hotels;
+    activities = result.activities;
+  } catch {
+    // DB unavailable — return static paths only
+  }
 
   const staticEntries = staticPaths.map((s): MetadataRoute.Sitemap[number] => ({
     url: `${siteConfig.url}${s.path}`,

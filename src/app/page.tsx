@@ -34,52 +34,81 @@ const PLAN_FLOWS = [
   { label: "Get around", href: "/resources/car-rental", icon: Car, eyebrow: "Car rental" },
 ];
 
+async function fetchFeatured() {
+  return prisma.destination.findMany({
+    where: { isActive: true, slug: { in: FEATURED_SLUGS } },
+    include: {
+      _count: { select: { hotels: true, activities: true, itineraries: true } },
+    },
+    orderBy: { sortOrder: "asc" },
+  });
+}
+
+async function fetchTrending() {
+  return prisma.destination.findMany({
+    where: { isActive: true, type: { in: ["CITY", "COUNTRY"] }, slug: { notIn: FEATURED_SLUGS } },
+    include: { _count: { select: { articles: true } } },
+    orderBy: { sortOrder: "asc" },
+    take: 4,
+  });
+}
+
+async function fetchArticles() {
+  return prisma.article.findMany({
+    where: { status: "PUBLISHED" },
+    include: { author: true },
+    orderBy: [{ publishedAt: "desc" }, { viewCount: "desc" }],
+    take: 6,
+  });
+}
+
+async function fetchHotels() {
+  return prisma.hotel.findMany({
+    where: { isActive: true },
+    include: { affiliateLinks: { where: { active: true }, take: 1 } },
+    orderBy: [{ guestRating: "desc" }, { sorts: "asc" }],
+    take: 6,
+  });
+}
+
+async function fetchActivities() {
+  return prisma.activity.findMany({
+    where: { isActive: true },
+    include: { affiliateLinks: { where: { active: true }, take: 1 } },
+    orderBy: { rating: "desc" },
+    take: 6,
+  });
+}
+
+async function fetchDeals() {
+  return prisma.affiliateLink.findMany({
+    where: { active: true, featuredDeal: true, OR: [{ dealExpiresAt: null }, { dealExpiresAt: { gt: new Date() } }] },
+    orderBy: [{ priority: "desc" }, { clickCount: "desc" }],
+    take: 3,
+  });
+}
+
 export default async function HomePage() {
-  const [
-    featuredDestinations,
-    trendingDestinations,
-    featuredArticles,
-    hotels,
-    activities,
-    deals,
-  ] = await Promise.all([
-    prisma.destination.findMany({
-      where: { isActive: true, slug: { in: FEATURED_SLUGS } },
-      include: {
-        _count: { select: { hotels: true, activities: true, itineraries: true } },
-      },
-      orderBy: { sortOrder: "asc" },
-    }),
-    prisma.destination.findMany({
-      where: { isActive: true, type: { in: ["CITY", "COUNTRY"] }, slug: { notIn: FEATURED_SLUGS } },
-      include: { _count: { select: { articles: true } } },
-      orderBy: { sortOrder: "asc" },
-      take: 4,
-    }),
-    prisma.article.findMany({
-      where: { status: "PUBLISHED" },
-      include: { author: true },
-      orderBy: [{ publishedAt: "desc" }, { viewCount: "desc" }],
-      take: 6,
-    }),
-    prisma.hotel.findMany({
-      where: { isActive: true },
-      include: { affiliateLinks: { where: { active: true }, take: 1 } },
-      orderBy: [{ guestRating: "desc" }, { sorts: "asc" }],
-      take: 6,
-    }),
-    prisma.activity.findMany({
-      where: { isActive: true },
-      include: { affiliateLinks: { where: { active: true }, take: 1 } },
-      orderBy: { rating: "desc" },
-      take: 6,
-    }),
-    prisma.affiliateLink.findMany({
-      where: { active: true, featuredDeal: true, OR: [{ dealExpiresAt: null }, { dealExpiresAt: { gt: new Date() } }] },
-      orderBy: [{ priority: "desc" }, { clickCount: "desc" }],
-      take: 3,
-    }),
-  ]);
+  let featuredDestinations: Awaited<ReturnType<typeof fetchFeatured>> = [];
+  let trendingDestinations: Awaited<ReturnType<typeof fetchTrending>> = [];
+  let featuredArticles: Awaited<ReturnType<typeof fetchArticles>> = [];
+  let hotels: Awaited<ReturnType<typeof fetchHotels>> = [];
+  let activities: Awaited<ReturnType<typeof fetchActivities>> = [];
+  let deals: Awaited<ReturnType<typeof fetchDeals>> = [];
+
+  try {
+    [featuredDestinations, trendingDestinations, featuredArticles, hotels, activities, deals] =
+      await Promise.all([
+        fetchFeatured(),
+        fetchTrending(),
+        fetchArticles(),
+        fetchHotels(),
+        fetchActivities(),
+        fetchDeals(),
+      ]);
+  } catch {
+    // DB unavailable — render static shell only
+  }
 
   const featuredOrdered = [...FEATURED_SLUGS]
     .map((slug) => featuredDestinations.find((d) => d.slug === slug))
