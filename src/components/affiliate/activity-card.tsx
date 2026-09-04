@@ -17,6 +17,7 @@ export interface ActivityCardData {
   category?: string | null;
   bestFor?: string | null;
   destinationName?: string | null;
+  location?: string | null;
   affiliateLinkId?: string | null;
   ctaLabel?: string;
 }
@@ -30,7 +31,8 @@ export function ActivityCard({
   className?: string;
   linked?: boolean;
 }) {
-  const { name, image, description, duration, priceRange, rating, reviewCount, category, destinationName, slug, affiliateLinkId, ctaLabel } = activity;
+  const { name, image, description, duration, priceRange, rating, reviewCount, category, destinationName, location, slug, affiliateLinkId, ctaLabel } = activity;
+  const placeLabel = location ?? destinationName;
 
   const cardContent = (
     <div
@@ -81,10 +83,10 @@ export function ActivityCard({
               {duration}
             </span>
           )}
-          {destinationName && (
+          {placeLabel && (
             <span className="inline-flex items-center gap-1">
               <MapPin className="h-3.5 w-3.5" aria-hidden />
-              {destinationName}
+              {placeLabel}
             </span>
           )}
         </div>

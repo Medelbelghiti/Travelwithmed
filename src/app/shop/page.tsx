@@ -8,7 +8,7 @@ import { Breadcrumbs, buildCrumbs } from "@/components/ui/breadcrumbs";
 export const revalidate = 3600;
 
 export const metadata = buildMetadata({
-  title: "Shop — Travel Prints & Merch | Riversmag",
+  title: "Shop — Travel Prints & Merch",
   description:
     "Limited-edition travel prints, posters and merch made by the Riversmag team. Every purchase supports free guides and honest planning tools.",
   canonicalPath: "/shop",

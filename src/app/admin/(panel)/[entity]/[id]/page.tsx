@@ -10,6 +10,7 @@ import {
   saveHotelAction,
   saveActivityAction,
   saveProductAction,
+  saveEsimProviderAction,
 } from "@/lib/actions/entities";
 import type { Prisma } from "@prisma/client";
 
@@ -21,6 +22,7 @@ type EntityTypes = {
   hotels: "hotel";
   activities: "activity";
   products: "product";
+  "esim-providers": "esimProvider";
 };
 
 const ENTITY_MODELS = {
@@ -29,6 +31,7 @@ const ENTITY_MODELS = {
   hotels: "hotel",
   activities: "activity",
   products: "product",
+  "esim-providers": "esimProvider",
 } as const;
 
 const ACTIONS: Record<keyof EntityTypes, typeof saveCategoryAction> = {
@@ -37,6 +40,7 @@ const ACTIONS: Record<keyof EntityTypes, typeof saveCategoryAction> = {
   hotels: saveHotelAction,
   activities: saveActivityAction,
   products: saveProductAction,
+  "esim-providers": saveEsimProviderAction,
 };
 
 const FIELD_GROUPS: Record<keyof EntityTypes, EntityEditField[][]> = {
@@ -94,16 +98,21 @@ const FIELD_GROUPS: Record<keyof EntityTypes, EntityEditField[][]> = {
       { name: "duration", label: "Duration" },
     ],
     [
+      { name: "location", label: "Location / meeting point" },
       { name: "priceRange", label: "Price range" },
       { name: "rating", label: "Rating", type: "number", step: "0.1" },
-      { name: "bestFor", label: "Best for" },
-      { name: "image", label: "Image URL" },
+      { name: "reviewCount", label: "Review count", type: "number" },
     ],
     [
+      { name: "bestFor", label: "Best for" },
+      { name: "image", label: "Image URL" },
       { name: "bookingUrl", label: "Booking URL" },
       { name: "destinationId", label: "Destination ID" },
     ],
-    [{ name: "description", label: "Description", textarea: true }],
+    [{ name: "description", label: "Overview / description", textarea: true }],
+    [{ name: "included", label: "Included (one item per line)", textarea: true }],
+    [{ name: "notIncluded", label: "Not included (one item per line)", textarea: true }],
+    [{ name: "importantInfo", label: "Important information (one item per line)", textarea: true }],
   ],
   products: [
     [
@@ -120,6 +129,23 @@ const FIELD_GROUPS: Record<keyof EntityTypes, EntityEditField[][]> = {
     ],
     [
       { name: "buyUrl", label: "Buy URL" },
+    ],
+    [{ name: "description", label: "Description", textarea: true }],
+  ],
+  "esim-providers": [
+    [
+      { name: "name", label: "Provider name" },
+      { name: "slug", label: "Slug" },
+      { name: "tagline", label: "Tagline" },
+    ],
+    [
+      { name: "affiliateLinkId", label: "Affiliate link ID" },
+      { name: "lastVerifiedAt", label: "Last verified (ISO date)" },
+      { name: "sortOrder", label: "Sort order", type: "number" },
+    ],
+    [
+      { name: "pros", label: "Pros (one item per line)", textarea: true },
+      { name: "cons", label: "Cons (one item per line)", textarea: true },
     ],
     [{ name: "description", label: "Description", textarea: true }],
   ],
@@ -159,7 +185,8 @@ type EntityModel = Prisma.CategoryGetPayload<Record<string, never>> &
   Prisma.AuthorGetPayload<Record<string, never>> &
   Prisma.HotelGetPayload<Record<string, never>> &
   Prisma.ActivityGetPayload<Record<string, never>> &
-  Prisma.ProductGetPayload<Record<string, never>>;
+  Prisma.ProductGetPayload<Record<string, never>> &
+  Prisma.EsimProviderGetPayload<Record<string, never>>;
 
 async function findEntity(entity: keyof EntityTypes, id: string): Promise<EntityModel | null> {
   switch (entity) {
@@ -173,5 +200,7 @@ async function findEntity(entity: keyof EntityTypes, id: string): Promise<Entity
       return (await prisma.activity.findUnique({ where: { id } })) as EntityModel | null;
     case "products":
       return (await prisma.product.findUnique({ where: { id } })) as EntityModel | null;
+    case "esim-providers":
+      return (await prisma.esimProvider.findUnique({ where: { id } })) as EntityModel | null;
   }
 }

@@ -17,6 +17,12 @@ export interface SeoProps {
   jsonLd?: Record<string, unknown> | Record<string, unknown>[];
 }
 
+function resolveTitle(title: string | undefined, fallback: string): string {
+  const base = title ?? fallback;
+  if (base.toLowerCase().includes(siteConfig.name.toLowerCase())) return base;
+  return `${base} | ${siteConfig.name}`;
+}
+
 export function buildMetadata({
   title,
   description,
@@ -36,7 +42,7 @@ export function buildMetadata({
   const og = ogImage ?? `/og?title=${encodeURIComponent(resolvedTitle.slice(0, 110))}&type=${encodeURIComponent(siteConfig.tagline)}`;
 
   return {
-    title: title ?? fallbackTitle,
+    title: { absolute: resolveTitle(title, fallbackTitle) },
     description: description ?? fallbackDescription,
     keywords: [...(keywords ?? siteConfig.keywords)],
     alternates: {
@@ -47,12 +53,12 @@ export function buildMetadata({
       ? { index: false, follow: false }
       : { index: true, follow: true, googleBot: { index: true, follow: true } },
     openGraph: {
-      title: title ?? fallbackTitle,
+      title: resolveTitle(title, fallbackTitle),
       description: description ?? fallbackDescription,
       url: canonicalPath ? absoluteUrl(canonicalPath) : undefined,
       siteName: siteConfig.name,
       type: ogType,
-      images: [{ url: absoluteUrl(og), width: 1200, height: 630, alt: title }],
+      images: [{ url: absoluteUrl(og), width: 1200, height: 630, alt: resolveTitle(title, fallbackTitle) }],
       publishedTime,
       modifiedTime,
       authors,
@@ -60,7 +66,7 @@ export function buildMetadata({
     },
     twitter: {
       card: "summary_large_image",
-      title: title ?? fallbackTitle,
+      title: resolveTitle(title, fallbackTitle),
       description: description ?? fallbackDescription,
       images: [absoluteUrl(og)],
     },
@@ -163,6 +169,31 @@ export function touristAttractionSchema(params: {
     description: params.description,
     url: params.url,
     image: params.image ? absoluteUrl(params.image) : undefined,
+  };
+}
+
+export function touristDestinationSchema(params: {
+  name: string;
+  description: string;
+  url: string;
+  image?: string | null;
+  includesAttractionNames?: string[];
+}) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "TouristDestination",
+    name: params.name,
+    description: params.description,
+    url: params.url,
+    image: params.image ? absoluteUrl(params.image) : undefined,
+    ...(params.includesAttractionNames && params.includesAttractionNames.length
+      ? {
+          includesAttraction: params.includesAttractionNames.map((n) => ({
+            "@type": "TouristAttraction",
+            name: n,
+          })),
+        }
+      : {}),
   };
 }
 

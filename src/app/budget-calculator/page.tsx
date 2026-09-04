@@ -1,12 +1,14 @@
 import { BudgetCalculator } from "@/components/budget-calculator";
 import { Breadcrumbs, buildCrumbs } from "@/components/ui/breadcrumbs";
 import { SectionHeading } from "@/components/ui/card";
+import { buildMetadata } from "@/lib/seo";
 
-export const metadata = {
+export const metadata = buildMetadata({
   title: "Travel Budget Calculator",
   description:
     "Estimate the real cost of your next trip — accommodation, food, transport, activities and flights, instantly.",
-};
+  canonicalPath: "/budget-calculator",
+});
 
 export default function BudgetCalculatorPage() {
   return (

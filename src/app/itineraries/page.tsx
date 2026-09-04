@@ -1,14 +1,16 @@
 import Link from "next/link";
 import { Map, CalendarDays } from "lucide-react";
 import { prisma } from "@/lib/prisma";
+import { buildMetadata } from "@/lib/seo";
 import { SectionHeading } from "@/components/ui/card";
 import { Breadcrumbs, buildCrumbs } from "@/components/ui/breadcrumbs";
 
-export const metadata = {
+export const metadata = buildMetadata({
   title: "Travel Itineraries",
   description:
     "Ready-to-follow travel itineraries with day-by-day plans, budgets, hotel and activity recommendations.",
-};
+  canonicalPath: "/itineraries",
+});
 
 export const dynamic = "force-dynamic";
 

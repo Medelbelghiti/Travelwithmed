@@ -396,6 +396,12 @@ model Activity {
   image         String?
   category      String?
   bestFor       String?
+  location      String?
+  // Editor-supplied factual details (never derived/invented). Stored as arrays
+  // of strings and maintained in the Riversmag admin (Monetization > Activities).
+  included      Json?
+  notIncluded   Json?
+  importantInfo Json?
   bookingUrl    String?
   affiliateLinkId String?
   isActive      Boolean  @default(true)
@@ -496,12 +502,68 @@ model AffiliateLink {
   productId   String?
   product     Product?     @relation(fields: [productId], references: [id])
 
-  clicks AffiliateClick[]
+  clicks        AffiliateClick[]
+  esimProviders EsimProvider[] @relation("EsimProviderLink")
+  esimPlans     EsimPlan[]     @relation("EsimPlanLink")
 
   @@index([category])
   @@index([active])
   @@index([articleId])
   @@index([destinationId])
+}
+
+// ========== eSIM PROVIDERS & PLANS ==========
+// Pricing, coverage, validity and feature data is editable and verified in the
+// Riversmag admin (Monetization > eSIM). Fields are intentionally free-text so
+// values like prices or "190+ countries" can be updated without code changes.
+
+model EsimProvider {
+  id            String   @id @default(cuid())
+  name          String   @unique
+  slug          String   @unique
+  tagline       String?
+  description   String?
+  pros          Json?
+  cons          Json?
+  affiliateLinkId String?
+  affiliateLink AffiliateLink? @relation("EsimProviderLink", fields: [affiliateLinkId], references: [id])
+  lastVerifiedAt DateTime?
+  isActive      Boolean  @default(true)
+  sortOrder     Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  plans EsimPlan[]
+
+  @@index([isActive])
+  @@index([sortOrder])
+}
+
+model EsimPlan {
+  id          String   @id @default(cuid())
+  providerId  String
+  provider    EsimProvider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  name        String
+  type        String   @default("COUNTRY") // GLOBAL | REGIONAL | COUNTRY
+  coverage    String?
+  dataAmount  String?
+  validity    String?
+  price       String?
+  priceCurrency String @default("USD")
+  supports5g  Boolean  @default(false)
+  hotspot     Boolean  @default(false)
+  bestFor     String?
+  affiliateLinkId String?
+  affiliateLink AffiliateLink? @relation("EsimPlanLink", fields: [affiliateLinkId], references: [id])
+  lastVerifiedAt DateTime?
+  isActive    Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([providerId])
+  @@index([type])
+  @@index([isActive])
 }
 
 model AffiliateClick {

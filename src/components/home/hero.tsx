@@ -1,6 +1,3 @@
-"use client";
-
-import { useState } from "react";
 import Link from "next/link";
 import { Search, Compass, BedDouble, Ticket, Map } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -8,8 +5,6 @@ import { Button } from "@/components/ui/button";
 const SUGGESTIONS = ["Paris", "Tokyo", "Marrakech", "Rome", "Bali", "Istanbul"];
 
 export function Hero() {
-  const [query, setQuery] = useState("");
-
   return (
     <section className="relative isolate flex min-h-[82vh] items-center overflow-hidden bg-brand-deep">
       <div
@@ -46,8 +41,8 @@ export function Hero() {
             <input
               id="hero-search"
               name="q"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
+              type="search"
+              defaultValue=""
               placeholder="Search activities, tours, destinations"
               className="w-full bg-transparent py-2.5 text-base text-ink outline-none placeholder:text-ink-muted"
             />

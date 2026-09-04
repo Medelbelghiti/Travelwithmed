@@ -1,13 +1,15 @@
 import { Breadcrumbs, buildCrumbs } from "@/components/ui/breadcrumbs";
 import { prisma } from "@/lib/prisma";
+import { buildMetadata } from "@/lib/seo";
 import { HotelsFilter } from "@/components/hotels-filter";
 import { SectionHeading } from "@/components/ui/card";
 
-export const metadata = {
+export const metadata = buildMetadata({
   title: "Hotels",
   description:
     "Honest hotel reviews, neighbourhood guides and price comparisons — hand-picked stays with real pros and cons.",
-};
+  canonicalPath: "/hotels",
+});
 
 export const dynamic = "force-dynamic";
 

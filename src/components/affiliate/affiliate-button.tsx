@@ -10,6 +10,9 @@ export interface AffiliateButtonProps {
   size?: "sm" | "md" | "lg";
   className?: string;
   external?: boolean;
+  category?: string;
+  provider?: string;
+  destination?: string;
 }
 
 const base =
@@ -36,6 +39,9 @@ export function AffiliateButton({
   size = "md",
   className,
   external = false,
+  category,
+  provider,
+  destination,
 }: AffiliateButtonProps) {
   const href = `/out/${linkId}${placement ? `?placement=${encodeURIComponent(placement)}` : ""}`;
   const rel = external ? "nofollow sponsored noopener" : undefined;
@@ -48,6 +54,11 @@ export function AffiliateButton({
       target={target}
       className={cn(base, variants[variant], sizes[size], className)}
       aria-label={label}
+      data-affiliate-click="true"
+      data-affiliate-category={category}
+      data-affiliate-provider={provider}
+      data-affiliate-destination={destination}
+      data-affiliate-cta={label}
     >
       {label}
       <ExternalLink className="h-4 w-4 opacity-70" aria-hidden />

@@ -3,16 +3,28 @@ import { ArticleCard } from "@/components/article-card";
 import { SectionHeading } from "@/components/ui/card";
 import { Breadcrumbs, buildCrumbs } from "@/components/ui/breadcrumbs";
 import { Pagination } from "@/components/pagination";
-
-export const metadata = {
-  title: "All Travel Guides",
-  description:
-    "Browse every Riversmag travel guide — destination guides, hotel picks, itineraries, gear reviews and practical travel advice.",
-};
+import { buildMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
 const PER_PAGE = 12;
+
+export async function generateMetadata({
+  searchParams,
+}: {
+  searchParams: Promise<{ page?: string }>;
+}) {
+  const { page: pageParam } = await searchParams;
+  const requested = Number(pageParam ?? "1");
+  const currentPage = Number.isFinite(requested) && requested >= 1 ? Math.floor(requested) : 1;
+  const canonicalPath = currentPage > 1 ? `/articles?page=${currentPage}` : "/articles";
+  return buildMetadata({
+    title: currentPage > 1 ? `All Travel Guides (Page ${currentPage})` : "All Travel Guides",
+    description:
+      "Browse every Riversmag travel guide — destination guides, hotel picks, itineraries, gear reviews and practical travel advice.",
+    canonicalPath,
+  });
+}
 
 export default async function ArticlesIndex({
   searchParams,

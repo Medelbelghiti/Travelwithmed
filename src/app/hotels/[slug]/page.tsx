@@ -19,6 +19,8 @@ import { SectionHeading } from "@/components/ui/card";
 import { AffiliateButton } from "@/components/affiliate/affiliate-button";
 import { AffiliateDisclosure } from "@/components/affiliate/disclosure";
 import { NewsletterCta } from "@/components/newsletter-cta";
+import { RelatedActivities } from "@/components/related/related-activities";
+import { RelatedGuides } from "@/components/related/related-guides";
 import { absoluteUrl } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
@@ -148,7 +150,7 @@ export default async function HotelPage({ params }: HotelPageProps) {
           {hotel.bestFor && <p className="mt-3 max-w-2xl text-white/60 italic">Best for: {hotel.bestFor}</p>}
           {affLink && (
             <div className="mt-7">
-              <AffiliateButton linkId={affLink.id} label={`Check availability at ${hotel.name}`} placement={`hotel-${hotel.slug}`} />
+              <AffiliateButton linkId={affLink.id} label={`Check availability at ${hotel.name}`} placement={`hotel-${hotel.slug}`} category="HOTELS" destination={destinationRef?.name ?? undefined} />
             </div>
           )}
         </div>
@@ -305,7 +307,7 @@ export default async function HotelPage({ params }: HotelPageProps) {
                 </p>
                 {affLink && (
                   <div className="mt-5">
-                    <AffiliateButton linkId={affLink.id} label="Compare prices" placement={`hotel-${hotel.slug}-sidebar`} />
+                    <AffiliateButton linkId={affLink.id} label="Compare prices" placement={`hotel-${hotel.slug}-sidebar`} category="HOTELS" destination={destinationRef?.name ?? undefined} />
                   </div>
                 )}
                 {hotel.priceRange && (
@@ -365,6 +367,15 @@ export default async function HotelPage({ params }: HotelPageProps) {
             </div>
           </section>
         )}
+
+        <RelatedActivities
+          destinationId={destinationRef?.id}
+          destinationName={destinationRef?.name}
+        />
+        <RelatedGuides
+          destinationId={destinationRef?.id}
+          destinationName={destinationRef?.name}
+        />
 
         <NewsletterCta
           title={`Planning a trip to ${destinationRef?.name ?? "your next destination"}?`}

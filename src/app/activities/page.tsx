@@ -1,13 +1,15 @@
 import { Breadcrumbs, buildCrumbs } from "@/components/ui/breadcrumbs";
 import { prisma } from "@/lib/prisma";
+import { buildMetadata } from "@/lib/seo";
 import { ActivitiesFilter } from "@/components/activities-filter";
 import { SectionHeading } from "@/components/ui/card";
 
-export const metadata = {
+export const metadata = buildMetadata({
   title: "Activities & Tours",
   description:
     "Discover the best tours and experiences worldwide — from food tours to day trips and adventure activities. Filter by category, duration, price and rating.",
-};
+  canonicalPath: "/activities",
+});
 
 export const dynamic = "force-dynamic";
 

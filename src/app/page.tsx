@@ -1,5 +1,15 @@
 ﻿import Link from "next/link";
-import { ArrowRight, BadgePercent } from "lucide-react";
+import {
+  ArrowRight,
+  BadgePercent,
+  BedDouble,
+  Car,
+  Compass,
+  Map,
+  ShieldCheck,
+  Signal,
+  Ticket,
+} from "lucide-react";
 import { Hero } from "@/components/home/hero";
 import { DestinationCard } from "@/components/destination-card";
 import { ArticleCard } from "@/components/article-card";
@@ -13,69 +23,95 @@ import { siteConfig } from "@/lib/site";
 
 export const dynamic = "force-dynamic";
 
-const STYLE_GUIDES = [
-  { name: "Budget Travel", slug: "budget-travel", description: "Spend less, travel more", href: "/travel-tips" },
-  { name: "Luxury Travel", slug: "luxury-travel", description: "The finest stays and experiences", href: "/travel-tips" },
-  { name: "Solo Travel", slug: "solo-travel", description: "Designed for going solo", href: "/travel-tips" },
-  { name: "Family Travel", slug: "family-travel", description: "Trip plans the whole family will love", href: "/travel-tips" },
-  { name: "Adventure", slug: "adventure", description: "For the thrill-seekers", href: "/activities" },
-  { name: "Digital Nomad", slug: "digital-nomad", description: "Work from anywhere", href: "/resources" },
+const FEATURED_SLUGS = ["paris", "marrakech", "tokyo", "bali", "rome"];
+
+const PLAN_FLOWS = [
+  { label: "Where to stay", href: "/hotels", icon: BedDouble, eyebrow: "Hotels" },
+  { label: "What to do", href: "/activities", icon: Ticket, eyebrow: "Things to do" },
+  { label: "Day by day", href: "/itineraries", icon: Map, eyebrow: "Itineraries" },
+  { label: "Stay connected", href: "/resources/esim", icon: Signal, eyebrow: "eSIM" },
+  { label: "Stay covered", href: "/resources/travel-insurance", icon: ShieldCheck, eyebrow: "Insurance" },
+  { label: "Get around", href: "/resources/car-rental", icon: Car, eyebrow: "Car rental" },
 ];
 
 export default async function HomePage() {
-  const [trendingDestinations, featuredArticles, latestArticles, hotels, activities, itineraries, gear, deals] =
-    await Promise.all([
-      prisma.destination.findMany({
-        where: { isActive: true, type: { in: ["CITY", "COUNTRY"] } },
-        include: { _count: { select: { articles: true } } },
-        orderBy: { sortOrder: "asc" },
-        take: 8,
-      }),
-      prisma.article.findMany({
-        where: { status: "PUBLISHED" },
-        include: { author: true },
-        orderBy: [{ publishedAt: "desc" }, { viewCount: "desc" }],
-        take: 6,
-      }),
-      prisma.article.findMany({
-        where: { status: "PUBLISHED" },
-        include: { author: true },
-        orderBy: { publishedAt: "desc" },
-        take: 8,
-      }),
-      prisma.hotel.findMany({
-        where: { isActive: true },
-        include: { affiliateLinks: { where: { active: true }, take: 1 } },
-        orderBy: [{ guestRating: "desc" }, { sorts: "asc" }],
-        take: 6,
-      }),
-      prisma.activity.findMany({
-        where: { isActive: true },
-        include: { affiliateLinks: { where: { active: true }, take: 1 } },
-        orderBy: { rating: "desc" },
-        take: 6,
-      }),
-      prisma.itinerary.findMany({
-        where: { isActive: true },
-        orderBy: { publishedAt: "desc" },
-        take: 4,
-      }),
-      prisma.product.findMany({
-        where: { isActive: true },
-        include: { affiliateLinks: { where: { active: true }, take: 1 } },
-        orderBy: { rating: "desc" },
-        take: 6,
-      }),
-      prisma.affiliateLink.findMany({
-        where: { active: true, featuredDeal: true, OR: [{ dealExpiresAt: null }, { dealExpiresAt: { gt: new Date() } }] },
-        orderBy: [{ priority: "desc" }, { clickCount: "desc" }],
-        take: 3,
-      }),
-    ]);
+  const [
+    featuredDestinations,
+    trendingDestinations,
+    featuredArticles,
+    hotels,
+    activities,
+    deals,
+  ] = await Promise.all([
+    prisma.destination.findMany({
+      where: { isActive: true, slug: { in: FEATURED_SLUGS } },
+      include: {
+        _count: { select: { hotels: true, activities: true, itineraries: true } },
+      },
+      orderBy: { sortOrder: "asc" },
+    }),
+    prisma.destination.findMany({
+      where: { isActive: true, type: { in: ["CITY", "COUNTRY"] }, slug: { notIn: FEATURED_SLUGS } },
+      include: { _count: { select: { articles: true } } },
+      orderBy: { sortOrder: "asc" },
+      take: 4,
+    }),
+    prisma.article.findMany({
+      where: { status: "PUBLISHED" },
+      include: { author: true },
+      orderBy: [{ publishedAt: "desc" }, { viewCount: "desc" }],
+      take: 6,
+    }),
+    prisma.hotel.findMany({
+      where: { isActive: true },
+      include: { affiliateLinks: { where: { active: true }, take: 1 } },
+      orderBy: [{ guestRating: "desc" }, { sorts: "asc" }],
+      take: 6,
+    }),
+    prisma.activity.findMany({
+      where: { isActive: true },
+      include: { affiliateLinks: { where: { active: true }, take: 1 } },
+      orderBy: { rating: "desc" },
+      take: 6,
+    }),
+    prisma.affiliateLink.findMany({
+      where: { active: true, featuredDeal: true, OR: [{ dealExpiresAt: null }, { dealExpiresAt: { gt: new Date() } }] },
+      orderBy: [{ priority: "desc" }, { clickCount: "desc" }],
+      take: 3,
+    }),
+  ]);
+
+  const featuredOrdered = [...FEATURED_SLUGS]
+    .map((slug) => featuredDestinations.find((d) => d.slug === slug))
+    .filter((d): d is NonNullable<typeof d> => Boolean(d));
 
   return (
     <>
       <Hero />
+
+      {/* Plan-your-trip pillar strip */}
+      <section className="border-b border-line bg-white">
+        <div className="container-x py-6">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+            {PLAN_FLOWS.map((flow) => {
+              const Icon = flow.icon;
+              return (
+                <Link
+                  key={flow.href}
+                  href={flow.href}
+                  className="group flex flex-col items-center gap-2 rounded-2xl border border-line bg-sand px-3 py-4 text-center transition-all hover:-translate-y-0.5 hover:border-brand hover:shadow-sm"
+                >
+                  <span className="flex h-10 w-10 items-center justify-center rounded-full bg-brand-light text-brand-dark">
+                    <Icon className="h-5 w-5" aria-hidden />
+                  </span>
+                  <span className="text-xs font-bold uppercase tracking-wide text-ink-muted">{flow.eyebrow}</span>
+                  <span className="text-sm font-semibold text-ink group-hover:text-brand">{flow.label}</span>
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      </section>
 
       {/* Deals strip */}
       {deals.length > 0 && (
@@ -117,18 +153,105 @@ export default async function HomePage() {
         </section>
       )}
 
-      {/* Trending destinations */}
-      {trendingDestinations.length > 0 && (
+      {/* Featured destinations */}
+      {featuredOrdered.length > 0 && (
         <section className="container-x section-pad">
           <SectionHeading
-            eyebrow="Trending now"
-            title="Trending destinations"
-            description="Where the Riversmag community is dreaming about right now."
+            eyebrow="Popular right now"
+            title="Where to go next"
+            description="Start with a destination — we'll guide you on where to stay, what to do and how to get around."
           />
-          <div className="grid grid-cols-2 gap-4 md:gap-6 lg:grid-cols-4">
-            {trendingDestinations.map((d) => (
-              <DestinationCard key={d.id} destination={{ ...d, articleCount: d._count.articles }} />
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {featuredOrdered.map((d) => (
+              <div
+                key={d.id}
+                className="flex flex-col overflow-hidden rounded-2xl border border-line bg-white shadow-sm transition-all hover:-translate-y-1 hover:shadow-xl"
+              >
+                <DestinationCard
+                  destination={{
+                    id: d.id,
+                    name: d.name,
+                    slug: d.slug,
+                    type: d.type,
+                    tagline: d.tagline,
+                    coverImage: d.coverImage,
+                    articleCount: undefined,
+                  }}
+                  className="border-0 shadow-none hover:translate-y-0 hover:shadow-none"
+                />
+                <div className="flex flex-1 flex-col p-4">
+                  <p className="text-xs font-bold uppercase tracking-wide text-ink-muted">Plan your trip</p>
+                  <ul className="mt-3 grid grid-cols-2 gap-2">
+                    {d._count.hotels > 0 && (
+                      <li>
+                        <Link
+                          href={`/destinations/${d.slug}#hotels`}
+                          className="flex items-center gap-1.5 text-sm font-medium text-ink-soft hover:text-brand"
+                        >
+                          <BedDouble className="h-3.5 w-3.5 text-brand" aria-hidden />
+                          Hotels
+                        </Link>
+                      </li>
+                    )}
+                    {d._count.activities > 0 && (
+                      <li>
+                        <Link
+                          href={`/destinations/${d.slug}#things-to-do`}
+                          className="flex items-center gap-1.5 text-sm font-medium text-ink-soft hover:text-brand"
+                        >
+                          <Ticket className="h-3.5 w-3.5 text-brand" aria-hidden />
+                          Things to do
+                        </Link>
+                      </li>
+                    )}
+                    {d._count.itineraries > 0 && (
+                      <li>
+                        <Link
+                          href={`/destinations/${d.slug}#itineraries`}
+                          className="flex items-center gap-1.5 text-sm font-medium text-ink-soft hover:text-brand"
+                        >
+                          <Map className="h-3.5 w-3.5 text-brand" aria-hidden />
+                          Itineraries
+                        </Link>
+                      </li>
+                    )}
+                    {[
+                      { label: "eSIM", href: "#planning", icon: Signal },
+                      { label: "Insurance", href: "#planning", icon: ShieldCheck },
+                      { label: "Car rental", href: "#planning", icon: Car },
+                    ].map((p) => {
+                      const Icon = p.icon;
+                      return (
+                        <li key={p.label}>
+                          <Link
+                            href={`/destinations/${d.slug}${p.href}`}
+                            className="flex items-center gap-1.5 text-sm font-medium text-ink-soft hover:text-brand"
+                          >
+                            <Icon className="h-3.5 w-3.5 text-brand" aria-hidden />
+                            {p.label}
+                          </Link>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                  <Link
+                    href={`/destinations/${d.slug}`}
+                    className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-brand hover:text-brand-dark"
+                  >
+                    Explore {d.name} <ArrowRight className="h-3.5 w-3.5" aria-hidden />
+                  </Link>
+                </div>
+              </div>
             ))}
+            {featuredOrdered.length < 5 && (
+              <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-line bg-sand p-6 text-center">
+                <Compass className="h-8 w-8 text-brand" aria-hidden />
+                <p className="mt-3 font-semibold text-ink">Looking for somewhere else?</p>
+                <Link href="/destinations" className="mt-2 text-sm font-semibold text-brand hover:text-brand-dark">
+                  Browse all destinations <ArrowRight className="h-3.5 w-3.5" aria-hidden />
+                </Link>
+              </div>
+            )}
           </div>
           <p className="mt-8 text-center">
             <Link href="/destinations" className="inline-flex items-center gap-1 font-semibold text-brand hover:text-brand-dark">
@@ -138,29 +261,21 @@ export default async function HomePage() {
         </section>
       )}
 
-      {/* Featured guides */}
-      {featuredArticles.length > 0 && (
+      {/* More destinations */}
+      {trendingDestinations.length > 0 && (
         <section className="section-pad bg-sand">
           <div className="container-x">
             <SectionHeading
-              eyebrow="Featured"
-              title="Popular travel guides"
-              description="In-depth guides written to help you plan smarter."
+              eyebrow="Keep exploring"
+              title="More destinations"
+              description="There's plenty more to discover across the site."
             />
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {featuredArticles.slice(0, 6).map((a) => (
-                <ArticleCard
-                  key={a.id}
-                  article={{
-                    id: a.id,
-                    title: a.title,
-                    slug: a.slug,
-                    type: a.type,
-                    excerpt: a.excerpt,
-                    coverImage: a.coverImage,
-                    publishedAt: a.publishedAt,
-                    authorName: a.author?.name ?? null,
-                  }}
+            <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+              {trendingDestinations.map((d) => (
+                <DestinationCard
+                  key={d.id}
+                  destination={{ ...d, articleCount: d._count.articles }}
+                  className="rounded-2xl"
                 />
               ))}
             </div>
@@ -168,39 +283,47 @@ export default async function HomePage() {
         </section>
       )}
 
-      {/* By travel style */}
-      <section className="container-x section-pad">
-        <SectionHeading
-          eyebrow="Find your style"
-          title="Best destinations by travel style"
-          description="However you like to travel, there's a perfect match waiting."
-          align="center"
-        />
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {STYLE_GUIDES.map((style) => (
-            <Link
-              key={style.name}
-              href={style.href}
-              className="group flex flex-col rounded-2xl border border-line bg-white p-6 shadow-sm transition-all hover:-translate-y-0.5 hover:border-brand hover:shadow-md"
-            >
-              <h3 className="font-serif text-xl font-semibold text-ink group-hover:text-brand">{style.name}</h3>
-              <p className="mt-1 text-sm text-ink-muted">{style.description}</p>
-              <span className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-brand">
-                Explore <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" aria-hidden />
-              </span>
+      {/* Featured travel guides */}
+      {featuredArticles.length > 0 && (
+        <section className="container-x section-pad">
+          <SectionHeading
+            eyebrow="Featured"
+            title="Featured travel guides"
+            description="In-depth guides written to help you plan smarter, wherever you're headed."
+          />
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {featuredArticles.slice(0, 6).map((a) => (
+              <ArticleCard
+                key={a.id}
+                article={{
+                  id: a.id,
+                  title: a.title,
+                  slug: a.slug,
+                  type: a.type,
+                  excerpt: a.excerpt,
+                  coverImage: a.coverImage,
+                  publishedAt: a.publishedAt,
+                  authorName: a.author?.name ?? null,
+                }}
+              />
+            ))}
+          </div>
+          <p className="mt-8 text-center">
+            <Link href="/articles" className="inline-flex items-center gap-1 font-semibold text-brand hover:text-brand-dark">
+              Browse every guide <ArrowRight className="h-4 w-4" aria-hidden />
             </Link>
-          ))}
-        </div>
-      </section>
+          </p>
+        </section>
+      )}
 
       {/* Recommended hotels */}
       {hotels.length > 0 && (
         <section className="section-pad bg-sand">
           <div className="container-x">
             <SectionHeading
-              eyebrow="Stay well"
+              eyebrow="Where to stay"
               title="Recommended hotels"
-              description="Hand-picked stays in the world's most-loved destinations."
+              description="Hand-picked stays in the world's most-loved destinations, for every budget."
             />
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {hotels.map((hotel) => (
@@ -228,13 +351,13 @@ export default async function HomePage() {
         </section>
       )}
 
-      {/* Best experiences */}
+      {/* Top activities */}
       {activities.length > 0 && (
         <section className="container-x section-pad">
           <SectionHeading
-            eyebrow="Make memories"
-            title="Best travel experiences"
-            description="Tours, excursions and unforgettable moments."
+            eyebrow="Things to do"
+            title="Top activities"
+            description="Tours, excursions and unforgettable experiences, ready to book."
             align="center"
           />
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -255,142 +378,64 @@ export default async function HomePage() {
               />
             ))}
           </div>
+          <p className="mt-8 text-center">
+            <Link href="/activities" className="inline-flex items-center gap-1 font-semibold text-brand hover:text-brand-dark">
+              View all activities <ArrowRight className="h-4 w-4" aria-hidden />
+            </Link>
+          </p>
         </section>
       )}
 
-      {/* Itineraries */}
-      {itineraries.length > 0 && (
-        <section className="section-pad bg-brand-dark">
-          <div className="container-x">
-            <SectionHeading
-              eyebrow="Day by day"
-              title="Popular itineraries"
-              description="Ready-to-follow itineraries with budgets, stays and highlights."
-            />
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-              {itineraries.map((it) => (
-                <Link
-                  key={it.id}
-                  href={`/itineraries/${it.slug}`}
-                  className="group flex flex-col justify-between rounded-2xl border border-white/10 bg-white/5 p-6 transition-colors hover:bg-white/10"
-                >
-                  <div>
-                    <h3 className="font-serif text-xl font-semibold text-white group-hover:text-accent">{it.title}</h3>
-                    {it.summary && <p className="mt-2 line-clamp-2 text-sm text-white/70">{it.summary}</p>}
-                  </div>
-                  <p className="mt-4 text-sm font-semibold text-accent">{it.days} days</p>
-                </Link>
-              ))}
-            </div>
-            <p className="mt-8 text-center">
-              <Link href="/itineraries" className="inline-flex items-center gap-1 font-semibold text-accent hover:text-white">
-                Browse all itineraries <ArrowRight className="h-4 w-4" aria-hidden />
-              </Link>
-            </p>
-          </div>
-        </section>
-      )}
-
-      {/* Latest articles */}
-      {latestArticles.length > 0 && (
-        <section className="container-x section-pad">
+      {/* Travel resources */}
+      <section className="section-pad bg-sand">
+        <div className="container-x">
           <SectionHeading
-            eyebrow="Fresh from the desk"
-            title="Latest articles"
-            description="New guides, destination deep-dives and practical travel advice."
+            eyebrow="Travel resources"
+            title="Everything you need to plan"
+            description="Book flights and stays, stay connected, stay covered and get around — all in one place."
           />
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {latestArticles.slice(0, 8).map((a) => (
-              <ArticleCard
-                key={a.id}
-                article={{
-                  id: a.id,
-                  title: a.title,
-                  slug: a.slug,
-                  type: a.type,
-                  excerpt: a.excerpt,
-                  coverImage: a.coverImage,
-                  publishedAt: a.publishedAt,
-                  authorName: a.author?.name ?? null,
-                }}
-              />
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {[
+              { label: "Flights", href: "/flights", blurb: "Compare and book your flights" },
+              { label: "Hotels", href: "/hotels", blurb: "Find the perfect place to stay" },
+              { label: "Activities & tours", href: "/activities", blurb: "Book things to do" },
+              { label: "eSIM", href: "/resources/esim", blurb: "Stay connected anywhere" },
+              { label: "Travel insurance", href: "/resources/travel-insurance", blurb: "Stay covered on every trip" },
+              { label: "Car rental", href: "/resources/car-rental", blurb: "Get around with ease" },
+              { label: "Visa information", href: "/resources/visas", blurb: "Know what you need before you go" },
+              { label: "Budget calculator", href: "/budget-calculator", blurb: "Plan your travel budget" },
+              { label: "Trip planner", href: "/trip-planner", blurb: "Sketch out your whole trip" },
+            ].map((r) => (
+              <Link
+                key={r.href}
+                href={r.href}
+                className="group flex flex-col rounded-2xl border border-line bg-white p-5 shadow-sm transition-all hover:-translate-y-0.5 hover:border-brand"
+              >
+                <h3 className="font-serif text-lg font-semibold text-ink group-hover:text-brand">{r.label}</h3>
+                <p className="mt-1 text-sm text-ink-muted">{r.blurb}</p>
+                <span className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-brand">
+                  Explore <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" aria-hidden />
+                </span>
+              </Link>
             ))}
           </div>
-        </section>
-      )}
+        </div>
+      </section>
 
-      {/* Travel gear */}
-      {gear.length > 0 && (
-        <section className="section-pad bg-sand">
-          <div className="container-x">
-            <SectionHeading
-              eyebrow="Pack right"
-              title="Travel gear recommendations"
-              description="Tested picks for every traveller — from cabin carry-ons to packing cubes."
-            />
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {gear.map((product) => (
-                <div key={product.id} className="rounded-2xl border border-line bg-white p-5 shadow-sm">
-                  <div className="flex items-center justify-between gap-3">
-                    <h3 className="font-serif text-lg font-semibold text-ink">{product.name}</h3>
-                    {product.rating ? (
-                      <span className="rounded-full bg-brand-light px-2 py-0.5 text-xs font-bold text-brand-dark">
-                        â˜… {product.rating.toFixed(1)}
-                      </span>
-                    ) : null}
-                  </div>
-                  {product.brand && <p className="mt-0.5 text-xs font-semibold uppercase tracking-wide text-ink-muted">{product.brand}</p>}
-                  {product.description && <p className="mt-2 line-clamp-2 text-sm text-ink-soft">{product.description}</p>}
-                  <div className="mt-3 flex items-center justify-between gap-3">
-                    {product.priceRange && <span className="text-sm font-semibold text-ink">{product.priceRange}</span>}
-                    {product.affiliateLinks[0] && (
-                      <Link
-                        href={`/out/${product.affiliateLinks[0].id}?placement=home-gear`}
-                        className="inline-flex items-center rounded-full bg-brand px-4 py-2 text-xs font-semibold text-white hover:bg-brand-dark"
-                        rel="nofollow sponsored"
-                      >
-                        Today&apos;s deals
-                      </Link>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* Resources + Newsletter + About */}
+      {/* Newsletter */}
       <section className="container-x section-pad">
         <div className="grid gap-10 lg:grid-cols-2">
           <div>
-            <SectionHeading eyebrow="Travel resources" title="Everything you need to plan" />
-            <ul className="grid gap-3 sm:grid-cols-2">
-              {[
-                ["Best eSIMs for travel", "/resources/esim"],
-                ["Travel insurance explained", "/resources/travel-insurance"],
-                ["Best carry-on luggage", "/travel-gear/carry-on-luggage"],
-                ["Packing checklists", "/travel-tips/packing"],
-                ["Visa information", "/resources/visas"],
-                ["Car rental tips", "/resources/car-rental"],
-              ].map(([label, href]) => (
-                <li key={href}>
-                  <Link href={href} className="block rounded-xl border border-line bg-white px-4 py-3 text-sm font-medium text-ink-soft transition-colors hover:border-brand hover:text-brand">
-                    {label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
+            <SectionHeading
+              eyebrow="Stay in the loop"
+              title="Get smarter travel tips"
+              description={`Join ${siteConfig.name} and get destination guides, packing hacks and exclusive deals in your inbox. No spam, ever.`}
+            />
+            <AffiliateDisclosure className="hidden lg:block" />
           </div>
-
-          <div className="rounded-3xl bg-brand-dark p-8 text-white">
-            <h2 className="text-3xl text-white">Get smarter travel tips</h2>
-            <p className="mt-3 text-white/75">
-              Join {siteConfig.name} and get destination guides, packing hacks and exclusive deals in your inbox. No spam, ever.
-            </p>
-            <div className="mt-6">
-              <NewsletterForm />
-            </div>
+          <div className="flex flex-col justify-center">
+            <NewsletterForm />
+            <AffiliateDisclosure className="mt-6 lg:hidden" />
           </div>
         </div>
       </section>
@@ -413,10 +458,6 @@ export default async function HomePage() {
           </Link>
         </div>
       </section>
-
-      <div className="container-x pb-12 pt-0">
-        <AffiliateDisclosure />
-      </div>
     </>
   );
 }

@@ -20,6 +20,7 @@ import {
   LogOut,
   Mountain,
   Menu,
+  Signal,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { logoutAction } from "@/lib/actions/auth";
@@ -38,6 +39,7 @@ const NAV = [
     { href: "/admin/hotels", label: "Hotels", icon: BedDouble },
     { href: "/admin/activities", label: "Activities", icon: Ticket },
     { href: "/admin/products", label: "Products", icon: Package },
+    { href: "/admin/esim-providers", label: "eSIM Providers", icon: Signal },
   ]},
   { section: "Growth", items: [
     { href: "/admin/media", label: "Media", icon: ImageIcon },

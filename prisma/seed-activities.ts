@@ -1,4 +1,4 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, Prisma } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import pg from "pg";
 
@@ -26,6 +26,10 @@ interface SeedActivity {
   reviewCount: number;
   bestFor: string;
   description: string;
+  location?: string;
+  included?: string[];
+  notIncluded?: string[];
+  importantInfo?: string[];
 }
 
 const ACTIVITIES: Record<string, SeedActivity[]> = {
@@ -39,6 +43,17 @@ const ACTIVITIES: Record<string, SeedActivity[]> = {
       rating: 4.8,
       reviewCount: 1240,
       bestFor: "First-time visitors and art lovers",
+      location: "Louvre Museum, Paris",
+      included: [
+        "Skip-the-line entry to the Louvre",
+        "Certified guide",
+        "Guided visit to the Mona Lisa, Winged Victory of Samothrace and Venus de Milo",
+      ],
+      notIncluded: ["Transport to and from the museum", "Gratuities for your guide"],
+      importantInfo: [
+        "Arrive 15 minutes before the start time at the meeting point",
+        "Large bags and luggage are not allowed inside",
+      ],
       description:
         "Skip the famously long queues at the world's most-visited museum and let a certified guide steer you straight to the Mona Lisa, the Winged Victory of Samothrace and Venus de Milo — while sharing the stories behind works most visitors walk straight past. A relaxed morning route keeps it focused enough for travellers on the classic Paris-in-4-days itinerary.",
     },
@@ -51,6 +66,13 @@ const ACTIVITIES: Record<string, SeedActivity[]> = {
       rating: 4.9,
       reviewCount: 980,
       bestFor: "Couples and photographers",
+      location: "Eiffel Tower, Champ de Mars, Paris",
+      included: ["Priority-access elevator ticket to the summit", "Skipped standard queues", "Commentary from your guide"],
+      notIncluded: ["Food and drinks", "Gratuities"],
+      importantInfo: [
+        "Passport/ID required for the security check",
+        "Summit visit is subject to weather and closure at the operator's discretion",
+      ],
       description:
         "Bypass the standard queues and ride directly to the summit of the Eiffel Tower, where sweeping views across Paris make for the perfect golden-hour moment. Your guide points out the Trocadéro, the Louvre and Montmartre from above before leaving you to linger as long as you like.",
     },
@@ -63,6 +85,17 @@ const ACTIVITIES: Record<string, SeedActivity[]> = {
       rating: 4.7,
       reviewCount: 760,
       bestFor: "History buffs",
+      location: "Palace of Versailles, Versailles",
+      included: [
+        "Round-trip transport from Paris",
+        "Skip-the-line entry to the Palace and the Hall of Mirrors",
+        "Guided visit to the State Apartments",
+      ],
+      notIncluded: ["Entry to the Trianon estate and gardens events", "Lunch", "Gratuities"],
+      importantInfo: [
+        "A passport/ID may be required for entry",
+        "The Palace is closed on Mondays (the tour does not run that day)",
+      ],
       description:
         "Escape the city for the day with skip-the-line entry to the Palace of Versailles, the Hall of Mirrors and the sprawling gardens. Round-trip transport takes the stress out of the 30-minute journey, giving you more time to explore Marie Antoinette's estate on your own.",
     },
@@ -75,6 +108,13 @@ const ACTIVITIES: Record<string, SeedActivity[]> = {
       rating: 4.8,
       reviewCount: 650,
       bestFor: "Foodies and first-timers",
+      location: "Montmartre, Paris",
+      included: ["Food tastings (boulangerie, fromagerie, chocolate)", "Guided walk of Montmartre", "Tour of Sacré-Cœur area"],
+      notIncluded: ["Hotel pickup and drop-off", "Gratuities for your guide"],
+      importantInfo: [
+        "Bring comfortable shoes — Montmartre is hilly and cobbled",
+        "Let the operator know about allergies in advance; tastings cannot all be swapped",
+      ],
       description:
         "Wind through the cobbled lanes of Montmartre past Sacré-Cœur while stopping at family-run boulangeries, fromageries and chocolate shops the crowds rarely find. A live guide weaves together the artists' quarter's bohemian history with honest tastings — a perfect introduction to Parisian food without the tourist-trap prices.",
     },
@@ -87,6 +127,10 @@ const ACTIVITIES: Record<string, SeedActivity[]> = {
       rating: 4.6,
       reviewCount: 2100,
       bestFor: "Romantic evenings and families",
+      location: "Seine River, Paris",
+      included: ["Evening sightseeing cruise on the Seine", "Live commentary", "Views of the Louvre, Notre-Dame and the Eiffel Tower"],
+      notIncluded: ["Food and drinks (available onboard)", "Hotel pickup and drop-off"],
+      importantInfo: ["Boarding closes 15 minutes before departure", "Dress for the open-air deck in cooler months"],
       description:
         "Glide past the illuminated landmarks of the Seine — the Louvre, Notre-Dame and the Eiffel Tower — on a relaxed evening cruise with live commentary. A budget-friendly way to see the city sparkle after a big day of sightseeing.",
     },
@@ -101,6 +145,17 @@ const ACTIVITIES: Record<string, SeedActivity[]> = {
       rating: 4.9,
       reviewCount: 1560,
       bestFor: "History enthusiasts",
+      location: "Colosseum, Piazza del Colosseo, Rome",
+      included: [
+        "Skip-the-line entry to the Colosseum, Roman Forum and Palatine Hill",
+        "Access beneath the Colosseum floor",
+        "Live guide",
+      ],
+      notIncluded: ["Transport to the meeting point", "Gratuities for your guide"],
+      importantInfo: [
+        "Passport/ID is required for entry on all tickets",
+        "Dress code: no large bags, and sturdy shoes for the uneven ancient paving",
+      ],
       description:
         "Go beneath the Colosseum floor to the tunnels where gladiators waited, then walk the ruins of the Roman Forum and Palatine Hill with skip-the-line entry throughout. Your guide brings 2,000 years of history to life without the crowds, making it the anchor of any Rome itinerary.",
     },
@@ -113,6 +168,13 @@ const ACTIVITIES: Record<string, SeedActivity[]> = {
       rating: 4.8,
       reviewCount: 1100,
       bestFor: "Art lovers",
+      location: "Vatican Museums, Vatican City",
+      included: ["Skip-the-line entry to the Vatican Museums", "The Sistine Chapel and the Raphael Rooms", "Live guide"],
+      notIncluded: ["Transport to the meeting point", "Gratuities for your guide"],
+      importantInfo: [
+        "Strict dress code: shoulders and knees must be covered",
+        "Passport/ID required for entry",
+      ],
       description:
         "Walk straight past the queues into the Vatican Museums, taking in the Raphael Rooms and the spiral staircase before standing beneath Michelangelo's ceiling in the Sistine Chapel — all with a guide who knows exactly where to stop and when to move on during the busiest hours.",
     },
@@ -201,6 +263,13 @@ const ACTIVITIES: Record<string, SeedActivity[]> = {
       rating: 4.8,
       reviewCount: 890,
       bestFor: "Foodies",
+      location: "Tsukiji Outer Market, Tokyo",
+      included: ["Small-group guided walk of the market", "Food tastings (sushi, tamagoyaki, street snacks)", "Local guide"],
+      notIncluded: ["Hotel pickup and drop-off", "Meals beyond the tastings", "Gratuities"],
+      importantInfo: [
+        "Wear comfortable, non-slip shoes — the market floor is often wet",
+        "Be mindful of vendors: do not touch produce or block stalls",
+      ],
       description:
         "Weave through the bustling stalls of Tokyo's Tsukiji Outer Market on a small-group tour, tasting fresh sushi, tamagoyaki and street snacks while learning how to navigate the maze of vendors. The perfect fuel-up before tackling the rest of the city.",
     },
@@ -213,6 +282,13 @@ const ACTIVITIES: Record<string, SeedActivity[]> = {
       rating: 4.7,
       reviewCount: 610,
       bestFor: "City lovers and night owls",
+      location: "Shibuya & Shinjuku, Tokyo",
+      included: ["Shibuya Sky observation deck entry", "Guided walk through Shinjuku's Golden Gai", "Local guide"],
+      notIncluded: ["Food and drinks at the izakayas", "Hotel pickup and drop-off", "Gratuities"],
+      importantInfo: [
+        "The Shibuya Sky deck is outdoor — dress for the weather",
+        "The tour runs in the evening; please eat beforehand or be ready to pay for your own drinks",
+      ],
       description:
         "Watch Tokyo's neon skyline ignite from the open-air Shibuya Sky deck, then follow a local guide into hidden izakayas and the labyrinthine alleys of Shinjuku's Golden Gai. A fantastic intro to the city's electric nightlife.",
     },
@@ -342,6 +418,10 @@ async function main() {
             reviewCount: act.reviewCount,
             bestFor: act.bestFor,
             category: act.category,
+            location: act.location ?? null,
+            included: act.included ? act.included : Prisma.JsonNull,
+            notIncluded: act.notIncluded ? act.notIncluded : Prisma.JsonNull,
+            importantInfo: act.importantInfo ? act.importantInfo : Prisma.JsonNull,
             destinationId: dest.id,
             affiliateLinkId: gygLink?.id ?? null,
             isActive: true,
@@ -361,6 +441,10 @@ async function main() {
             reviewCount: act.reviewCount,
             bestFor: act.bestFor,
             category: act.category,
+            location: act.location ?? null,
+            included: act.included ? act.included : Prisma.JsonNull,
+            notIncluded: act.notIncluded ? act.notIncluded : Prisma.JsonNull,
+            importantInfo: act.importantInfo ? act.importantInfo : Prisma.JsonNull,
             destinationId: dest.id,
             affiliateLinkId: gygLink?.id ?? null,
             isActive: true,

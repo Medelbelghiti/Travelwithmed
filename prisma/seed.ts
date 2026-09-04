@@ -395,6 +395,123 @@ async function main() {
   }
   console.log(`eSIM articles: ${esimCount}`);
 
+  // ---------- Evergreen eSIM guides ----------
+  const esimEvergreen: {
+    title: string;
+    slug: string;
+    excerpt: string;
+    focusKeyword: string;
+    blocks: ContentBlock[];
+  }[] = [
+    {
+      title: "How to Activate a Travel eSIM: Step-by-Step",
+      slug: "how-to-activate-travel-esim",
+      excerpt: "The exact steps to install and activate a travel eSIM, and what to do if it does not connect on arrival.",
+      focusKeyword: "how to activate travel esim",
+      blocks: [
+        { type: "p", text: "Activation is the step most travellers overthink. In practice it is: check compatibility, buy a plan, install it, then tell your phone to use it for data. Here is the precise sequence." },
+        { type: "h2", text: "Before you fly" },
+        { type: "ol", items: [
+          "Check your phone is unlocked and eSIM-capable (Settings > Cellular > Add eSIM on iPhone; Settings > Connections > SIM manager on Android)",
+          "Buy a plan from your provider and receive the QR code or app profile",
+          "Install the eSIM profile — you do not need to activate it yet",
+        ] },
+        { type: "h2", text: "Activating on arrival" },
+        { type: "ol", items: [
+          "Turn on the travel eSIM line (Settings > Cellular, choose the travel line)",
+          "Set the travel line as the data source",
+          "If calls still need your home number, keep the home eSIM as primary for voice",
+          "Toggle airplane mode off/on once so the phone re-registers on the local network",
+        ] },
+        { type: "h2", text: "If it does not connect" },
+        { type: "ul", items: [
+          "Confirm your device is unlocked at the network level, not just carrier-settings unlocked",
+          "Check the plan actually covers the country you are in",
+          "Restart and re-select the travel line as the active data line",
+          "Contact your provider — most plans activate within minutes once data is visible",
+        ] },
+        { type: "cta", label: "Compare travel eSIM plans", category: Cat.ESIM, placement: "esim-activate" },
+        { type: "faq", items: [
+          { question: "Can I install an eSIM before I travel?", answer: "Yes — install the profile (the QR scan) before you fly. Activation happens when the eSIM first finds its home network on arrival." },
+          { question: "Do I need to remove my home SIM?", answer: "No. Most travellers keep both, setting the travel eSIM for data and the home line for calls." },
+        ] },
+      ],
+    },
+    {
+      title: "eSIM vs Regular SIM Card for Travel",
+      slug: "esim-vs-regular-sim-travel",
+      excerpt: "eSIM or a local physical SIM? We compare activation speed, cost, coverage and the one case where a physical SIM still wins.",
+      focusKeyword: "esim vs regular sim card",
+      blocks: [
+        { type: "p", text: "Both an eSIM and a local physical SIM get you cheap local data. The real differences are timing, convenience and how many countries you can cover in a single plan." },
+        { type: "h2", text: "Comparison" },
+        { type: "table", headers: ["Factor", "Local physical SIM", "Travel eSIM"], rows: [
+          ["Setup time", "Queue at the airport counter", "Scan before you fly"],
+          ["Keeps your home number", "Usually not", "Yes — run both lines"],
+          ["Multiple countries", "One SIM per country", "One plan, many countries"],
+          ["Requires", "A SIM tray and a passport copy", "An eSIM-capable phone"],
+        ] },
+        { type: "h2", text: "When a physical SIM still wins" },
+        { type: "ul", items: [
+          "Your phone is not eSIM-capable or is carrier-locked",
+          "You are staying in one country for weeks and want the cheapest possible data",
+          "You prefer paying cash at a local shop over online checkout",
+        ] },
+        { type: "h2", text: "Verdict" },
+        { type: "p", text: "For most trips now, an eSIM is the simpler choice: no queues, no passport copies, and you keep your number. Pick a physical SIM mainly if your phone simply will not take an eSIM or you need long, single-country data at the very lowest price." },
+        { type: "cta", label: "Compare eSIM plans", category: Cat.ESIM, placement: "esim-vs-sim" },
+        { type: "faq", items: [
+          { question: "Which is cheaper, eSIM or local SIM?", answer: "For a multi-country trip an eSIM is often cheaper because one plan covers everything. For a long single-country stay, a local physical SIM can edge it on price." },
+        ] },
+      ],
+    },
+    {
+      title: "Travel eSIM Data Calculator: How Much Mobile Data You Need",
+      slug: "travel-esim-data-calculator",
+      excerpt: "Estimate your daily mobile usage and choose the right eSIM data allowance for maps, messaging, social and streaming.",
+      focusKeyword: "travel esim data calculator",
+      blocks: [
+        { type: "p", text: "The biggest eSIM mistake is buying far too little data — or paying for far too much. This guide gives realistic daily ranges so you can pick the right allowance." },
+        { type: "h2", text: "Rough daily usage" },
+        { type: "table", headers: ["Usage", "Per day", "Notes"], rows: [
+          ["Light (maps + messaging)", "~200-300 MB", "Offline maps help a lot"],
+          ["Typical (maps, social, bites of video)", "~500 MB - 1 GB", "Most travellers land here"],
+          ["Heavy (streaming, uploads)", "~2 GB+", "Streaming is the data killer"],
+        ] },
+        { type: "h2", text: "Your quick estimate" },
+        { type: "ul", items: [
+          "Estimate your daily usage from the table above",
+          "Multiply by the number of days you need data",
+          "Add 20-30% buffer for airport uploads, cab apps and emergencies",
+          "Round up to the nearest plan size your provider offers",
+        ] },
+        { type: "h2", text: "Cutting your usage" },
+        { type: "ul", items: [
+          "Download offline maps (Google Maps / Google Translate) before you leave",
+          "Set social apps to 'download only on Wi-Fi'",
+          "Pre-download podcasts and playlists instead of streaming",
+        ] },
+        { type: "cta", label: "Find the right eSIM data plan", category: Cat.ESIM, placement: "esim-data-calculator" },
+        { type: "faq", items: [
+          { question: "Is 1 GB a day enough for a week?", answer: "For a typical traveller, yes — roughly 7 GB covers a week of maps, messaging and social. Streamers will want more." },
+        ] },
+      ],
+    },
+  ];
+  for (const g of esimEvergreen) {
+    await upsertArticle({
+      title: g.title,
+      slug: g.slug,
+      excerpt: g.excerpt,
+      type: "TRAVEL_TIPS",
+      destinationId: null,
+      focusKeyword: g.focusKeyword,
+      categorySlugs: ["travel-tips"],
+      blocks: g.blocks,
+    }, categoryIds);
+  }
+  console.log(`Evergreen eSIM guides: ${esimEvergreen.length}`);
+
   console.log("Seed complete.");
 }
 
@@ -404,7 +521,7 @@ async function upsertArticle(
     slug: string;
     excerpt: string;
     type: string;
-    destinationId: string;
+    destinationId: string | null;
     focusKeyword: string;
     categorySlugs: string[];
     blocks: ContentBlock[];
@@ -419,7 +536,7 @@ async function upsertArticle(
     title: input.title,
     excerpt: input.excerpt,
     content: JSON.stringify(input.blocks),
-    type: input.type as "DESTINATION_GUIDE",
+    type: input.type as "DESTINATION_GUIDE" | "TRAVEL_TIPS",
     status: "PUBLISHED" as const,
     publishedAt: new Date(),
     focusKeyword: input.focusKeyword,

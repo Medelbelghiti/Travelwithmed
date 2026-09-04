@@ -1,11 +1,13 @@
 import { CategoryListing } from "@/components/category-listing";
 import { Breadcrumbs, buildCrumbs } from "@/components/ui/breadcrumbs";
+import { buildMetadata } from "@/lib/seo";
 
-export const metadata = {
+export const metadata = buildMetadata({
   title: "Flights",
   description:
     "Smart flight tips, route guides and the best ways to find cheap flights for your next trip.",
-};
+  canonicalPath: "/flights",
+});
 
 export const dynamic = "force-dynamic";
 

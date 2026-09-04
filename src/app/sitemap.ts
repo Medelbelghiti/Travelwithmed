@@ -5,96 +5,116 @@ import { isShopEnabled } from "@/lib/fourthwall";
 
 export const dynamic = "force-dynamic";
 
+type PathEntry = { path: string; lastModified?: Date };
+
+const firstDefined = (...values: (Date | null | undefined)[]): Date | undefined =>
+  values.find((v): v is Date => v instanceof Date);
+
 async function collectPaths() {
   const [destinations, articles, itineraries, hotels, activities] = await Promise.all([
-    prisma.destination.findMany({ where: { isActive: true }, select: { slug: true } }),
-    prisma.article.findMany({ where: { status: "PUBLISHED", allowIndexing: true }, select: { slug: true } }),
-    prisma.itinerary.findMany({ where: { isActive: true }, select: { slug: true } }),
-    prisma.hotel.findMany({ where: { isActive: true }, select: { slug: true } }),
-    prisma.activity.findMany({ where: { isActive: true }, select: { slug: true } }),
+    prisma.destination.findMany({
+      where: { isActive: true },
+      select: { slug: true, updatedAt: true },
+    }),
+    prisma.article.findMany({
+      where: { status: "PUBLISHED", allowIndexing: true },
+      select: { slug: true, updatedAt: true, updatedDate: true, publishedAt: true },
+    }),
+    prisma.itinerary.findMany({
+      where: { isActive: true },
+      select: { slug: true, updatedAt: true, publishedAt: true },
+    }),
+    prisma.hotel.findMany({
+      where: { isActive: true },
+      select: { slug: true, updatedAt: true },
+    }),
+    prisma.activity.findMany({
+      where: { isActive: true },
+      select: { slug: true, updatedAt: true },
+    }),
   ]);
 
-  const staticPaths = [
-    "",
-    "/destinations",
-    "/guides",
-    "/itineraries",
-    "/deals",
-    "/free-guides",
-    "/hotels",
-    "/flights",
-    "/activities",
-    "/travel-gear",
-    "/travel-tips",
-    "/resources",
-    "/resources/esim",
-    "/resources/travel-insurance",
-    "/resources/visas",
-    "/resources/car-rental",
-    "/budget-calculator",
-    "/trip-planner",
-    "/about",
-    "/contact",
-    "/editorial-policy",
-    "/affiliate-disclosure",
-    "/privacy-policy",
-    "/terms",
-    "/cookie-policy",
+  // Static paths: indexable canonical URLs only.
+  // Excluded (deliberately not indexed / not useful in the sitemap):
+  //   /search (query params), /trip (personal), /printables/* (noindex),
+  //   /admin/* and /api/* (auth, disallowed in robots.txt), /out/* (redirect tracker).
+  const staticPaths: PathEntry[] = [
+    { path: "" },
+    { path: "/destinations" },
+    { path: "/guides" },
+    { path: "/itineraries" },
+    { path: "/deals" },
+    { path: "/free-guides" },
+    { path: "/hotels" },
+    { path: "/flights" },
+    { path: "/activities" },
+    { path: "/travel-gear" },
+    { path: "/travel-tips" },
+    { path: "/resources" },
+    { path: "/resources/esim" },
+    { path: "/resources/travel-insurance" },
+    { path: "/resources/visas" },
+    { path: "/resources/car-rental" },
+    { path: "/budget-calculator" },
+    { path: "/trip-planner" },
+    { path: "/about" },
+    { path: "/contact" },
+    { path: "/editorial-policy" },
+    { path: "/affiliate-disclosure" },
+    { path: "/privacy-policy" },
+    { path: "/terms" },
+    { path: "/cookie-policy" },
   ];
-  if (isShopEnabled()) staticPaths.push("/shop");
-  const staticPaths2 = staticPaths.map((p) => ({ path: p, lastModified: undefined as undefined }));
+  if (isShopEnabled()) staticPaths.push({ path: "/shop" });
 
   return {
-    destinations: destinations.map((d) => ({ path: `/destinations/${d.slug}`, lastModified: undefined as Date | undefined })),
-    articles: articles.map((a) => ({ path: `/articles/${a.slug}` })),
-    itineraries: itineraries.map((i) => ({ path: `/itineraries/${i.slug}` })),
-    hotels: hotels.map((h) => ({ path: `/hotels/${h.slug}`, lastModified: undefined as Date | undefined })),
-    activities: activities.map((a) => ({ path: `/activities/${a.slug}`, lastModified: undefined as Date | undefined })),
-    staticPaths2,
+    destinations: destinations.map((d): PathEntry => ({
+      path: `/destinations/${d.slug}`,
+      lastModified: d.updatedAt,
+    })),
+    articles: articles.map((a): PathEntry => ({
+      path: `/articles/${a.slug}`,
+      lastModified: firstDefined(a.updatedAt, a.updatedDate, a.publishedAt),
+    })),
+    itineraries: itineraries.map((i): PathEntry => ({
+      path: `/itineraries/${i.slug}`,
+      lastModified: firstDefined(i.updatedAt, i.publishedAt),
+    })),
+    hotels: hotels.map((h): PathEntry => ({
+      path: `/hotels/${h.slug}`,
+      lastModified: h.updatedAt,
+    })),
+    activities: activities.map((a): PathEntry => ({
+      path: `/activities/${a.slug}`,
+      lastModified: a.updatedAt,
+    })),
+    staticPaths,
   };
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const { destinations, articles, itineraries, hotels, activities, staticPaths2 } = await collectPaths();
+  const { destinations, articles, itineraries, hotels, activities, staticPaths } = await collectPaths();
 
-  const all = [
-    ...staticPaths2.map((s) => ({
-      url: `${siteConfig.url}${s.path}`,
-      lastModified: new Date(),
-      changeFrequency: "daily" as const,
-      priority: s.path === "" ? 1 : 0.8,
-    })),
-    ...destinations.map((d) => ({
-      url: `${siteConfig.url}${d.path}`,
-      lastModified: d.lastModified ?? new Date(),
-      changeFrequency: "weekly" as const,
-      priority: 0.9,
-    })),
-    ...articles.map((a) => ({
-      url: `${siteConfig.url}${a.path}`,
-      lastModified: new Date(),
-      changeFrequency: "weekly" as const,
-      priority: 0.7,
-    })),
-    ...itineraries.map((i) => ({
-      url: `${siteConfig.url}${i.path}`,
-      lastModified: new Date(),
-      changeFrequency: "weekly" as const,
-      priority: 0.7,
-    })),
-    ...hotels.map((h) => ({
-      url: `${siteConfig.url}${h.path}`,
-      lastModified: h.lastModified ?? new Date(),
-      changeFrequency: "weekly" as const,
-      priority: 0.7,
-    })),
-    ...activities.map((a) => ({
-      url: `${siteConfig.url}${a.path}`,
-      lastModified: new Date(),
-      changeFrequency: "weekly" as const,
-      priority: 0.7,
-    })),
+  const staticEntries = staticPaths.map((s): MetadataRoute.Sitemap[number] => ({
+    url: `${siteConfig.url}${s.path}`,
+    changeFrequency: "yearly",
+    priority: s.path === "" ? 1 : s.path === "/destinations" ? 0.9 : 0.7,
+  }));
+
+  const dynamicEntries = (entries: PathEntry[], priority: number): MetadataRoute.Sitemap[number][] =>
+    entries.map((e) => ({
+      url: `${siteConfig.url}${e.path}`,
+      lastModified: e.lastModified,
+      changeFrequency: "weekly",
+      priority,
+    }));
+
+  return [
+    ...staticEntries,
+    ...dynamicEntries(destinations, 0.9),
+    ...dynamicEntries(articles, 0.7),
+    ...dynamicEntries(itineraries, 0.7),
+    ...dynamicEntries(hotels, 0.7),
+    ...dynamicEntries(activities, 0.7),
   ];
-
-  return all as MetadataRoute.Sitemap;
 }

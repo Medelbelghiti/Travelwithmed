@@ -1,11 +1,13 @@
 ﻿import { CategoryListing } from "@/components/category-listing";
 import { Breadcrumbs, buildCrumbs } from "@/components/ui/breadcrumbs";
+import { buildMetadata } from "@/lib/seo";
 
-export const metadata = {
+export const metadata = buildMetadata({
   title: "Travel Guides",
   description:
     "In-depth travel guides covering destinations, hotels, itineraries, travel gear and practical advice — from the Riversmag editorial team.",
-};
+  canonicalPath: "/guides",
+});
 
 export const dynamic = "force-dynamic";
 

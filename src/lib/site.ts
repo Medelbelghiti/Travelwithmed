@@ -17,6 +17,19 @@ export const siteConfig = {
     "luxury travel",
   ],
   contactEmail: "hello@riversmag.com",
+  newsletter: {
+    eyebrow: "The Riversmag newsletter",
+    title: "Plan smarter, travel better",
+    description:
+      "One useful email a week with practical travel tips, refreshed destination guides and editor-picked deals — researched by real travellers, never spam.",
+    benefits: [
+      "Practical travel tips & packing hacks",
+      "Refreshed destination guides & itineraries",
+      "Editor-picked travel deals, no junk",
+    ],
+    cta: "Get smarter travel tips",
+    success: "Welcome to smarter travel — talk soon!",
+  },
   socials: {
     instagram: "https://instagram.com/riversmag",
     pinterest: "https://pinterest.com/riversmag",
@@ -58,7 +71,7 @@ export const siteConfig = {
       ],
       resources: [
         { label: "Travel Gear", href: "/travel-gear" },
-        { label: "Packing", href: "/travel-tips/packing" },
+        { label: "Travel Tips", href: "/travel-tips" },
         { label: "Travel Budget", href: "/budget-calculator" },
         { label: "Visa Information", href: "/resources/visas" },
       ],

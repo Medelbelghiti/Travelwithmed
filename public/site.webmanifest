@@ -1,0 +1,16 @@
+{
+  "name": "Riversmag — Travel Guides, Itineraries & Smart Travel Recommendations",
+  "short_name": "Riversmag",
+  "description": "Discover destinations, plan unforgettable trips, compare hotels and activities, and find smart travel recommendations with Riversmag.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0910",
+  "theme_color": "#0a0910",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "48x48",
+      "type": "image/x-icon"
+    }
+  ]
+}

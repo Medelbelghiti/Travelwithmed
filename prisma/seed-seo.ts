@@ -23,6 +23,11 @@ const PHOTOS: Record<string, string> = {
   seoul:"https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?auto=format&fit=crop&w=1920&q=90",
 };
 
+function upgradePhoto(url: string | undefined): string {
+  if (!url) return `https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=1920&q=90`;
+  return url.replace(/w=\d+/, "w=1920").replace(/q=\d+/, "q=90");
+}
+
 const SEO_TITLES: Record<string, string> = {
   paris:"Paris Travel Guide | France — Riversmag",
   tokyo:"Tokyo Travel Guide | Japan — Riversmag",

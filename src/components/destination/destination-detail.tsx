@@ -20,7 +20,7 @@ import { AffiliateButton } from "@/components/affiliate/affiliate-button";
 import { AffiliateDisclosure } from "@/components/affiliate/disclosure";
 import { NewsletterCta } from "@/components/newsletter-cta";
 import { prisma } from "@/lib/prisma";
-import { breadcrumbSchema, faqSchema, touristAttractionSchema } from "@/lib/seo";
+import { faqSchema, touristDestinationSchema } from "@/lib/seo";
 import { absoluteUrl } from "@/lib/utils";
 
 type DestinationWithRelations = Prisma.DestinationGetPayload<{
@@ -86,31 +86,23 @@ export async function DestinationDetail({ destination }: DestinationDetailProps)
     { key: "esimInfo", label: "Internet & eSIM", icon: Signal, content: destination.esimInfo },
   ];
 
-  const jsonLd: Record<string, unknown>[] = [
-    breadcrumbSchema(
-      crumbItems.map((c) => ({ name: c.name, url: c.href })),
-    ),
-  ];
+  const jsonLd: Record<string, unknown>[] = [];
   if (destination.faqItems.length > 0) {
     jsonLd.push(faqSchema(destination.faqItems.map((f) => ({ question: f.question, answer: f.answer }))));
   }
-  jsonLd.push(touristAttractionSchema({ name: destination.name, description: destination.tagline ?? destination.overview ?? `Discover ${destination.name} with Riversmag's guide`, url: absoluteUrl(`/destinations/${destination.slug}`), image: destination.coverImage ?? undefined }));
+  jsonLd.push(
+    touristDestinationSchema({
+      name: destination.name,
+      description: destination.tagline ?? destination.overview ?? `Discover ${destination.name} with Riversmag's guide`,
+      url: absoluteUrl(`/destinations/${destination.slug}`),
+      image: destination.coverImage ?? undefined,
+      includesAttractionNames: destination.activities.slice(0, 4).map((a) => a.name),
+    }),
+  );
 
   return (
     <main>
       <JsonLdBreadcrumbs items={crumbItems} />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": destination.type === "CITY" ? "City" : destination.type === "COUNTRY" ? "Country" : "Place",
-            name: destination.name,
-            description: destination.tagline ?? undefined,
-            url: absoluteUrl(`/destinations/${destination.slug}`),
-          }),
-        }}
-      />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
 
       <div className="relative overflow-hidden bg-brand-dark">
@@ -162,7 +154,7 @@ export async function DestinationDetail({ destination }: DestinationDetailProps)
 
         {/* Hotels */}
         {destination.hotels.length > 0 && (
-          <section className="mb-14">
+          <section id="hotels" className="mb-14 scroll-mt-24">
             <SectionHeading
               eyebrow="Where to stay"
               title={`Top hotels in ${destination.name}`}
@@ -195,7 +187,7 @@ export async function DestinationDetail({ destination }: DestinationDetailProps)
 
         {/* Activities */}
         {destination.activities.length > 0 && (
-          <section className="mb-14">
+          <section id="things-to-do" className="mb-14 scroll-mt-24">
             <SectionHeading
               eyebrow="Things to do"
               title={`Best experiences in ${destination.name}`}
@@ -224,7 +216,7 @@ export async function DestinationDetail({ destination }: DestinationDetailProps)
 
         {/* Itineraries */}
         {destination.itineraries.length > 0 && (
-          <section className="mb-14">
+          <section id="itineraries" className="mb-14 scroll-mt-24">
             <SectionHeading eyebrow="Day by day" title={`Suggested itineraries`} />
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {destination.itineraries.map((it) => (
@@ -311,18 +303,18 @@ export async function DestinationDetail({ destination }: DestinationDetailProps)
         )}
 
         {/* Cross-category CTAs */}
-        <section className="mb-10">
+        <section id="planning" className="mb-10 scroll-mt-24">
           <div className="rounded-3xl bg-sand p-8">
             <h2 className="text-2xl">Plan the practical stuff</h2>
             <p className="mt-2 text-ink-soft">Get everything sorted in a few clicks.</p>
             <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {[
-                { link: categoryLinks.flights, label: "Check flight prices", icon: Plane },
-                { link: categoryLinks.insurance, label: "Get travel insurance", icon: ShieldCheck },
-                { link: categoryLinks.esim, label: "Get an eSIM", icon: Signal },
-                { link: categoryLinks.carRental, label: "Compare car rentals", icon: Car },
-                { link: categoryLinks.transfers, label: "Book airport transfer", icon: Train },
-                { link: categoryLinks.activities, label: "Browse all tours", icon: Ticket },
+                { link: categoryLinks.flights, label: "Check flight prices", icon: Plane, category: "FLIGHTS" },
+                { link: categoryLinks.insurance, label: "Get travel insurance", icon: ShieldCheck, category: "INSURANCE" },
+                { link: categoryLinks.esim, label: "Get an eSIM", icon: Signal, category: "ESIM" },
+                { link: categoryLinks.carRental, label: "Compare car rentals", icon: Car, category: "CAR_RENTAL" },
+                { link: categoryLinks.transfers, label: "Book airport transfer", icon: Train, category: "AIRPORT_TRANSFERS" },
+                { link: categoryLinks.activities, label: "Browse all tours", icon: Ticket, category: "ACTIVITIES" },
               ]
                 .filter((c) => c.link)
                 .map((c) => {
@@ -333,7 +325,15 @@ export async function DestinationDetail({ destination }: DestinationDetailProps)
                         <Icon className="h-5 w-5 text-brand" aria-hidden />
                         <span className="font-medium text-ink">{c.label}</span>
                       </div>
-                      <AffiliateButton linkId={c.link!.id} label="View" size="sm" variant="outline" placement={destination.slug} />
+                      <AffiliateButton
+                        linkId={c.link!.id}
+                        label="View"
+                        size="sm"
+                        variant="outline"
+                        placement={destination.slug}
+                        category={c.category}
+                        destination={destination.name}
+                      />
                     </div>
                   );
                 })}

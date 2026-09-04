@@ -1,27 +1,12 @@
 import { notFound } from "next/navigation";
-import Image from "next/image";
-import Link from "next/link";
-import {
-  MapPin,
-  Star,
-  Ticket,
-  ArrowRight,
-  Users,
-  Check,
-  Clock3,
-  ThumbsUp,
-  BadgeCheck,
-} from "lucide-react";
+import { MapPin, Star } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { buildMetadata } from "@/lib/seo";
 import { Breadcrumbs, buildCrumbs, JsonLdBreadcrumbs } from "@/components/ui/breadcrumbs";
-import { SectionHeading } from "@/components/ui/card";
 import { AffiliateButton } from "@/components/affiliate/affiliate-button";
-import { AffiliateDisclosure } from "@/components/affiliate/disclosure";
-import { NewsletterCta } from "@/components/newsletter-cta";
-import { ActivityCard } from "@/components/affiliate/activity-card";
 import { AddToTrip } from "@/components/trip/add-to-trip";
-import { ReviewsSection } from "@/components/reviews/reviews-section";
+import { ActivityDetails } from "@/components/affiliate/activity-details";
+import { NewsletterCta } from "@/components/newsletter-cta";
 import { absoluteUrl } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
@@ -57,13 +42,12 @@ export default async function ActivityPage({ params }: ActivityPageProps) {
       destination: { select: { id: true, name: true, slug: true, tagline: true } },
       affiliateLinks: { where: { active: true } },
       reviews: { orderBy: { createdAt: "desc" } },
-      media: true,
     },
   });
 
   if (!activity || !activity.isActive) notFound();
 
-  const affLink = activity.affiliateLinks[0];
+  const affLink = activity.affiliateLinks[0] ?? (activity.affiliateLinkId ? await prisma.affiliateLink.findUnique({ where: { id: activity.affiliateLinkId } }) : null);
   const destinationRef = activity.destination;
 
   const crumbItems = buildCrumbs([
@@ -72,16 +56,45 @@ export default async function ActivityPage({ params }: ActivityPageProps) {
     { name: activity.name, href: `/activities/${activity.slug}` },
   ]);
 
-  const similar = destinationRef
-    ? await prisma.activity.findMany({
+  // Related data — all derived from the destination, never invented.
+  const alternativePromise = destinationRef
+    ? prisma.activity.findMany({
         where: { isActive: true, destinationId: destinationRef.id, id: { not: activity.id } },
-        include: {
-          affiliateLinks: { where: { active: true } },
-          destination: { select: { name: true } },
-        },
+        include: { affiliateLinks: { where: { active: true }, take: 1 } },
+        take: 6,
+      })
+    : Promise.resolve([]);
+
+  const hotelsPromise = destinationRef
+    ? prisma.hotel.findMany({
+        where: { isActive: true, destinationId: destinationRef.id },
+        include: { affiliateLinks: { where: { active: true }, take: 1 } },
         take: 3,
       })
-    : [];
+    : Promise.resolve([]);
+
+  const itinerariesPromise = destinationRef
+    ? prisma.itinerary.findMany({
+        where: { isActive: true, destinationId: destinationRef.id },
+        take: 3,
+      })
+    : Promise.resolve([]);
+
+  const destinationGuidesPromise = destinationRef
+    ? prisma.article.findMany({
+        where: { status: "PUBLISHED", destinationId: destinationRef.id },
+        include: { author: true },
+        orderBy: { publishedAt: "desc" },
+        take: 6,
+      })
+    : Promise.resolve([]);
+
+  const [alternatives, hotels, itineraries, destinationGuides] = await Promise.all([
+    alternativePromise,
+    hotelsPromise,
+    itinerariesPromise,
+    destinationGuidesPromise,
+  ]);
 
   const totalReviews = activity.reviewCount ?? activity.reviews.length;
   const tripItem = {
@@ -97,11 +110,11 @@ export default async function ActivityPage({ params }: ActivityPageProps) {
   };
 
   const quickFacts = [
-    { icon: Clock3, label: "Duration", value: activity.duration ?? "Flexible" },
-    { icon: MapPin, label: "Where", value: destinationRef?.name ?? "Various locations" },
-    { icon: Ticket, label: "From", value: activity.priceRange ?? "Price on request" },
-    { icon: Star, label: "Rating", value: activity.rating != null ? `${activity.rating.toFixed(1)} / 5` : "New" },
-    { icon: Users, label: "Reviews", value: totalReviews != null ? `${totalReviews} reviews` : "Be the first" },
+    { label: "Duration", value: activity.duration ?? "Flexible" },
+    { label: "Location", value: activity.location ?? destinationRef?.name ?? "Various locations" },
+    { label: "From", value: activity.priceRange ?? "Price on request" },
+    { label: "Rating", value: activity.rating != null ? `${activity.rating.toFixed(1)} / 5` : "New" },
+    { label: "Reviews", value: totalReviews != null ? `${totalReviews} reviews` : "Be the first" },
   ];
 
   return (
@@ -149,15 +162,9 @@ export default async function ActivityPage({ params }: ActivityPageProps) {
               {destinationRef.name}
             </p>
           )}
-          {activity.bestFor && (
-            <p className="mt-3 flex items-center gap-2 text-white/70">
-              <ThumbsUp className="h-4 w-4 text-accent" aria-hidden />
-              Best for: {activity.bestFor}
-            </p>
-          )}
           <div className="mt-6 flex flex-wrap items-center gap-3">
             {affLink && (
-              <AffiliateButton linkId={affLink.id} label={`Book ${activity.name}`} placement={`activity-${activity.slug}`} />
+              <AffiliateButton linkId={affLink.id} label={`Book ${activity.name}`} placement={`activity-${activity.slug}`} category="ACTIVITIES" destination={destinationRef?.name ?? undefined} />
             )}
             <AddToTrip item={tripItem} />
           </div>
@@ -167,166 +174,90 @@ export default async function ActivityPage({ params }: ActivityPageProps) {
       {/* Quick facts strip */}
       <div className="border-b border-line bg-white">
         <div className="container-x grid grid-cols-2 gap-px sm:grid-cols-3 lg:grid-cols-5">
-          {quickFacts.map((f) => {
-            const Icon = f.icon;
-            return (
-              <div key={f.label} className="flex items-center gap-3 py-5">
-                <Icon className="h-5 w-5 shrink-0 text-brand" aria-hidden />
-                <div>
-                  <p className="text-xs uppercase tracking-wide text-ink-muted">{f.label}</p>
-                  <p className="text-sm font-semibold text-ink">{f.value}</p>
-                </div>
-              </div>
-            );
-          })}
+          {quickFacts.map((f) => (
+            <div key={f.label} className="py-5">
+              <p className="text-xs uppercase tracking-wide text-ink-muted">{f.label}</p>
+              <p className="text-sm font-semibold text-ink">{f.value}</p>
+            </div>
+          ))}
         </div>
       </div>
 
-      <div className="container-x py-12">
-        <div className="grid gap-12 lg:grid-cols-[1fr_320px]">
-          <div className="min-w-0">
-            {/* Feature image */}
-            {activity.image && (
-              <div className="relative aspect-video overflow-hidden rounded-3xl">
-                <Image src={activity.image} alt={activity.name} fill sizes="(max-width: 1024px) 100vw, 800px" priority className="object-cover" />
-              </div>
-            )}
+      <ActivityDetails
+        activity={{
+          id: activity.id,
+          name: activity.name,
+          slug: activity.slug,
+          description: activity.description,
+          duration: activity.duration,
+          priceRange: activity.priceRange,
+          rating: activity.rating,
+          reviewCount: activity.reviewCount,
+          category: activity.category,
+          bestFor: activity.bestFor,
+          location: activity.location,
+          image: activity.image,
+          included: (activity.included as string[] | null) ?? null,
+          notIncluded: (activity.notIncluded as string[] | null) ?? null,
+          importantInfo: (activity.importantInfo as string[] | null) ?? null,
+          affiliateLinkId: affLink?.id ?? null,
+          destination: destinationRef
+            ? { id: destinationRef.id, name: destinationRef.name, slug: destinationRef.slug }
+            : null,
+        }}
+        alternatives={alternatives.map((a) => ({
+          id: a.id,
+          name: a.name,
+          slug: a.slug,
+          description: a.description,
+          duration: a.duration,
+          priceRange: a.priceRange,
+          rating: a.rating,
+          category: a.category,
+          destination: destinationRef
+            ? { id: destinationRef.id, name: destinationRef.name, slug: destinationRef.slug }
+            : null,
+          affiliateLinkId: a.affiliateLinks[0]?.id ?? null,
+        }))}
+        hotels={hotels.map((h) => ({
+          id: h.id,
+          name: h.name,
+          image: h.image,
+          city: h.city,
+          country: h.country,
+          guestRating: h.guestRating,
+          priceRange: h.priceRange,
+          bestFor: h.bestFor,
+          affiliateLinkId: h.affiliateLinks[0]?.id ?? null,
+        }))}
+        itineraries={itineraries.map((it) => ({
+          id: it.id,
+          title: it.title,
+          slug: it.slug,
+          summary: it.summary,
+          days: it.days,
+        }))}
+        destinationGuides={destinationGuides.map((a) => ({
+          id: a.id,
+          title: a.title,
+          slug: a.slug,
+          type: a.type,
+          excerpt: a.excerpt,
+          coverImage: a.coverImage,
+          publishedAt: a.publishedAt,
+          authorName: a.author?.name ?? null,
+        }))}
+        reviews={activity.reviews.map((r) => ({
+          id: r.id,
+          title: r.title,
+          content: r.content,
+          rating: r.rating,
+          author: r.author,
+          createdAt: r.createdAt,
+        }))}
+      />
 
-            {/* Overview */}
-            {activity.description && (
-              <section className="mt-10">
-                <h2 className="text-3xl">What to expect</h2>
-                <p className="mt-4 text-lg leading-relaxed text-ink-soft">{activity.description}</p>
-                <div className="mt-6">
-                  <AffiliateDisclosure short />
-                </div>
-              </section>
-            )}
-
-            {/* What's included hints */}
-            <section className="mt-10">
-              <h2 className="text-3xl">Good to know</h2>
-              <div className="mt-5 grid gap-3 sm:grid-cols-2">
-                {activity.bestFor && (
-                  <div className="flex items-start gap-3 rounded-xl border border-line bg-white p-4 shadow-sm">
-                    <BadgeCheck className="mt-0.5 h-5 w-5 shrink-0 text-brand" aria-hidden />
-                    <div>
-                      <p className="text-sm font-semibold text-ink">Who it&apos;s for</p>
-                      <p className="mt-0.5 text-sm text-ink-soft">{activity.bestFor}</p>
-                    </div>
-                  </div>
-                )}
-                <div className="flex items-start gap-3 rounded-xl border border-line bg-white p-4 shadow-sm">
-                  <Check className="mt-0.5 h-5 w-5 shrink-0 text-brand" aria-hidden />
-                  <div>
-                    <p className="text-sm font-semibold text-ink">Booking tip</p>
-                    <p className="mt-0.5 text-sm text-ink-soft">
-                      Popular slots fill up quickly — book in advance to lock in the best price and time.
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3 rounded-xl border border-line bg-white p-4 shadow-sm">
-                  <Clock3 className="mt-0.5 h-5 w-5 shrink-0 text-brand" aria-hidden />
-                  <div>
-                    <p className="text-sm font-semibold text-ink">Time needed</p>
-                    <p className="mt-0.5 text-sm text-ink-soft">
-                      Plan around {activity.duration?.toLowerCase() ?? "your schedule"}. Great for combining with nearby attractions.
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3 rounded-xl border border-line bg-white p-4 shadow-sm">
-                  <ThumbsUp className="mt-0.5 h-5 w-5 shrink-0 text-brand" aria-hidden />
-                  <div>
-                    <p className="text-sm font-semibold text-ink">Save to trip</p>
-                    <p className="mt-0.5 text-sm text-ink-soft">
-                      Tap <span className="font-semibold">Add to trip</span> to shortlist this experience while you plan.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </section>
-
-            {/* Reviews */}
-            <section className="mt-14">
-              <SectionHeading eyebrow="Traveller feedback" title={totalReviews != null && totalReviews > 0 ? `What travellers say` : "Reviews"} />
-              <div className="mt-6">
-                <ReviewsSection activityId={activity.id} seed={activity.reviews} />
-              </div>
-            </section>
-          </div>
-
-          {/* Sidebar */}
-          <aside>
-            <div className="sticky top-24 space-y-6">
-              <div className="rounded-2xl bg-brand-dark p-6 text-white">
-                <h3 className="flex items-center gap-2">
-                  <Ticket className="h-5 w-5 text-accent" aria-hidden />
-                  Book in advance
-                </h3>
-                <p className="mt-2 text-sm text-white/70">
-                  Popular tours sell out and prices rise closer to the date. Secure the best rate and skip queues.
-                </p>
-                {affLink && (
-                  <div className="mt-5">
-                    <AffiliateButton linkId={affLink.id} label="See available tours" placement={`activity-${activity.slug}-sidebar`} />
-                  </div>
-                )}
-                {activity.priceRange && (
-                  <p className="mt-4 text-sm text-white/70">
-                    From around <span className="font-semibold text-white">{activity.priceRange}</span> per person
-                  </p>
-                )}
-              </div>
-
-              <div className="rounded-2xl border border-line bg-white p-5 shadow-sm">
-                <AddToTrip item={tripItem} />
-                <p className="mt-3 text-xs text-ink-muted">
-                  Saved to your trip dashboard on this device.
-                </p>
-              </div>
-
-              {destinationRef && (
-                <Link
-                  href={`/destinations/${destinationRef.slug}`}
-                  className="group flex items-center justify-between rounded-2xl border border-line bg-white p-5 shadow-sm transition-colors hover:border-brand"
-                >
-                  <div>
-                    <p className="text-xs uppercase tracking-wider text-ink-muted">Explore</p>
-                    <p className="font-serif text-lg font-semibold text-ink group-hover:text-brand">{destinationRef.name}</p>
-                  </div>
-                  <ArrowRight className="h-5 w-5 text-brand" aria-hidden />
-                </Link>
-              )}
-            </div>
-          </aside>
-        </div>
-
-        {similar.length > 0 && (
-          <section className="mt-16">
-            <SectionHeading eyebrow="More to do" title={`More experiences in ${destinationRef?.name ?? "the area"}`} />
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {similar.map((a) => (
-                <ActivityCard
-                  key={a.id}
-                  activity={{
-                    id: a.id,
-                    name: a.name,
-                    image: a.image,
-                    description: a.description,
-                    duration: a.duration,
-                    priceRange: a.priceRange,
-                    rating: a.rating,
-                    category: a.category,
-                    destinationName: a.destination?.name ?? null,
-                    affiliateLinkId: a.affiliateLinks[0]?.id ?? null,
-                  }}
-                  linked
-                />
-              ))}
-            </div>
-          </section>
-        )}
-
+      <div className="container-x pb-12">
         <NewsletterCta
           title={`Travelling to ${destinationRef?.name ?? "a new place"}?`}
           description="Get the best experiences, money-saving tips and fresh destination guides in your inbox."

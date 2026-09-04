@@ -1,12 +1,14 @@
 import { TripPlanner } from "@/components/trip-planner";
 import { Breadcrumbs, buildCrumbs } from "@/components/ui/breadcrumbs";
 import { SectionHeading } from "@/components/ui/card";
+import { buildMetadata } from "@/lib/seo";
 
-export const metadata = {
+export const metadata = buildMetadata({
   title: "Trip Planner",
   description:
     "Plan your next trip in minutes — pick a destination, dates and travel style to get a day-by-day sketch, budget estimate and the practical booking steps.",
-};
+  canonicalPath: "/trip-planner",
+});
 
 export default function TripPlannerPage() {
   return (

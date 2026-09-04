@@ -1,7 +1,7 @@
 ﻿import { notFound } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { Calendar, Clock, User } from "lucide-react";
+import { Calendar, Clock, RefreshCw, User } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { buildMetadata } from "@/lib/seo";
 import { parseContentBlocks, blocksToText } from "@/lib/content";
@@ -92,7 +92,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
         : { "@type": "Organization", name: "Riversmag" },
       publisher: { "@type": "Organization", name: "Riversmag", logo: { "@type": "ImageObject", url: "/images/logo.png" } },
       datePublished: article.publishedAt?.toISOString(),
-      dateModified: article.updatedAt.toISOString(),
+      dateModified: (article.updatedDate ?? article.updatedAt).toISOString(),
     },
   ];
   const faqBlocks = blocks.filter((b) => b.type === "faq");
@@ -172,19 +172,39 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
           <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-ink-muted">
             <span className="inline-flex items-center gap-1.5">
               <User className="h-4 w-4" aria-hidden />
+              <span className="font-medium text-ink">Written by</span>
               {article.author?.name ?? article.authorName ?? "Riversmag Editors"}
             </span>
             {article.publishedAt && (
               <span className="inline-flex items-center gap-1.5">
                 <Calendar className="h-4 w-4" aria-hidden />
-                {formatDate(article.publishedAt)}
+                <span>Published</span>
+                <time dateTime={article.publishedAt.toISOString()}>{formatDate(article.publishedAt)}</time>
               </span>
             )}
+            <span className="inline-flex items-center gap-1.5">
+              <RefreshCw className="h-4 w-4" aria-hidden />
+              <span>Last updated</span>
+              <time dateTime={(article.updatedDate ?? article.updatedAt).toISOString()}>
+                {formatDate(article.updatedDate ?? article.updatedAt)}
+              </time>
+            </span>
             <span className="inline-flex items-center gap-1.5">
               <Clock className="h-4 w-4" aria-hidden />
               {article.readingTimeMinutes || Math.max(1, Math.ceil(wordCount / 220))} min read
             </span>
           </div>
+
+          <p className="mt-5 text-sm text-ink-muted">
+            Independently researched and reviewed by our editorial team, then checked for accuracy.{" "}
+            <a href="/editorial-policy" className="text-brand underline underline-offset-2 hover:opacity-80">
+              Editorial standards
+            </a>
+            {" · "}
+            <a href="/affiliate-disclosure" className="text-brand underline underline-offset-2 hover:opacity-80">
+              Affiliate disclosure
+            </a>
+          </p>
         </div>
       </header>
 
@@ -231,7 +251,14 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
             <AffiliateDisclosure />
           </div>
 
-          <NewsletterCta />
+          <NewsletterCta
+            title={
+              article.destination
+                ? `Planning ${article.destination.name}? Get it right first time`
+                : "Don't miss the practical stuff"
+            }
+            description="Practical travel tips, refreshed destination guides and editor-picked deals — one useful email a week, never spam."
+          />
         </div>
 
         <aside className="hidden lg:block">
@@ -276,6 +303,10 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
                   href={`/out/${recommendedHotelLinks[0].id}?placement=article-sidebar`}
                   rel="nofollow sponsored"
                   className="mt-4 inline-flex rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-white hover:bg-accent-dark"
+                  data-affiliate-click="true"
+                  data-affiliate-category="HOTELS"
+                  data-affiliate-destination={article.destination?.name ?? undefined}
+                  data-affiliate-cta="Compare hotels"
                 >
                   Compare hotels
                 </a>

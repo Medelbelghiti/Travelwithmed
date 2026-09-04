@@ -1,21 +1,25 @@
-﻿import { NewsletterForm } from "@/components/newsletter-form";
+﻿import { NewsletterSignup } from "@/components/newsletter-signup";
 
+/**
+ * Backward-compatible wrapper for the article/detail-page end CTA.
+ * Delegates to the reusable `NewsletterSignup` and defaults to the site-wide
+ * value proposition (practical travel tips, destination guides, travel deals).
+ */
 export function NewsletterCta({
-  title = "Planning a trip? Get it right",
-  description = "Join the Riversmag newsletter for destination guides, packing hacks and editor-picked travel deals in your inbox. No spam, unsubscribe anytime.",
+  title,
+  description,
+  className,
 }: {
   title?: string;
   description?: string;
+  className?: string;
 }) {
   return (
-    <section aria-label="Newsletter signup" className="mt-12 rounded-3xl bg-brand-dark p-8 text-white md:p-10">
-      <div className="max-w-2xl">
-        <h2 className="text-white">{title}</h2>
-        <p className="mt-3 text-white/75">{description}</p>
-        <div className="mt-6 max-w-md">
-          <NewsletterForm />
-        </div>
-      </div>
-    </section>
+    <NewsletterSignup
+      title={title}
+      description={description}
+      variant="panel"
+      className={className}
+    />
   );
 }

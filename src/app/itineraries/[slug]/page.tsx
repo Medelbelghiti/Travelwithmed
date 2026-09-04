@@ -6,6 +6,8 @@ import { AffiliateButton } from "@/components/affiliate/affiliate-button";
 import { AffiliateDisclosure } from "@/components/affiliate/disclosure";
 import { Breadcrumbs, buildCrumbs, JsonLdBreadcrumbs } from "@/components/ui/breadcrumbs";
 import { formatCurrency } from "@/lib/utils";
+import { RelatedActivities } from "@/components/related/related-activities";
+import { RelatedGuides } from "@/components/related/related-guides";
 
 export const dynamic = "force-dynamic";
 
@@ -15,12 +17,13 @@ type ItineraryProps = {
 
 export async function generateMetadata({ params }: ItineraryProps) {
   const { slug } = await params;
-  const itinerary = await prisma.itinerary.findUnique({ where: { slug } });
+  const itinerary = await prisma.itinerary.findUnique({ where: { slug }, include: { destination: { select: { name: true, slug: true } } } });
   if (!itinerary) return { title: "Itinerary not found" };
   return buildMetadata({
     title: itinerary.title,
     description: itinerary.summary ?? undefined,
     canonicalPath: `/itineraries/${itinerary.slug}`,
+    ogImage: itinerary.coverImage ?? undefined,
     ogType: "article",
   });
 }
@@ -226,16 +229,25 @@ export default async function ItineraryPage({ params }: ItineraryProps) {
           </section>
         )}
 
+        <RelatedActivities
+          destinationId={itinerary.destination?.id}
+          destinationName={itinerary.destination?.name}
+        />
+        <RelatedGuides
+          destinationId={itinerary.destination?.id}
+          destinationName={itinerary.destination?.name}
+        />
+
         {/* Planning CTAs */}
         <section className="mt-14 rounded-3xl bg-sand p-8">
           <h2 className="text-2xl">Lock in the details</h2>
           <p className="mt-2 text-ink-soft">Book your flights, stays, tours and insurance for a smoother trip.</p>
           <div className="mt-6 flex flex-wrap gap-3">
-            {links.flights && <AffiliateButton linkId={links.flights.id} label="Check flight prices" placement="itinerary-footer" />}
-            {links.hotels && <AffiliateButton linkId={links.hotels.id} label="Compare hotels" placement="itinerary-footer" variant="outline" />}
-            {links.activities && <AffiliateButton linkId={links.activities.id} label="Browse tours" placement="itinerary-footer" variant="accent" />}
-            {links.insurance && <AffiliateButton linkId={links.insurance.id} label="Get insurance" placement="itinerary-footer" variant="outline" />}
-            {links.esim && <AffiliateButton linkId={links.esim.id} label="Get an eSIM" placement="itinerary-footer" variant="outline" />}
+            {links.flights && <AffiliateButton linkId={links.flights.id} label="Check flight prices" placement="itinerary-footer" category="FLIGHTS" destination={itinerary.destination?.name ?? undefined} />}
+            {links.hotels && <AffiliateButton linkId={links.hotels.id} label="Compare hotels" placement="itinerary-footer" variant="outline" category="HOTELS" destination={itinerary.destination?.name ?? undefined} />}
+            {links.activities && <AffiliateButton linkId={links.activities.id} label="Browse tours" placement="itinerary-footer" variant="accent" category="ACTIVITIES" destination={itinerary.destination?.name ?? undefined} />}
+            {links.insurance && <AffiliateButton linkId={links.insurance.id} label="Get insurance" placement="itinerary-footer" variant="outline" category="INSURANCE" destination={itinerary.destination?.name ?? undefined} />}
+            {links.esim && <AffiliateButton linkId={links.esim.id} label="Get an eSIM" placement="itinerary-footer" variant="outline" category="ESIM" destination={itinerary.destination?.name ?? undefined} />}
           </div>
           <div className="mt-6">
             <AffiliateDisclosure short />

@@ -11,7 +11,7 @@ export interface EntityRow {
 }
 
 export interface EntityManagerProps {
-  entity: "categories" | "authors" | "hotels" | "activities" | "products";
+  entity: "categories" | "authors" | "hotels" | "activities" | "products" | "esim-providers";
   title: string;
   description: string;
   rows: EntityRow[];
@@ -45,6 +45,11 @@ const FIELDS: Record<EntityManagerProps["entity"], { name: string; label: string
     { name: "name", label: "Name" },
     { name: "brand", label: "Brand" },
     { name: "category", label: "Category" },
+  ],
+  "esim-providers": [
+    { name: "name", label: "Provider name" },
+    { name: "slug", label: "Slug" },
+    { name: "tagline", label: "Tagline" },
   ],
 };
 

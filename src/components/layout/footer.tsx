@@ -2,7 +2,7 @@ import Link from "next/link";
 import { siteConfig } from "@/lib/site";
 import { isShopEnabled } from "@/lib/fourthwall";
 import { Logo } from "./header";
-import { NewsletterForm } from "@/components/newsletter-form";
+import { NewsletterSignup } from "@/components/newsletter-signup";
 
 export function Footer() {
   const { footer } = siteConfig.nav;
@@ -26,7 +26,12 @@ export function Footer() {
             <p className="mt-2 max-w-sm text-sm font-medium text-brand-dark">{siteConfig.tagline}</p>
 
             <div className="mt-6">
-              <NewsletterForm variant="compact" />
+              <NewsletterSignup
+                variant="inline"
+                eyebrow="The newsletter"
+                title="Practical tips, guides & deals"
+                description="One useful email a week — destination guides, packing hacks and editor-picked travel deals."
+              />
             </div>
           </div>
 

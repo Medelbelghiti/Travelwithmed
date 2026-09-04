@@ -4,12 +4,14 @@ import { DestinationCard, RegionCard } from "@/components/destination-card";
 import { SectionHeading } from "@/components/ui/card";
 import { Breadcrumbs, buildCrumbs } from "@/components/ui/breadcrumbs";
 import { prisma } from "@/lib/prisma";
+import { buildMetadata } from "@/lib/seo";
 
-export const metadata = {
+export const metadata = buildMetadata({
   title: "Destinations",
   description:
     "Explore destination guides from across Europe, Asia, Africa, the Americas and the Middle East — with hotel picks, itineraries and travel tips.",
-};
+  canonicalPath: "/destinations",
+});
 
 export const dynamic = "force-dynamic";
 
