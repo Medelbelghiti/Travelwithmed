@@ -16,6 +16,27 @@ export interface CategoryListingProps {
   limit?: number;
 }
 
+async function fetchArticles({
+  categoriesFilter,
+  articleType,
+  limit,
+}: {
+  categoriesFilter: { some: { category: { slug: { in?: string[] }; type?: string } } } | undefined;
+  articleType?: string;
+  limit: number;
+}) {
+  return prisma.article.findMany({
+    where: {
+      status: "PUBLISHED",
+      ...(categoriesFilter ? { categories: categoriesFilter } : {}),
+      ...(articleType ? { type: articleType as never } : {}),
+    },
+    include: { author: true },
+    orderBy: { publishedAt: "desc" },
+    take: limit,
+  });
+}
+
 export async function CategoryListing({
   title,
   eyebrow,
@@ -33,16 +54,16 @@ export async function CategoryListing({
       ? { some: { category: { slug: { in: categorySlugs }, ...(categoryType ? { type: categoryType } : {}) } } }
       : undefined;
 
-  const articles = await prisma.article.findMany({
-    where: {
-      status: "PUBLISHED",
-      ...(categoriesFilter ? { categories: categoriesFilter } : {}),
-      ...(articleType ? { type: articleType as never } : {}),
-    },
-    include: { author: true },
-    orderBy: { publishedAt: "desc" },
-    take: limit,
-  });
+  let articles: Awaited<ReturnType<typeof fetchArticles>> = [];
+  try {
+    articles = await fetchArticles({
+      categoriesFilter,
+      articleType,
+      limit,
+    });
+  } catch {
+    articles = [];
+  }
 
   return (
     <div>

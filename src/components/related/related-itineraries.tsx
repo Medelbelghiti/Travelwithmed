@@ -9,14 +9,8 @@ interface RelatedItinerariesProps {
   excludeId?: string;
 }
 
-export async function RelatedItineraries({
-  destinationId,
-  limit = 3,
-  excludeId,
-}: RelatedItinerariesProps) {
-  if (!destinationId) return null;
-
-  const itineraries = await prisma.itinerary.findMany({
+async function fetchRelatedItineraries(destinationId: string, excludeId?: string, limit = 3) {
+  return prisma.itinerary.findMany({
     where: {
       isActive: true,
       destinationId,
@@ -25,6 +19,21 @@ export async function RelatedItineraries({
     orderBy: { publishedAt: "desc" },
     take: limit,
   });
+}
+
+export async function RelatedItineraries({
+  destinationId,
+  limit = 3,
+  excludeId,
+}: RelatedItinerariesProps) {
+  if (!destinationId) return null;
+
+  let itineraries: Awaited<ReturnType<typeof fetchRelatedItineraries>> = [];
+  try {
+    itineraries = await fetchRelatedItineraries(destinationId, excludeId, limit);
+  } catch {
+    itineraries = [];
+  }
 
   if (itineraries.length === 0) return null;
 

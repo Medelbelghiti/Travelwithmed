@@ -2,6 +2,19 @@ import { prisma } from "@/lib/prisma";
 import { SectionHeading } from "@/components/ui/card";
 import { ArticleCard } from "@/components/article-card";
 
+async function fetchRelatedGuides(destinationId: string, excludeId?: string, limit = 3) {
+  return prisma.article.findMany({
+    where: {
+      status: "PUBLISHED",
+      destinationId,
+      ...(excludeId ? { id: { not: excludeId } } : {}),
+    },
+    include: { author: true },
+    orderBy: { publishedAt: "desc" },
+    take: limit,
+  });
+}
+
 interface RelatedGuidesProps {
   destinationId?: string | null;
   destinationName?: string | null;
@@ -17,16 +30,12 @@ export async function RelatedGuides({
 }: RelatedGuidesProps) {
   if (!destinationId) return null;
 
-  const articles = await prisma.article.findMany({
-    where: {
-      status: "PUBLISHED",
-      destinationId,
-      ...(excludeId ? { id: { not: excludeId } } : {}),
-    },
-    include: { author: true },
-    orderBy: { publishedAt: "desc" },
-    take: limit,
-  });
+  let articles: Awaited<ReturnType<typeof fetchRelatedGuides>> = [];
+  try {
+    articles = await fetchRelatedGuides(destinationId, excludeId, limit);
+  } catch {
+    articles = [];
+  }
 
   if (articles.length === 0) return null;
 

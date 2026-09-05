@@ -9,15 +9,8 @@ interface RelatedActivitiesProps {
   limit?: number;
 }
 
-export async function RelatedActivities({
-  destinationId,
-  destinationName,
-  excludeId,
-  limit = 6,
-}: RelatedActivitiesProps) {
-  if (!destinationId) return null;
-
-  const activities = await prisma.activity.findMany({
+async function fetchRelatedActivities(destinationId: string, excludeId?: string, limit = 6) {
+  return prisma.activity.findMany({
     where: {
       isActive: true,
       destinationId,
@@ -27,6 +20,22 @@ export async function RelatedActivities({
     orderBy: [{ rating: "desc" }],
     take: limit,
   });
+}
+
+export async function RelatedActivities({
+  destinationId,
+  destinationName,
+  excludeId,
+  limit = 6,
+}: RelatedActivitiesProps) {
+  if (!destinationId) return null;
+
+  let activities: Awaited<ReturnType<typeof fetchRelatedActivities>> = [];
+  try {
+    activities = await fetchRelatedActivities(destinationId, excludeId, limit);
+  } catch {
+    activities = [];
+  }
 
   if (activities.length === 0) return null;
 

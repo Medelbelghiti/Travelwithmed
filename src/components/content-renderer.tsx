@@ -19,6 +19,41 @@ interface RendererProps {
   destinationSlug?: string | null;
 }
 
+async function fetchBlockHotels(block: { destinationId?: string }, destinationId?: string | null) {
+  return prisma.hotel.findMany({
+    where: {
+      isActive: true,
+      ...(block.destinationId ? { destinationId: block.destinationId } : {}),
+      ...(destinationId && !block.destinationId ? { destinationId } : {}),
+    },
+    include: { affiliateLinks: { where: { active: true }, take: 1 } },
+    orderBy: [{ guestRating: "desc" }],
+    take: 3,
+  });
+}
+
+async function fetchBlockActivities(block: { destinationId?: string }, destinationId?: string | null) {
+  return prisma.activity.findMany({
+    where: {
+      isActive: true,
+      ...(block.destinationId ? { destinationId: block.destinationId } : {}),
+      ...(destinationId && !block.destinationId ? { destinationId } : {}),
+    },
+    include: { affiliateLinks: { where: { active: true }, take: 1 } },
+    orderBy: [{ rating: "desc" }],
+    take: 3,
+  });
+}
+
+async function fetchBlockProducts(block: { category?: string }) {
+  return prisma.product.findMany({
+    where: { isActive: true, ...(block.category ? { category: block.category } : {}) },
+    include: { affiliateLinks: { where: { active: true }, take: 1 } },
+    orderBy: [{ rating: "desc" }],
+    take: 3,
+  });
+}
+
 export async function ContentRenderer({ content, articleId, destinationId }: RendererProps) {
   const blocks = parseContentBlocks(content);
   if (blocks.length === 0) return null;
@@ -151,16 +186,12 @@ export async function ContentRenderer({ content, articleId, destinationId }: Ren
         );
         break;
       case "hotels": {
-        const hotels = await prisma.hotel.findMany({
-          where: {
-            isActive: true,
-            ...(block.destinationId ? { destinationId: block.destinationId } : {}),
-            ...(destinationId && !block.destinationId ? { destinationId } : {}),
-          },
-          include: { affiliateLinks: { where: { active: true }, take: 1 } },
-          orderBy: [{ guestRating: "desc" }],
-          take: 3,
-        });
+        let hotels: Awaited<ReturnType<typeof fetchBlockHotels>> = [];
+        try {
+          hotels = await fetchBlockHotels(block, destinationId);
+        } catch {
+          hotels = [];
+        }
         if (hotels.length > 0) {
           hasAffiliateBlocks = true;
           rendered.push(
@@ -189,16 +220,12 @@ export async function ContentRenderer({ content, articleId, destinationId }: Ren
         break;
       }
       case "activities": {
-        const activities = await prisma.activity.findMany({
-          where: {
-            isActive: true,
-            ...(block.destinationId ? { destinationId: block.destinationId } : {}),
-            ...(destinationId && !block.destinationId ? { destinationId } : {}),
-          },
-          include: { affiliateLinks: { where: { active: true }, take: 1 } },
-          orderBy: [{ rating: "desc" }],
-          take: 3,
-        });
+        let activities: Awaited<ReturnType<typeof fetchBlockActivities>> = [];
+        try {
+          activities = await fetchBlockActivities(block, destinationId);
+        } catch {
+          activities = [];
+        }
         if (activities.length > 0) {
           hasAffiliateBlocks = true;
           rendered.push(
@@ -228,12 +255,12 @@ export async function ContentRenderer({ content, articleId, destinationId }: Ren
         break;
       }
       case "products": {
-        const products = await prisma.product.findMany({
-          where: { isActive: true, ...(block.category ? { category: block.category } : {}) },
-          include: { affiliateLinks: { where: { active: true }, take: 1 } },
-          orderBy: [{ rating: "desc" }],
-          take: 3,
-        });
+        let products: Awaited<ReturnType<typeof fetchBlockProducts>> = [];
+        try {
+          products = await fetchBlockProducts(block);
+        } catch {
+          products = [];
+        }
         if (products.length > 0) {
           hasAffiliateBlocks = true;
           rendered.push(
