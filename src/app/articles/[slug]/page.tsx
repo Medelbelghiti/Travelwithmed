@@ -19,12 +19,46 @@ type ArticlePageProps = {
   params: Promise<{ slug: string }>;
 };
 
+async function fetchArticle(slug: string) {
+  return prisma.article.findUnique({
+    where: { slug },
+    include: { author: true, destination: true, faqItems: true },
+  });
+}
+
+async function fetchRelatedArticles(articleId: string) {
+  return prisma.relatedArticle.findMany({
+    where: { articleId },
+    include: { relatedArticle: { include: { author: true } } },
+    orderBy: { relevanceScore: "desc" },
+    take: 3,
+  });
+}
+
+async function fetchRelatedByDestination(destinationId: string, currentId: string) {
+  return prisma.article.findMany({
+    where: { status: "PUBLISHED", destinationId, id: { not: currentId } },
+    include: { author: true },
+    take: 3,
+  });
+}
+
+async function fetchHotelLinks(destinationId: string) {
+  return prisma.affiliateLink.findMany({
+    where: { active: true, category: "HOTELS", destinationId },
+    take: 3,
+    include: { article: { select: { slug: true, title: true } } },
+  });
+}
+
 export async function generateMetadata({ params }: ArticlePageProps) {
   const { slug } = await params;
-  const article = await prisma.article.findUnique({
-    where: { slug },
-    include: { author: true, seoMetadata: true },
-  });
+  let article: Awaited<ReturnType<typeof fetchArticleMeta>> | null = null;
+  try {
+    article = await fetchArticleMeta(slug);
+  } catch {
+    article = null;
+  }
   if (!article || article.status !== "PUBLISHED") return { title: "Article not found" };
 
   return buildMetadata({
@@ -40,37 +74,39 @@ export async function generateMetadata({ params }: ArticlePageProps) {
   });
 }
 
+async function fetchArticleMeta(slug: string) {
+  return prisma.article.findUnique({
+    where: { slug },
+    include: { author: true, seoMetadata: true },
+  });
+}
+
 export default async function ArticlePage({ params }: ArticlePageProps) {
   const { slug } = await params;
-  const article = await prisma.article.findUnique({
-    where: { slug },
-    include: { author: true, destination: true, faqItems: true },
-  });
+  let article: Awaited<ReturnType<typeof fetchArticle>> | null = null;
+  try {
+    article = await fetchArticle(slug);
+  } catch {
+    article = null;
+  }
 
   if (!article || article.status !== "PUBLISHED") notFound();
 
-  const [related, relatedByDestination, recommendedHotelLinks] = await Promise.all([
-    prisma.relatedArticle.findMany({
-      where: { articleId: article.id },
-      include: { relatedArticle: { include: { author: true } } },
-      orderBy: { relevanceScore: "desc" },
-      take: 3,
-    }),
-    article.destinationId
-      ? prisma.article.findMany({
-          where: { status: "PUBLISHED", destinationId: article.destinationId, id: { not: article.id } },
-          include: { author: true },
-          take: 3,
-        })
-      : Promise.resolve([]),
-    article.destinationId
-      ? prisma.affiliateLink.findMany({
-          where: { active: true, category: "HOTELS", destinationId: article.destinationId },
-          take: 3,
-          include: { article: { select: { slug: true, title: true } } },
-        })
-      : Promise.resolve([]),
-  ]);
+  let related: Awaited<ReturnType<typeof fetchRelatedArticles>> = [];
+  let relatedByDestination: Awaited<ReturnType<typeof fetchRelatedByDestination>> = [];
+  let recommendedHotelLinks: Awaited<ReturnType<typeof fetchHotelLinks>> = [];
+
+  try {
+    [related, relatedByDestination, recommendedHotelLinks] = await Promise.all([
+      fetchRelatedArticles(article.id),
+      article.destinationId ? fetchRelatedByDestination(article.destinationId, article.id) : Promise.resolve([]),
+      article.destinationId ? fetchHotelLinks(article.destinationId) : Promise.resolve([]),
+    ]);
+  } catch {
+    related = [];
+    relatedByDestination = [];
+    recommendedHotelLinks = [];
+  }
 
   const blocks = parseContentBlocks(article.content);
   const wordCount = blocksToText(blocks).trim().split(/\s+/).length || article.wordCount || 1;

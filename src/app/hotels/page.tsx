@@ -13,8 +13,8 @@ export const metadata = buildMetadata({
 
 export const dynamic = "force-dynamic";
 
-export default async function HotelsPage() {
-  const hotels = await prisma.hotel.findMany({
+async function fetchHotels() {
+  return prisma.hotel.findMany({
     where: { isActive: true },
     include: {
       destination: { select: { name: true, slug: true } },
@@ -23,6 +23,15 @@ export default async function HotelsPage() {
     orderBy: [{ starRating: "desc" }, { guestRating: "desc" }],
     take: 60,
   });
+}
+
+export default async function HotelsPage() {
+  let hotels: Awaited<ReturnType<typeof fetchHotels>> = [];
+  try {
+    hotels = await fetchHotels();
+  } catch {
+    hotels = [];
+  }
 
   const crumbs = buildCrumbs([{ name: "Hotels", href: "/hotels" }]);
 

@@ -36,12 +36,34 @@ function asArray(value: unknown): JsonArray {
   return [];
 }
 
+async function fetchHotel(slug: string) {
+  return prisma.hotel.findUnique({
+    where: { slug },
+    include: {
+      destination: { select: { id: true, name: true, slug: true } },
+      affiliateLinks: { where: { active: true } },
+      reviews: { include: { authorRef: true }, orderBy: { createdAt: "desc" }, take: 6 },
+      media: true,
+    },
+  });
+}
+
+async function fetchSimilarHotels(destinationId: string, currentId: string) {
+  return prisma.hotel.findMany({
+    where: { isActive: true, destinationId, id: { not: currentId } },
+    include: { affiliateLinks: { where: { active: true } } },
+    take: 3,
+  });
+}
+
 export async function generateMetadata({ params }: HotelPageProps) {
   const { slug } = await params;
-  const hotel = await prisma.hotel.findUnique({
-    where: { slug },
-    include: { destination: true, affiliateLinks: { where: { active: true } } },
-  });
+  let hotel: Awaited<ReturnType<typeof fetchHotelMeta>> | null = null;
+  try {
+    hotel = await fetchHotelMeta(slug);
+  } catch {
+    hotel = null;
+  }
   if (!hotel || !hotel.isActive) return { title: "Hotel not found" };
 
   return buildMetadata({
@@ -55,17 +77,21 @@ export async function generateMetadata({ params }: HotelPageProps) {
   });
 }
 
+async function fetchHotelMeta(slug: string) {
+  return prisma.hotel.findUnique({
+    where: { slug },
+    include: { destination: true, affiliateLinks: { where: { active: true } } },
+  });
+}
+
 export default async function HotelPage({ params }: HotelPageProps) {
   const { slug } = await params;
-  const hotel = await prisma.hotel.findUnique({
-    where: { slug },
-    include: {
-      destination: { select: { id: true, name: true, slug: true } },
-      affiliateLinks: { where: { active: true } },
-      reviews: { include: { authorRef: true }, orderBy: { createdAt: "desc" }, take: 6 },
-      media: true,
-    },
-  });
+  let hotel: Awaited<ReturnType<typeof fetchHotel>> | null = null;
+  try {
+    hotel = await fetchHotel(slug);
+  } catch {
+    hotel = null;
+  }
 
   if (!hotel || !hotel.isActive) notFound();
 
@@ -84,13 +110,14 @@ export default async function HotelPage({ params }: HotelPageProps) {
     { name: hotel.name, href: `/hotels/${hotel.slug}` },
   ]);
 
-  const similarHotels = destinationRef
-    ? await prisma.hotel.findMany({
-        where: { isActive: true, destinationId: destinationRef.id, id: { not: hotel.id } },
-        include: { affiliateLinks: { where: { active: true } } },
-        take: 3,
-      })
-    : [];
+  let similarHotels: Awaited<ReturnType<typeof fetchSimilarHotels>> = [];
+  if (destinationRef) {
+    try {
+      similarHotels = await fetchSimilarHotels(destinationRef.id, hotel.id);
+    } catch {
+      similarHotels = [];
+    }
+  }
 
   const imageSrc = hotel.image;
 

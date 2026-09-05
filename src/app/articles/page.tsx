@@ -9,6 +9,16 @@ export const dynamic = "force-dynamic";
 
 const PER_PAGE = 12;
 
+async function fetchArticles(page: number, perPage: number) {
+  return prisma.article.findMany({
+    where: { status: "PUBLISHED" },
+    include: { author: true, categories: { include: { category: true } } },
+    orderBy: { publishedAt: "desc" },
+    skip: (page - 1) * perPage,
+    take: perPage,
+  });
+}
+
 export async function generateMetadata({
   searchParams,
 }: {
@@ -36,14 +46,14 @@ export default async function ArticlesIndex({
   const currentPage = Number.isFinite(requested) && requested >= 1 ? Math.floor(requested) : 1;
 
   const [total, articles] = await Promise.all([
-    prisma.article.count({ where: { status: "PUBLISHED" } }),
-    prisma.article.findMany({
-      where: { status: "PUBLISHED" },
-      include: { author: true, categories: { include: { category: true } } },
-      orderBy: { publishedAt: "desc" },
-      skip: (currentPage - 1) * PER_PAGE,
-      take: PER_PAGE,
-    }),
+    (async () => {
+      try {
+        return await prisma.article.count({ where: { status: "PUBLISHED" } });
+      } catch {
+        return 0;
+      }
+    })(),
+    fetchArticles(currentPage, PER_PAGE).catch(() => [] as Awaited<ReturnType<typeof fetchArticles>>),
   ]);
 
   const totalPages = Math.max(1, Math.ceil(total / PER_PAGE));

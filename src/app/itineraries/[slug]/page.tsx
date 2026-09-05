@@ -15,22 +15,8 @@ type ItineraryProps = {
   params: Promise<{ slug: string }>;
 };
 
-export async function generateMetadata({ params }: ItineraryProps) {
-  const { slug } = await params;
-  const itinerary = await prisma.itinerary.findUnique({ where: { slug }, include: { destination: { select: { name: true, slug: true } } } });
-  if (!itinerary) return { title: "Itinerary not found" };
-  return buildMetadata({
-    title: itinerary.title,
-    description: itinerary.summary ?? undefined,
-    canonicalPath: `/itineraries/${itinerary.slug}`,
-    ogImage: itinerary.coverImage ?? undefined,
-    ogType: "article",
-  });
-}
-
-export default async function ItineraryPage({ params }: ItineraryProps) {
-  const { slug } = await params;
-  const itinerary = await prisma.itinerary.findUnique({
+async function fetchItinerary(slug: string) {
+  return prisma.itinerary.findUnique({
     where: { slug },
     include: {
       daysList: { orderBy: { dayNumber: "asc" } },
@@ -42,6 +28,38 @@ export default async function ItineraryPage({ params }: ItineraryProps) {
       },
     },
   });
+}
+
+export async function generateMetadata({ params }: ItineraryProps) {
+  const { slug } = await params;
+  let itinerary: Awaited<ReturnType<typeof fetchItineraryMeta>> | null = null;
+  try {
+    itinerary = await fetchItineraryMeta(slug);
+  } catch {
+    itinerary = null;
+  }
+  if (!itinerary) return { title: "Itinerary not found" };
+  return buildMetadata({
+    title: itinerary.title,
+    description: itinerary.summary ?? undefined,
+    canonicalPath: `/itineraries/${itinerary.slug}`,
+    ogImage: itinerary.coverImage ?? undefined,
+    ogType: "article",
+  });
+}
+
+async function fetchItineraryMeta(slug: string) {
+  return prisma.itinerary.findUnique({ where: { slug }, include: { destination: { select: { name: true, slug: true } } } });
+}
+
+export default async function ItineraryPage({ params }: ItineraryProps) {
+  const { slug } = await params;
+  let itinerary: Awaited<ReturnType<typeof fetchItinerary>> | null = null;
+  try {
+    itinerary = await fetchItinerary(slug);
+  } catch {
+    itinerary = null;
+  }
 
   if (!itinerary || !itinerary.isActive) notFound();
 

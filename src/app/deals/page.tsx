@@ -9,6 +9,14 @@ import { formatDate } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
+async function fetchDeals() {
+  return prisma.affiliateLink.findMany({
+    where: { active: true, OR: [{ dealTitle: { not: null } }, { featuredDeal: true }] },
+    orderBy: [{ featuredDeal: "desc" }, { priority: "desc" }, { clickCount: "desc" }],
+    take: 30,
+  });
+}
+
 export const metadata = buildMetadata({
   title: "Today's Travel Deals & Promo Codes",
   description:
@@ -17,11 +25,12 @@ export const metadata = buildMetadata({
 });
 
 export default async function DealsPage() {
-  const all = await prisma.affiliateLink.findMany({
-    where: { active: true, OR: [{ dealTitle: { not: null } }, { featuredDeal: true }] },
-    orderBy: [{ featuredDeal: "desc" }, { priority: "desc" }, { clickCount: "desc" }],
-    take: 30,
-  });
+  let all: Awaited<ReturnType<typeof fetchDeals>> = [];
+  try {
+    all = await fetchDeals();
+  } catch {
+    all = [];
+  }
 
   const now = new Date();
   const live = all.filter((l) => !l.dealExpiresAt || l.dealExpiresAt > now);

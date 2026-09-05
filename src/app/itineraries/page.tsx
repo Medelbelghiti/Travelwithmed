@@ -14,12 +14,21 @@ export const metadata = buildMetadata({
 
 export const dynamic = "force-dynamic";
 
-export default async function ItinerariesIndex() {
-  const itineraries = await prisma.itinerary.findMany({
+async function fetchItineraries() {
+  return prisma.itinerary.findMany({
     where: { isActive: true },
     include: { destination: true },
     orderBy: { publishedAt: "desc" },
   });
+}
+
+export default async function ItinerariesIndex() {
+  let itineraries: Awaited<ReturnType<typeof fetchItineraries>> = [];
+  try {
+    itineraries = await fetchItineraries();
+  } catch {
+    itineraries = [];
+  }
 
   return (
     <main className="container-x section-pad">

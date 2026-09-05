@@ -15,12 +15,61 @@ type ActivityPageProps = {
   params: Promise<{ slug: string }>;
 };
 
+async function fetchActivity(slug: string) {
+  return prisma.activity.findUnique({
+    where: { slug },
+    include: {
+      destination: { select: { id: true, name: true, slug: true, tagline: true } },
+      affiliateLinks: { where: { active: true } },
+      reviews: { orderBy: { createdAt: "desc" } },
+    },
+  });
+}
+
+async function fetchAffLink(id: string) {
+  return prisma.affiliateLink.findUnique({ where: { id } });
+}
+
+async function fetchAlternatives(destinationId: string, currentId: string) {
+  return prisma.activity.findMany({
+    where: { isActive: true, destinationId, id: { not: currentId } },
+    include: { affiliateLinks: { where: { active: true }, take: 1 } },
+    take: 6,
+  });
+}
+
+async function fetchHotels(destinationId: string) {
+  return prisma.hotel.findMany({
+    where: { isActive: true, destinationId },
+    include: { affiliateLinks: { where: { active: true }, take: 1 } },
+    take: 3,
+  });
+}
+
+async function fetchItineraries(destinationId: string) {
+  return prisma.itinerary.findMany({
+    where: { isActive: true, destinationId },
+    take: 3,
+  });
+}
+
+async function fetchGuides(destinationId: string) {
+  return prisma.article.findMany({
+    where: { status: "PUBLISHED", destinationId },
+    include: { author: true },
+    orderBy: { publishedAt: "desc" },
+    take: 6,
+  });
+}
+
 export async function generateMetadata({ params }: ActivityPageProps) {
   const { slug } = await params;
-  const activity = await prisma.activity.findUnique({
-    where: { slug },
-    include: { destination: true },
-  });
+  let activity: Awaited<ReturnType<typeof fetchActivityMeta>> | null = null;
+  try {
+    activity = await fetchActivityMeta(slug);
+  } catch {
+    activity = null;
+  }
   if (!activity || !activity.isActive) return { title: "Activity not found" };
 
   return buildMetadata({
@@ -34,20 +83,30 @@ export async function generateMetadata({ params }: ActivityPageProps) {
   });
 }
 
+async function fetchActivityMeta(slug: string) {
+  return prisma.activity.findUnique({
+    where: { slug },
+    include: { destination: true },
+  });
+}
+
 export default async function ActivityPage({ params }: ActivityPageProps) {
   const { slug } = await params;
-  const activity = await prisma.activity.findUnique({
-    where: { slug },
-    include: {
-      destination: { select: { id: true, name: true, slug: true, tagline: true } },
-      affiliateLinks: { where: { active: true } },
-      reviews: { orderBy: { createdAt: "desc" } },
-    },
-  });
+  let activity: Awaited<ReturnType<typeof fetchActivity>> | null = null;
+  try {
+    activity = await fetchActivity(slug);
+  } catch {
+    activity = null;
+  }
 
   if (!activity || !activity.isActive) notFound();
 
-  const affLink = activity.affiliateLinks[0] ?? (activity.affiliateLinkId ? await prisma.affiliateLink.findUnique({ where: { id: activity.affiliateLinkId } }) : null);
+  let affLink: Awaited<ReturnType<typeof fetchAffLink>> = null;
+  try {
+    affLink = activity.affiliateLinks[0] ?? (activity.affiliateLinkId ? await fetchAffLink(activity.affiliateLinkId) : null);
+  } catch {
+    affLink = null;
+  }
   const destinationRef = activity.destination;
 
   const crumbItems = buildCrumbs([
@@ -56,45 +115,26 @@ export default async function ActivityPage({ params }: ActivityPageProps) {
     { name: activity.name, href: `/activities/${activity.slug}` },
   ]);
 
-  // Related data — all derived from the destination, never invented.
-  const alternativePromise = destinationRef
-    ? prisma.activity.findMany({
-        where: { isActive: true, destinationId: destinationRef.id, id: { not: activity.id } },
-        include: { affiliateLinks: { where: { active: true }, take: 1 } },
-        take: 6,
-      })
-    : Promise.resolve([]);
+  let alternatives: Awaited<ReturnType<typeof fetchAlternatives>> = [];
+  let hotels: Awaited<ReturnType<typeof fetchHotels>> = [];
+  let itineraries: Awaited<ReturnType<typeof fetchItineraries>> = [];
+  let destinationGuides: Awaited<ReturnType<typeof fetchGuides>> = [];
 
-  const hotelsPromise = destinationRef
-    ? prisma.hotel.findMany({
-        where: { isActive: true, destinationId: destinationRef.id },
-        include: { affiliateLinks: { where: { active: true }, take: 1 } },
-        take: 3,
-      })
-    : Promise.resolve([]);
-
-  const itinerariesPromise = destinationRef
-    ? prisma.itinerary.findMany({
-        where: { isActive: true, destinationId: destinationRef.id },
-        take: 3,
-      })
-    : Promise.resolve([]);
-
-  const destinationGuidesPromise = destinationRef
-    ? prisma.article.findMany({
-        where: { status: "PUBLISHED", destinationId: destinationRef.id },
-        include: { author: true },
-        orderBy: { publishedAt: "desc" },
-        take: 6,
-      })
-    : Promise.resolve([]);
-
-  const [alternatives, hotels, itineraries, destinationGuides] = await Promise.all([
-    alternativePromise,
-    hotelsPromise,
-    itinerariesPromise,
-    destinationGuidesPromise,
-  ]);
+  if (destinationRef) {
+    try {
+      [alternatives, hotels, itineraries, destinationGuides] = await Promise.all([
+        fetchAlternatives(destinationRef.id, activity.id),
+        fetchHotels(destinationRef.id),
+        fetchItineraries(destinationRef.id),
+        fetchGuides(destinationRef.id),
+      ]);
+    } catch {
+      alternatives = [];
+      hotels = [];
+      itineraries = [];
+      destinationGuides = [];
+    }
+  }
 
   const totalReviews = activity.reviewCount ?? activity.reviews.length;
   const tripItem = {

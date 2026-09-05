@@ -18,10 +18,12 @@ export async function generateMetadata({ params }: HubPageProps) {
   if (!isHubTypeSlug(type)) return {};
   const hubType = HUB_TYPES[type];
 
-  const destination = await prisma.destination.findUnique({
-    where: { slug: city },
-    select: { id: true, name: true, slug: true, coverImage: true, isActive: true },
-  });
+  let destination: Awaited<ReturnType<typeof fetchDestinationMeta>> | null = null;
+  try {
+    destination = await fetchDestinationMeta(city);
+  } catch {
+    destination = null;
+  }
   if (!destination || !destination.isActive) return {};
 
   if (TOUR_HUBS.includes(type)) {
@@ -41,44 +43,42 @@ export async function generateMetadata({ params }: HubPageProps) {
   });
 }
 
+async function fetchDestinationMeta(slug: string) {
+  return prisma.destination.findUnique({
+    where: { slug },
+    select: { id: true, name: true, slug: true, coverImage: true, isActive: true },
+  });
+}
+
 export default async function HubPage({ params }: HubPageProps) {
   const { type, city } = await params;
   if (!isHubTypeSlug(type)) notFound();
   const hubType = HUB_TYPES[type];
 
-  const destination = await prisma.destination.findUnique({
-    where: { slug: city },
-    include: {
-      parent: { select: { id: true, name: true, slug: true } },
-      hotels: { where: { isActive: true } },
-      activities: { where: { isActive: true } },
-      itineraries: { where: { isActive: true } },
-    },
-  });
+  let destination: Awaited<ReturnType<typeof fetchDestination>> | null = null;
+  try {
+    destination = await fetchDestination(city);
+  } catch {
+    destination = null;
+  }
   if (!destination || !destination.isActive) notFound();
 
   if (TOUR_HUBS.includes(type)) {
-    const activities = await prisma.activity.findMany({
-      where: { isActive: true, destinationId: destination.id },
-      include: { affiliateLinks: { where: { active: true }, take: 1 } },
-      orderBy: [{ rating: "desc" }, { reviewCount: "desc" }],
-    });
+    let activities: Awaited<ReturnType<typeof fetchHubActivities>> = [];
+    let articles: Awaited<ReturnType<typeof fetchHubArticles>> = [];
+    let activityLink: Awaited<ReturnType<typeof resolveAffiliateLink>> = null;
 
-    const activityLink = await resolveAffiliateLink({ category: "ACTIVITIES", destinationId: destination.id });
-
-    const articles = await prisma.article.findMany({
-      where: { destinationId: destination.id, status: "PUBLISHED", allowIndexing: true },
-      select: {
-        id: true,
-        title: true,
-        slug: true,
-        excerpt: true,
-        coverImage: true,
-        author: { select: { name: true } },
-      },
-      orderBy: { publishedAt: "desc" },
-      take: 6,
-    });
+    try {
+      [activities, articles, activityLink] = await Promise.all([
+        fetchHubActivities(destination.id),
+        fetchHubArticles(destination.id),
+        resolveAffiliateLink({ category: "ACTIVITIES", destinationId: destination.id }),
+      ]);
+    } catch {
+      activities = [];
+      articles = [];
+      activityLink = null;
+    }
 
     const itineraries = destination.itineraries.map((it) => ({
       id: it.id,
@@ -114,13 +114,18 @@ export default async function HubPage({ params }: HubPageProps) {
     return <ToursHub hub={hub} />;
   }
 
-  const hotels = await prisma.hotel.findMany({
-    where: { isActive: true, destinationId: destination.id },
-    include: { affiliateLinks: { where: { active: true }, take: 1 } },
-    orderBy: [{ guestRating: "desc" }, { sorts: "desc" }],
-  });
+  let hotels: Awaited<ReturnType<typeof fetchHubHotels>> = [];
+  let hotelLink: Awaited<ReturnType<typeof resolveAffiliateLink>> = null;
 
-  const hotelLink = await resolveAffiliateLink({ category: "HOTELS", destinationId: destination.id });
+  try {
+    [hotels, hotelLink] = await Promise.all([
+      fetchHubHotels(destination.id),
+      resolveAffiliateLink({ category: "HOTELS", destinationId: destination.id }),
+    ]);
+  } catch {
+    hotels = [];
+    hotelLink = null;
+  }
 
   const hub: HotelsHubData = {
     hubType,
@@ -146,4 +151,48 @@ export default async function HubPage({ params }: HubPageProps) {
   };
 
   return <HotelsHub hub={hub} />;
+}
+
+async function fetchDestination(slug: string) {
+  return prisma.destination.findUnique({
+    where: { slug },
+    include: {
+      parent: { select: { id: true, name: true, slug: true } },
+      hotels: { where: { isActive: true } },
+      activities: { where: { isActive: true } },
+      itineraries: { where: { isActive: true } },
+    },
+  });
+}
+
+async function fetchHubActivities(destinationId: string) {
+  return prisma.activity.findMany({
+    where: { isActive: true, destinationId },
+    include: { affiliateLinks: { where: { active: true }, take: 1 } },
+    orderBy: [{ rating: "desc" }, { reviewCount: "desc" }],
+  });
+}
+
+async function fetchHubArticles(destinationId: string) {
+  return prisma.article.findMany({
+    where: { destinationId, status: "PUBLISHED", allowIndexing: true },
+    select: {
+      id: true,
+      title: true,
+      slug: true,
+      excerpt: true,
+      coverImage: true,
+      author: { select: { name: true } },
+    },
+    orderBy: { publishedAt: "desc" },
+    take: 6,
+  });
+}
+
+async function fetchHubHotels(destinationId: string) {
+  return prisma.hotel.findMany({
+    where: { isActive: true, destinationId },
+    include: { affiliateLinks: { where: { active: true }, take: 1 } },
+    orderBy: [{ guestRating: "desc" }, { sorts: "desc" }],
+  });
 }
