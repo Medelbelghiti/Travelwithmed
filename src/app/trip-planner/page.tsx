@@ -15,6 +15,7 @@ export default function TripPlannerPage() {
     <main className="container-x section-pad">
       <Breadcrumbs items={buildCrumbs([{ name: "Trip Planner", href: "/trip-planner" }])} />
       <SectionHeading
+        level={1}
         eyebrow="Dream it, plan it"
         title="Interactive trip planner"
         description="Sketch out your perfect trip in two minutes — destinations, dates, budget, style and interests."

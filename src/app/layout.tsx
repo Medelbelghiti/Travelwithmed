@@ -11,6 +11,7 @@ import { TripBadge } from "@/components/trip/add-to-trip";
 import { siteConfig } from "@/lib/site";
 import { websiteSchema, organizationSchema } from "@/lib/seo";
 import { absoluteUrl } from "@/lib/utils";
+import { isShopEnabled } from "@/lib/fourthwall";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -66,6 +67,7 @@ export const viewport: Viewport = {
 const jsonLd = [websiteSchema(), organizationSchema()];
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
+  const shopEnabled = isShopEnabled();
   return (
     <html lang="en" className={`${inter.variable} h-full antialiased`}>
       <body className="flex min-h-full flex-col">
@@ -76,7 +78,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         >
           Skip to content
         </a>
-        <Header />
+        <Header shopEnabled={shopEnabled} />
         <main id="main" className="flex-1">
           {children}
         </main>

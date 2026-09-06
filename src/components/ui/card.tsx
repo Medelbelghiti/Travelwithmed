@@ -28,14 +28,17 @@ export function SectionHeading({
   title,
   description,
   align = "left",
+  level = 2,
   className,
 }: {
   eyebrow?: string;
   title: ReactNode;
   description?: string;
   align?: "left" | "center";
+  level?: 1 | 2;
   className?: string;
 }) {
+  const Heading = level === 1 ? "h1" : "h2";
   return (
     <div
       className={cn(
@@ -47,7 +50,7 @@ export function SectionHeading({
       {eyebrow && (
         <p className="mb-3 text-xs font-bold uppercase tracking-[0.2em] text-brand">{eyebrow}</p>
       )}
-      <h2 className="text-3xl md:text-4xl">{title}</h2>
+      <Heading className={level === 1 ? "text-4xl font-semibold md:text-5xl" : "text-3xl md:text-4xl"}>{title}</Heading>
       {description && <p className="mt-4 text-ink-soft leading-relaxed text-lg">{description}</p>}
     </div>
   );

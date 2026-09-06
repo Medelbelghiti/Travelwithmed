@@ -34,6 +34,7 @@ export default async function ItinerariesIndex() {
     <main className="container-x section-pad">
       <Breadcrumbs items={buildCrumbs([{ name: "Itineraries", href: "/itineraries" }])} />
       <SectionHeading
+        level={1}
         eyebrow="Day by day"
         title="Travel itineraries"
         description="Follow a proven plan — every day mapped out with stays, sights, food and estimated budgets."

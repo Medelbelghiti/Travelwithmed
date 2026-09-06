@@ -23,6 +23,64 @@ const ICONS = {
   itinerary: Map,
 };
 
+async function searchArticles(query: string) {
+  return prisma.article.findMany({
+    where: {
+      status: "PUBLISHED",
+      OR: [{ title: { contains: query, mode: "insensitive" } }, { excerpt: { contains: query, mode: "insensitive" } }],
+    },
+    select: { title: true, slug: true, excerpt: true, coverImage: true, publishedAt: true, type: true },
+    take: 20,
+  });
+}
+
+async function searchDestinations(query: string) {
+  return prisma.destination.findMany({
+    where: {
+      isActive: true,
+      OR: [{ name: { contains: query, mode: "insensitive" } }, { tagline: { contains: query, mode: "insensitive" } }],
+    },
+    select: { name: true, slug: true, type: true, tagline: true },
+    take: 20,
+  });
+}
+
+async function searchItineraries(query: string) {
+  return prisma.itinerary.findMany({
+    where: { isActive: true, title: { contains: query, mode: "insensitive" } },
+    select: { title: true, slug: true, summary: true },
+    take: 20,
+  });
+}
+
+async function searchHotels(query: string) {
+  return prisma.hotel.findMany({
+    where: { isActive: true, name: { contains: query, mode: "insensitive" } },
+    select: { name: true, slug: true, city: true },
+    take: 20,
+  });
+}
+
+async function searchAll(query: string) {
+  const empty = {
+    articles: [] as Awaited<ReturnType<typeof searchArticles>>,
+    destinations: [] as Awaited<ReturnType<typeof searchDestinations>>,
+    itineraries: [] as Awaited<ReturnType<typeof searchItineraries>>,
+    hotels: [] as Awaited<ReturnType<typeof searchHotels>>,
+  };
+  try {
+    const [articles, destinations, itineraries, hotels] = await Promise.all([
+      searchArticles(query),
+      searchDestinations(query),
+      searchItineraries(query),
+      searchHotels(query),
+    ]);
+    return { articles, destinations, itineraries, hotels };
+  } catch {
+    return empty;
+  }
+}
+
 export async function generateMetadata({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
   const { q } = await searchParams;
   return buildMetadata({
@@ -49,35 +107,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
     );
   }
 
-  const [articles, destinations, itineraries, hotels] = await Promise.all([
-    prisma.article.findMany({
-      where: {
-        status: "PUBLISHED",
-        OR: [{ title: { contains: query, mode: "insensitive" } }, { excerpt: { contains: query, mode: "insensitive" } }],
-      },
-      select: { title: true, slug: true, excerpt: true, coverImage: true, publishedAt: true, type: true },
-      take: 20,
-    }),
-    prisma.destination.findMany({
-      where: {
-        isActive: true,
-        OR: [{ name: { contains: query, mode: "insensitive" } }, { tagline: { contains: query, mode: "insensitive" } }],
-      },
-      select: { name: true, slug: true, type: true, tagline: true },
-      take: 20,
-    }),
-    prisma.itinerary.findMany({
-      where: { isActive: true, title: { contains: query, mode: "insensitive" } },
-      select: { title: true, slug: true, summary: true },
-      take: 20,
-    }),
-    prisma.hotel.findMany({
-      where: { isActive: true, name: { contains: query, mode: "insensitive" } },
-      select: { name: true, slug: true, city: true },
-      take: 20,
-    }),
-  ]);
-
+  const { articles, destinations, itineraries, hotels } = await searchAll(query);
   const total = articles.length + destinations.length + itineraries.length + hotels.length;
 
   const groups: ResultGroup[] = [

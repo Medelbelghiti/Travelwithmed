@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { Palette, Truck } from "lucide-react";
 import { buildMetadata } from "@/lib/seo";
-import { isShopEnabled, getProducts, formatMoney } from "@/lib/fourthwall";
+import { isShopEnabled, getProducts } from "@/lib/fourthwall";
 import { ShopCard } from "@/components/shop/shop-card";
 import { Breadcrumbs, buildCrumbs } from "@/components/ui/breadcrumbs";
 

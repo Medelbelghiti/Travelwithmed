@@ -140,11 +140,16 @@ export async function ContentRenderer({ content, articleId, destinationId }: Ren
         );
         break;
       case "cta": {
-        const link = await resolveAffiliateLink({
-          category: block.category,
-          articleId,
-          destinationId,
-        });
+        let link: { id: string } | null = null;
+        try {
+          link = await resolveAffiliateLink({
+            category: block.category,
+            articleId,
+            destinationId,
+          });
+        } catch {
+          link = null;
+        }
         if (link) {
           hasAffiliateBlocks = true;
           rendered.push(
@@ -292,6 +297,7 @@ export async function ContentRenderer({ content, articleId, destinationId }: Ren
       }
       case "shop": {
         if (isShopEnabled()) {
+          let products: PosterProduct[] = [];
           try {
             const all = await getProducts();
             const q = (block.query ?? "").toLowerCase();
@@ -299,29 +305,29 @@ export async function ContentRenderer({ content, articleId, destinationId }: Ren
               .filter((p) => !p.soldOut)
               .filter((p) => !q || p.name.toLowerCase().includes(q) || (p.description ?? "").toLowerCase().includes(q))
               .slice(0, block.limit ?? 4);
-            if (available.length > 0) {
-              const products: PosterProduct[] = available.map((product) => ({
-                id: product.id,
-                name: product.name,
-                imageUrl: product.imageUrl,
-                priceLabel: formatMoney(product.price, product.currency) || null,
-                url: product.url,
-                soldOut: product.soldOut,
-                description: product.description,
-              }));
-              const placeSlug = (block.query ?? "").trim().toLowerCase() || "travel";
-              rendered.push(
-                <div key={key} className="my-8">
-                  <PosterLeadMagnet
-                    query={placeSlug}
-                    downloadPath={`/printables/poster/${encodeURIComponent(placeSlug)}`}
-                    products={products}
-                  />
-                </div>,
-              );
-            }
+            products = available.map((product) => ({
+              id: product.id,
+              name: product.name,
+              imageUrl: product.imageUrl,
+              priceLabel: formatMoney(product.price, product.currency) || null,
+              url: product.url,
+              soldOut: product.soldOut,
+              description: product.description,
+            }));
           } catch {
             // Swallow shop failures so articles still render.
+          }
+          if (products.length > 0) {
+            const placeSlug = (block.query ?? "").trim().toLowerCase() || "travel";
+            rendered.push(
+              <div key={key} className="my-8">
+                <PosterLeadMagnet
+                  query={placeSlug}
+                  downloadPath={`/printables/poster/${encodeURIComponent(placeSlug)}`}
+                  products={products}
+                />
+              </div>,
+            );
           }
         }
         break;

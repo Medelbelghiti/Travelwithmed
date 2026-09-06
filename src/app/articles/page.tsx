@@ -62,7 +62,7 @@ export default async function ArticlesIndex({
     return (
       <div className="container-x section-pad">
         <Breadcrumbs items={buildCrumbs([{ name: "Guides", href: "/articles" }])} />
-        <SectionHeading title="All Travel Guides" />
+        <SectionHeading level={1} title="All Travel Guides" />
         <p className="text-ink-muted">No guides published yet. Check back soon.</p>
       </div>
     );
@@ -72,6 +72,7 @@ export default async function ArticlesIndex({
     <main className="container-x section-pad">
       <Breadcrumbs items={buildCrumbs([{ name: "Guides", href: "/articles" }])} />
       <SectionHeading
+        level={1}
         eyebrow="The library"
         title="All travel guides"
         description="Destination deep-dives, hotel roundups, itineraries and practical advice — all in one place."

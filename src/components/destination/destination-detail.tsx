@@ -22,6 +22,7 @@ import { NewsletterCta } from "@/components/newsletter-cta";
 import { prisma } from "@/lib/prisma";
 import { faqSchema, touristDestinationSchema } from "@/lib/seo";
 import { absoluteUrl } from "@/lib/utils";
+import { HUB_TYPES, type HubType } from "@/lib/hubs";
 
 type DestinationWithRelations = Prisma.DestinationGetPayload<{
   include: {
@@ -138,6 +139,30 @@ export async function DestinationDetail({ destination }: DestinationDetailProps)
             {destination.overview ||
               `Explore ${destination.name} with Riversmag's in-depth destination guide — from the best areas to stay to the top things to do, tours, food, budgets and practical travel tips.`}
           </p>
+        </section>
+
+        {/* City guides (hub pages) */}
+        <section className="mb-14">
+          <SectionHeading eyebrow="Destination guides" title={`Plan ${destination.name} with these guides`} />
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {(Object.values(HUB_TYPES) as HubType[]).map((hubType) => (
+              <Link
+                key={hubType.slug}
+                href={`/articles/hub/${hubType.slug}/${destination.slug}`}
+                className="group flex flex-col justify-between rounded-2xl border border-line bg-white p-6 shadow-sm transition-all hover:-translate-y-0.5 hover:border-brand"
+              >
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-[0.2em] text-brand">{hubType.label}</p>
+                  <h3 className="mt-2 font-serif text-lg font-semibold text-ink group-hover:text-brand">
+                    {hubType.title(destination.name)}
+                  </h3>
+                </div>
+                <span className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-brand">
+                  Read the guide <ArrowRight className="h-3.5 w-3.5" aria-hidden />
+                </span>
+              </Link>
+            ))}
+          </div>
         </section>
 
         {/* Info grid */}

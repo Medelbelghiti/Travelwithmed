@@ -9,6 +9,7 @@ import { HotelCard } from "@/components/affiliate/hotel-card";
 import { AffiliateButton } from "@/components/affiliate/affiliate-button";
 import { AffiliateDisclosure } from "@/components/affiliate/disclosure";
 import { buildMetadata, hotelSchema, breadcrumbSchema, itemListSchema } from "@/lib/seo";
+import { absoluteUrl } from "@/lib/utils";
 
 type HotelRow = Prisma.HotelGetPayload<{
   include: { affiliateLinks: { where: { active: boolean }; take: number } };
@@ -82,6 +83,7 @@ export function HotelsHub({ hub }: { hub: HotelsHubData }) {
       address: h.city ? `${h.city}${h.country ? `, ${h.country}` : ""}` : undefined,
       rating: h.guestRating,
       priceRange: h.priceRange,
+      url: absoluteUrl(`/hotels/${h.slug}`),
       image: h.image,
     }),
   );

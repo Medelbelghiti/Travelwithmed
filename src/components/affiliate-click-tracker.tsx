@@ -58,7 +58,7 @@ export function AffiliateClickTracker() {
         affiliate_destination: destination ?? undefined,
         affiliate_cta: cta ?? undefined,
         affiliate_placement: placement,
-        non_interaction: true,
+        non_interaction: false,
       });
     }
 

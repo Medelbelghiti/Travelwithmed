@@ -1,8 +1,16 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useEffect, useRef } from "react";
 import { Mountain, Menu } from "lucide-react";
 import { siteConfig } from "@/lib/site";
-import { isShopEnabled } from "@/lib/fourthwall";
 import { SearchDialog } from "./search-dialog";
+
+function isActive(pathname: string, href: string) {
+  if (href === "/") return pathname === "/";
+  return pathname === href || pathname.startsWith(`${href}/`);
+}
 
 export function Logo({ className = "h-8 w-auto" }: { className?: string }) {
   return (
@@ -17,8 +25,9 @@ export function Logo({ className = "h-8 w-auto" }: { className?: string }) {
   );
 }
 
-export function Header() {
-  const navItems = isShopEnabled()
+export function Header({ shopEnabled }: { shopEnabled: boolean }) {
+  const pathname = usePathname();
+  const navItems = shopEnabled
     ? [...siteConfig.nav.primary, { label: "Shop", href: "/shop" }]
     : siteConfig.nav.primary;
   return (
@@ -32,7 +41,10 @@ export function Header() {
               <li key={item.href}>
                 <Link
                   href={item.href}
-                  className="rounded-full px-3 py-2 text-sm font-medium text-ink-soft transition-colors hover:bg-brand/20 hover:text-white"
+                  aria-current={isActive(pathname, item.href) ? "page" : undefined}
+                  className={`rounded-full px-3 py-2 text-sm font-medium transition-colors hover:bg-brand/20 hover:text-white ${
+                    isActive(pathname, item.href) ? "bg-brand text-white" : "text-ink-soft"
+                  }`}
                 >
                   {item.label}
                 </Link>
@@ -43,20 +55,27 @@ export function Header() {
 
         <div className="flex items-center gap-1">
           <SearchDialog />
-          <MobileNav />
+          <MobileNav shopEnabled={shopEnabled} />
         </div>
       </div>
     </header>
   );
 }
 
-function MobileNav() {
-  const navItems = isShopEnabled()
+function MobileNav({ shopEnabled }: { shopEnabled: boolean }) {
+  const pathname = usePathname();
+  const detailsRef = useRef<HTMLDetailsElement>(null);
+  const navItems = shopEnabled
     ? [...siteConfig.nav.primary, { label: "Shop", href: "/shop" }]
     : siteConfig.nav.primary;
+
+  useEffect(() => {
+    detailsRef.current?.removeAttribute("open");
+  }, [pathname]);
+
   return (
     <div className="lg:hidden">
-      <details className="group relative">
+      <details ref={detailsRef} className="group relative">
         <summary className="flex h-10 w-10 cursor-pointer list-none items-center justify-center rounded-full text-ink-soft transition-colors hover:bg-brand/20 hover:text-white [&::-webkit-details-marker]:hidden">
           <Menu className="h-5 w-5" aria-hidden />
           <span className="sr-only">Open menu</span>
@@ -68,7 +87,10 @@ function MobileNav() {
               <li key={item.href}>
                 <Link
                   href={item.href}
-                  className="block rounded-xl px-4 py-2.5 text-sm font-medium text-ink-soft transition-colors hover:bg-brand/20 hover:text-white"
+                  aria-current={isActive(pathname, item.href) ? "page" : undefined}
+                  className={`block rounded-xl px-4 py-2.5 text-sm font-medium transition-colors hover:bg-brand/20 hover:text-white ${
+                    isActive(pathname, item.href) ? "bg-brand text-white" : "text-ink-soft"
+                  }`}
                 >
                   {item.label}
                 </Link>

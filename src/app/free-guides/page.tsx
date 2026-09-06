@@ -1,5 +1,5 @@
 ﻿import Link from "next/link";
-import { Download, FileText, Map, Sparkles } from "lucide-react";
+import { FileText, Map, Sparkles } from "lucide-react";
 import { buildMetadata } from "@/lib/seo";
 import { NewsletterForm } from "@/components/newsletter-form";
 import { Breadcrumbs, buildCrumbs } from "@/components/ui/breadcrumbs";

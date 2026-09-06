@@ -15,17 +15,50 @@ export const metadata = buildMetadata({
 
 export const dynamic = "force-dynamic";
 
+async function fetchRegions() {
+  return prisma.destination.findMany({ where: { isActive: true, type: "REGION" }, orderBy: { sortOrder: "asc" } });
+}
+
+async function fetchCountries() {
+  return prisma.destination.findMany({
+    where: { isActive: true, type: "COUNTRY" },
+    include: { _count: { select: { articles: true } } },
+    orderBy: { name: "asc" },
+    take: 30,
+  });
+}
+
+async function fetchCities() {
+  return prisma.destination.findMany({
+    where: { isActive: true, type: "CITY" },
+    include: { _count: { select: { articles: true } } },
+    orderBy: { name: "asc" },
+    take: 24,
+  });
+}
+
+async function fetchDestinations() {
+  const empty = {
+    regions: [] as Awaited<ReturnType<typeof fetchRegions>>,
+    countries: [] as Awaited<ReturnType<typeof fetchCountries>>,
+    cities: [] as Awaited<ReturnType<typeof fetchCities>>,
+  };
+  try {
+    const [regions, countries, cities] = await Promise.all([fetchRegions(), fetchCountries(), fetchCities()]);
+    return { regions, countries, cities };
+  } catch {
+    return empty;
+  }
+}
+
 export default async function DestinationsIndex() {
-  const [regions, countries, cities] = await Promise.all([
-    prisma.destination.findMany({ where: { isActive: true, type: "REGION" }, orderBy: { sortOrder: "asc" } }),
-    prisma.destination.findMany({ where: { isActive: true, type: "COUNTRY" }, include: { _count: { select: { articles: true } } }, orderBy: { name: "asc" }, take: 30 }),
-    prisma.destination.findMany({ where: { isActive: true, type: "CITY" }, include: { _count: { select: { articles: true } } }, orderBy: { name: "asc" }, take: 24 }),
-  ]);
+  const { regions, countries, cities } = await fetchDestinations();
 
   return (
     <main className="container-x section-pad">
       <Breadcrumbs items={buildCrumbs([{ name: "Destinations", href: "/destinations" }])} />
       <SectionHeading
+        level={1}
         eyebrow="The world awaits"
         title="Explore destinations"
         description="In-depth destination guides with hotels, activities, itineraries and practical advice."

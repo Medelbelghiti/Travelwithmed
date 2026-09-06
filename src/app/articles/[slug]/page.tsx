@@ -3,13 +3,13 @@ import Image from "next/image";
 import Link from "next/link";
 import { Calendar, Clock, RefreshCw, User } from "lucide-react";
 import { prisma } from "@/lib/prisma";
-import { buildMetadata } from "@/lib/seo";
+import { buildMetadata, articleSchema } from "@/lib/seo";
 import { parseContentBlocks, blocksToText } from "@/lib/content";
 import { ContentRenderer } from "@/components/content-renderer";
 import { ArticleCard, ARTICLE_TYPE_LABELS } from "@/components/article-card";
 import { Badge } from "@/components/ui/badge";
 import { AffiliateDisclosure } from "@/components/affiliate/disclosure";
-import { formatDate } from "@/lib/utils";
+import { formatDate, absoluteUrl } from "@/lib/utils";
 import { NewsletterCta } from "@/components/newsletter-cta";
 import { siteConfig } from "@/lib/site";
 
@@ -116,20 +116,15 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
     .slice(0, 3);
 
   const jsonLd: Record<string, unknown>[] = [
-    {
-      "@context": "https://schema.org",
-      "@type": "Article",
-      headline: article.title,
+    articleSchema({
+      title: article.title,
       description: article.metaDescription ?? article.excerpt ?? undefined,
-      image: article.coverImage ?? undefined,
-      mainEntityOfPage: { "@type": "WebPage", "@id": `/articles/${article.slug}` },
-      author: article.author?.name
-        ? { "@type": "Person", name: article.author.name }
-        : { "@type": "Organization", name: "Riversmag" },
-      publisher: { "@type": "Organization", name: "Riversmag", logo: { "@type": "ImageObject", url: "/images/logo.png" } },
-      datePublished: article.publishedAt?.toISOString(),
-      dateModified: (article.updatedDate ?? article.updatedAt).toISOString(),
-    },
+      url: absoluteUrl(`/articles/${article.slug}`),
+      image: article.coverImage,
+      publishedTime: article.publishedAt,
+      modifiedTime: article.updatedDate ?? article.updatedAt,
+      authorName: article.author?.name ?? article.authorName ?? null,
+    }),
   ];
   const faqBlocks = blocks.filter((b) => b.type === "faq");
   if (faqBlocks.length > 0) {

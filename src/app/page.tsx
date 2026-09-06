@@ -20,8 +20,16 @@ import { NewsletterForm } from "@/components/newsletter-form";
 import { AffiliateDisclosure } from "@/components/affiliate/disclosure";
 import { prisma } from "@/lib/prisma";
 import { siteConfig } from "@/lib/site";
+import { buildMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
+
+export const metadata = buildMetadata({
+  title: "Riversmag — Travel Guides, Itineraries & Smart Recommendations",
+  description:
+    "Discover destinations, plan unforgettable trips, compare hotels and activities, and find honest travel advice from the Riversmag editorial team.",
+  canonicalPath: "/",
+});
 
 const FEATURED_SLUGS = ["paris", "marrakech", "tokyo", "bali", "rome"];
 

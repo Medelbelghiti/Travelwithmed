@@ -44,7 +44,7 @@ export function AffiliateButton({
   destination,
 }: AffiliateButtonProps) {
   const href = `/out/${linkId}${placement ? `?placement=${encodeURIComponent(placement)}` : ""}`;
-  const rel = external ? "nofollow sponsored noopener" : undefined;
+  const rel = external ? "noopener noreferrer sponsored" : "sponsored";
   const target = external ? "_blank" : undefined;
 
   return (

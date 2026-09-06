@@ -51,11 +51,15 @@ export function buildMetadata({
     },
     robots: noindex
       ? { index: false, follow: false }
-      : { index: true, follow: true, googleBot: { index: true, follow: true } },
+      : {
+          index: true,
+          follow: true,
+          googleBot: { index: true, follow: true, "max-image-preview": "large" },
+        },
     openGraph: {
       title: resolveTitle(title, fallbackTitle),
       description: description ?? fallbackDescription,
-      url: canonicalPath ? absoluteUrl(canonicalPath) : undefined,
+      url: canonicalPath ? absoluteUrl(canonicalPath) : absoluteUrl("/"),
       siteName: siteConfig.name,
       type: ogType,
       images: [{ url: absoluteUrl(og), width: 1200, height: 630, alt: resolveTitle(title, fallbackTitle) }],
@@ -103,7 +107,7 @@ export function organizationSchema() {
 
 export function articleSchema(params: {
   title: string;
-  description: string;
+  description?: string | null;
   url: string;
   image?: string | null;
   publishedTime?: Date | string | null;
@@ -205,7 +209,7 @@ export function itemListSchema(items: { name: string; url?: string }[]) {
       "@type": "ListItem",
       position: index + 1,
       name: item.name,
-      ...(item.url ? { url: item.url } : {}),
+      ...(item.url ? { url: absoluteUrl(item.url) } : {}),
     })),
   };
 }

@@ -14,6 +14,7 @@ export interface CategoryListingProps {
   linkHref?: string;
   linkLabel?: string;
   limit?: number;
+  level?: 1 | 2;
 }
 
 async function fetchArticles({
@@ -48,6 +49,7 @@ export async function CategoryListing({
   linkHref,
   linkLabel,
   limit = 60,
+  level = 1,
 }: CategoryListingProps) {
   const categoriesFilter =
     categorySlugs || categoryType
@@ -67,7 +69,7 @@ export async function CategoryListing({
 
   return (
     <div>
-      <SectionHeading eyebrow={eyebrow} title={title} description={description} />
+      <SectionHeading level={level} eyebrow={eyebrow} title={title} description={description} />
       {articles.length === 0 ? (
         <p className="text-ink-muted">{emptyMessage}</p>
       ) : (

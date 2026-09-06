@@ -144,8 +144,8 @@ export function EsimComparison({
                 )),
               )}
             </div>
-            <div className="hidden overflow-hidden rounded-2xl border border-line bg-white shadow-sm md:block">
-              <table className="w-full border-collapse text-left">
+            <div className="hidden overflow-x-auto rounded-2xl border border-line bg-white shadow-sm md:block">
+              <table className="w-full min-w-[900px] border-collapse text-left">
                 <thead>
                   <tr className="bg-sand text-xs uppercase tracking-wide text-ink-muted">
                     <th className="px-4 py-3 font-semibold">Provider</th>

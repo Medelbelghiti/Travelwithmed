@@ -2,6 +2,7 @@ import type { MetadataRoute } from "next";
 import { prisma } from "@/lib/prisma";
 import { siteConfig } from "@/lib/site";
 import { isShopEnabled } from "@/lib/fourthwall";
+import { HUB_TYPES } from "@/lib/hubs";
 
 export const dynamic = "force-dynamic";
 
@@ -10,11 +11,11 @@ type PathEntry = { path: string; lastModified?: Date };
 const firstDefined = (...values: (Date | null | undefined)[]): Date | undefined =>
   values.find((v): v is Date => v instanceof Date);
 
-async function fetchDynamicPaths(): Promise<{ destinations: PathEntry[]; articles: PathEntry[]; itineraries: PathEntry[]; hotels: PathEntry[]; activities: PathEntry[] }> {
+async function fetchDynamicPaths(): Promise<{ destinations: PathEntry[]; articles: PathEntry[]; itineraries: PathEntry[]; hotels: PathEntry[]; activities: PathEntry[]; hubs: PathEntry[] }> {
   const [destinations, articles, itineraries, hotels, activities] = await Promise.all([
     prisma.destination.findMany({
       where: { isActive: true },
-      select: { slug: true, updatedAt: true },
+      select: { slug: true, updatedAt: true, type: true },
     }),
     prisma.article.findMany({
       where: { status: "PUBLISHED", allowIndexing: true },
@@ -33,6 +34,17 @@ async function fetchDynamicPaths(): Promise<{ destinations: PathEntry[]; article
       select: { slug: true, updatedAt: true },
     }),
   ]);
+
+  const hubSlugs = Object.keys(HUB_TYPES) as (keyof typeof HUB_TYPES)[];
+  const hubs: PathEntry[] = [];
+  for (const d of destinations) {
+    for (const hubType of hubSlugs) {
+      hubs.push({
+        path: `/articles/hub/${hubType}/${d.slug}`,
+        lastModified: d.updatedAt,
+      });
+    }
+  }
 
   return {
     destinations: destinations.map((d): PathEntry => ({
@@ -55,6 +67,7 @@ async function fetchDynamicPaths(): Promise<{ destinations: PathEntry[]; article
       path: `/activities/${a.slug}`,
       lastModified: a.updatedAt,
     })),
+    hubs,
   };
 }
 
@@ -64,6 +77,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   let itineraries: PathEntry[] = [];
   let hotels: PathEntry[] = [];
   let activities: PathEntry[] = [];
+  let hubs: PathEntry[] = [];
   const staticPaths: PathEntry[] = [
     { path: "" },
     { path: "/destinations" },
@@ -100,6 +114,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     itineraries = result.itineraries;
     hotels = result.hotels;
     activities = result.activities;
+    hubs = result.hubs;
   } catch {
     // DB unavailable — return static paths only
   }
@@ -121,6 +136,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   return [
     ...staticEntries,
     ...dynamicEntries(destinations, 0.9),
+    ...dynamicEntries(hubs, 0.8),
     ...dynamicEntries(articles, 0.7),
     ...dynamicEntries(itineraries, 0.7),
     ...dynamicEntries(hotels, 0.7),

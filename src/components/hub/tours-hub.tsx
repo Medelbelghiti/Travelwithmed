@@ -9,6 +9,7 @@ import { ActivityCard } from "@/components/affiliate/activity-card";
 import { AffiliateButton } from "@/components/affiliate/affiliate-button";
 import { AffiliateDisclosure } from "@/components/affiliate/disclosure";
 import { buildMetadata, breadcrumbSchema, itemListSchema } from "@/lib/seo";
+import { absoluteUrl } from "@/lib/utils";
 
 type ActivityRow = Prisma.ActivityGetPayload<{
   include: { affiliateLinks: { where: { active: true }; take: number } };
@@ -86,10 +87,12 @@ export function ToursHub({ hub }: { hub: ToursHubData }) {
   const isThingsToDo = hubType.slug === "things-to-do";
 
   const activityJsonLd = activities.slice(0, 8).map((a) => ({
+    "@context": "https://schema.org",
     "@type": "TouristAttraction",
     name: a.name,
     description: a.bestFor ?? a.description ?? undefined,
     image: a.image ?? undefined,
+    url: absoluteUrl(`/activities/${a.slug}`),
   }));
 
   const jsonLd = [

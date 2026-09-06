@@ -15,6 +15,7 @@ export default function BudgetCalculatorPage() {
     <main className="container-x section-pad">
       <Breadcrumbs items={buildCrumbs([{ name: "Travel Budget", href: "/budget-calculator" }])} />
       <SectionHeading
+        level={1}
         eyebrow="Plan the numbers"
         title="Travel budget calculator"
         description="Get a realistic trip estimate in seconds. Adjust the sliders to match your travel style."

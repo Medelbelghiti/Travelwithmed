@@ -1,4 +1,6 @@
 import { Breadcrumbs, buildCrumbs } from "@/components/ui/breadcrumbs";
+import Image from "next/image";
+import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { buildMetadata } from "@/lib/seo";
 import { HotelsFilter } from "@/components/hotels-filter";
@@ -80,9 +82,9 @@ export default async function HotelsPage() {
                 href={`/hotels/${h.slug}`}
                 className="flex items-center gap-4 rounded-xl border border-line bg-white p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:border-brand hover:shadow-md"
               >
-                <div className="h-14 w-14 shrink-0 overflow-hidden rounded-lg bg-sand">
+                <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-lg bg-sand">
                   {h.image ? (
-                    <img src={h.image} alt={h.name} className="h-full w-full object-cover" />
+                    <Image src={h.image} alt={h.name} fill sizes="56px" className="object-cover" />
                   ) : (
                     <div className="flex h-full items-center justify-center text-ink-muted text-lg">★</div>
                   )}
@@ -102,7 +104,32 @@ export default async function HotelsPage() {
       )}
 
       <section>
-        <HotelsFilter hotels={filterData} />
+        {filterData.length > 0 ? (
+          <HotelsFilter hotels={filterData} />
+        ) : (
+          <div className="rounded-2xl border border-line bg-sand/50 p-12 text-center">
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-brand">Where to stay</p>
+            <h2 className="mt-3 text-2xl font-semibold text-ink">We&apos;re adding more hotel reviews</h2>
+            <p className="mx-auto mt-3 max-w-xl text-sm text-ink-soft">
+              Our editorial team is publishing new hotel reviews every week. For now, our destination guides and
+              where-to-stay posts cover the best neighbourhoods and properties to book.
+            </p>
+            <div className="mt-7 flex flex-wrap justify-center gap-3">
+              <Link
+                href="/destinations"
+                className="rounded-xl bg-brand px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-brand-dark"
+              >
+                Explore destinations
+              </Link>
+              <Link
+                href="/articles"
+                className="rounded-xl border border-line bg-white px-5 py-2.5 text-sm font-semibold text-ink transition-colors hover:bg-white/80"
+              >
+                Read travel guides
+              </Link>
+            </div>
+          </div>
+        )}
       </section>
     </main>
   );

@@ -1,4 +1,6 @@
 import { Breadcrumbs, buildCrumbs } from "@/components/ui/breadcrumbs";
+import Image from "next/image";
+import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { buildMetadata } from "@/lib/seo";
 import { ActivitiesFilter } from "@/components/activities-filter";
@@ -90,9 +92,9 @@ export default async function ActivitiesPage({
                 href={`/activities/${a.slug}`}
                 className="flex items-center gap-4 rounded-xl border border-line bg-white p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:border-brand hover:shadow-md"
               >
-                <div className="h-14 w-14 shrink-0 overflow-hidden rounded-lg bg-sand">
+                <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-lg bg-sand">
                   {a.image ? (
-                    <img src={a.image} alt={a.name} className="h-full w-full object-cover" />
+                    <Image src={a.image} alt={a.name} fill sizes="56px" className="object-cover" />
                   ) : (
                     <div className="flex h-full items-center justify-center text-ink-muted">★</div>
                   )}
@@ -113,7 +115,38 @@ export default async function ActivitiesPage({
 
       {/* Filter + grid */}
       <section>
-        <ActivitiesFilter activities={filterData} initialCategory={categoryParam} />
+        {filterData.length > 0 ? (
+          <ActivitiesFilter activities={filterData} initialCategory={categoryParam} />
+        ) : (
+          <div className="rounded-2xl border border-line bg-sand/50 p-12 text-center">
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-brand">Tours & experiences</p>
+            <h2 className="mt-3 text-2xl font-semibold text-ink">We&apos;re adding more tours and experiences</h2>
+            <p className="mx-auto mt-3 max-w-xl text-sm text-ink-soft">
+              Our editors are working through our next round of vetted tours and activities. In the meantime, plan your
+              trip with our destination guides and ready-made itineraries — everything worth doing is laid out there.
+            </p>
+            <div className="mt-7 flex flex-wrap justify-center gap-3">
+              <Link
+                href="/destinations"
+                className="rounded-xl bg-brand px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-brand-dark"
+              >
+                Explore destinations
+              </Link>
+              <Link
+                href="/itineraries"
+                className="rounded-xl border border-line bg-white px-5 py-2.5 text-sm font-semibold text-ink transition-colors hover:bg-white/80"
+              >
+                Browse itineraries
+              </Link>
+              <Link
+                href="/articles"
+                className="rounded-xl border border-line bg-white px-5 py-2.5 text-sm font-semibold text-ink transition-colors hover:bg-white/80"
+              >
+                Read travel guides
+              </Link>
+            </div>
+          </div>
+        )}
       </section>
 
       {/* Category quick links */}
