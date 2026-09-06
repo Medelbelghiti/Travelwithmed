@@ -22,25 +22,21 @@ export const metadata = buildMetadata({
 });
 
 export default async function EsimHubPage() {
-  const [providers, guides, cityGroups] = await Promise.all([
-    getActiveEsimProviders({ includeLinks: true }),
-    prisma.article.findMany({
-      where: {
-        status: "PUBLISHED",
-        slug: {
-          in: [
-            "best-esim-for-travel-guide",
-            "how-to-activate-travel-esim",
-            "esim-vs-regular-sim-travel",
-            "travel-esim-data-calculator",
-          ],
-        },
-      },
-      include: { author: true },
-      orderBy: { publishedAt: "desc" },
-    }),
-    buildCityEsimGroups(),
-  ]);
+  let providers: Awaited<ReturnType<typeof getActiveEsimProviders>> = [];
+  let guides: Awaited<ReturnType<typeof fetchEsimGuides>> = [];
+  let cityGroups: Awaited<ReturnType<typeof buildCityEsimGroups>> = [];
+
+  try {
+    ([providers, guides, cityGroups] = await Promise.all([
+      getActiveEsimProviders({ includeLinks: true }),
+      fetchEsimGuides(),
+      buildCityEsimGroups(),
+    ]));
+  } catch {
+    providers = [];
+    guides = [];
+    cityGroups = [];
+  }
 
   return (
     <main>
@@ -145,6 +141,24 @@ export default async function EsimHubPage() {
       </div>
     </main>
   );
+}
+
+async function fetchEsimGuides() {
+  return prisma.article.findMany({
+    where: {
+      status: "PUBLISHED",
+      slug: {
+        in: [
+          "best-esim-for-travel-guide",
+          "how-to-activate-travel-esim",
+          "esim-vs-regular-sim-travel",
+          "travel-esim-data-calculator",
+        ],
+      },
+    },
+    include: { author: true },
+    orderBy: { publishedAt: "desc" },
+  });
 }
 
 async function buildCityEsimGroups() {
