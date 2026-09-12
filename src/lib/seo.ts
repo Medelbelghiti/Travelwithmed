@@ -37,13 +37,12 @@ export function buildMetadata({
   alternates,
 }: SeoProps): Metadata {
   const fallbackTitle = `${siteConfig.name} — Travel Guides, Itineraries & Smart Travel Recommendations`;
-  const fallbackDescription = siteConfig.description;
   const resolvedTitle = title ?? fallbackTitle;
   const og = ogImage ?? `/og?title=${encodeURIComponent(resolvedTitle.slice(0, 110))}&type=${encodeURIComponent(siteConfig.tagline)}`;
 
   return {
     title: { absolute: resolveTitle(title, fallbackTitle) },
-    description: description ?? fallbackDescription,
+    description,
     keywords: [...(keywords ?? siteConfig.keywords)],
     alternates: {
       canonical: canonicalPath ? absoluteUrl(canonicalPath) : undefined,
@@ -58,7 +57,7 @@ export function buildMetadata({
         },
     openGraph: {
       title: resolveTitle(title, fallbackTitle),
-      description: description ?? fallbackDescription,
+      description,
       url: canonicalPath ? absoluteUrl(canonicalPath) : absoluteUrl("/"),
       siteName: siteConfig.name,
       type: ogType,
@@ -71,7 +70,7 @@ export function buildMetadata({
     twitter: {
       card: "summary_large_image",
       title: resolveTitle(title, fallbackTitle),
-      description: description ?? fallbackDescription,
+      description,
       images: [absoluteUrl(og)],
     },
   };
@@ -218,6 +217,7 @@ export function hotelSchema(params: {
   name: string;
   address?: string;
   rating?: number | null;
+  reviewCount?: number | null;
   priceRange?: string | null;
   url?: string;
   image?: string | null;
@@ -228,7 +228,7 @@ export function hotelSchema(params: {
     name: params.name,
     address: params.address ? { "@type": "PostalAddress", streetAddress: params.address } : undefined,
     aggregateRating: params.rating
-      ? { "@type": "AggregateRating", ratingValue: params.rating, bestRating: 5 }
+      ? { "@type": "AggregateRating", ratingValue: params.rating, bestRating: 5, reviewCount: params.reviewCount ?? 1 }
       : undefined,
     priceRange: params.priceRange ?? undefined,
     url: params.url ?? undefined,

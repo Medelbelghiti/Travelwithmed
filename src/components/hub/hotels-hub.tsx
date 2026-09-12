@@ -82,6 +82,7 @@ export function HotelsHub({ hub }: { hub: HotelsHubData }) {
       name: h.name,
       address: h.city ? `${h.city}${h.country ? `, ${h.country}` : ""}` : undefined,
       rating: h.guestRating,
+      reviewCount: h.reviewCount,
       priceRange: h.priceRange,
       url: absoluteUrl(`/hotels/${h.slug}`),
       image: h.image,

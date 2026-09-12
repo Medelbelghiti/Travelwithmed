@@ -10,7 +10,6 @@ import { AffiliateClickTracker } from "@/components/affiliate-click-tracker";
 import { TripBadge } from "@/components/trip/add-to-trip";
 import { siteConfig } from "@/lib/site";
 import { websiteSchema, organizationSchema } from "@/lib/seo";
-import { absoluteUrl } from "@/lib/utils";
 import { isShopEnabled } from "@/lib/fourthwall";
 
 const inter = Inter({
@@ -55,7 +54,6 @@ export const metadata: Metadata = {
     follow: true,
     googleBot: { index: true, follow: true, "max-image-preview": "large" },
   },
-  alternates: { canonical: absoluteUrl("/") },
 };
 
 export const viewport: Viewport = {
