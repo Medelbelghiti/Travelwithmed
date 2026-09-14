@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import Script from "next/script";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { Header } from "@/components/layout/header";
@@ -86,6 +87,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <GoogleAnalytics />
         <AffiliateClickTracker />
         <TripBadge />
+        <Script
+          src="https://tpembars.com/NTczMjQx.js?t=573241"
+          strategy="afterInteractive"
+        />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
