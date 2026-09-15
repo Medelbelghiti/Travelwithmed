@@ -15,7 +15,14 @@ function readAttr(anchor: HTMLAnchorElement, name: string): string | undefined {
 }
 
 /**
- * Fires a GA4 `affiliate_click` event for every (server-tracked) `/out/` click.
+ * Fires a single GA4 `affiliate_click` event when an affiliate CTA is clicked.
+ *
+ * Recognized anchors (one delegated listener, one event per click):
+ *  - server-tracked `/out/` links (existing behavior, unchanged)
+ *  - direct affiliate CTAs carrying `data-affiliate-provider` (e.g. the
+ *    Travelpayouts CTA component) — tracked client-side only; the `tp.media`
+ *    destination URL is never modified and Travelpayouts attribution via
+ *    marker/trs is untouched.
  *
  * Dimensions attached (no personal data):
  *  - page_location / page_path : source page the click happened on
@@ -28,17 +35,21 @@ function readAttr(anchor: HTMLAnchorElement, name: string): string | undefined {
  * Click counts are the source of truth in the server-side AffiliateClick table
  * (tracked in the `/out/[id]` route); this event mirrors them into GA4 so the
  * same dimensions can be sliced in your GA4 reporting property.
+ *
+ * The listener binds unconditionally on mount and `window.gtag` is only checked
+ * at click time, so a late-loading gtag cannot silently disable tracking.
  */
 export function AffiliateClickTracker() {
   useEffect(() => {
-    if (!window.gtag) return;
-
     function onClick(event: MouseEvent) {
       const target =
         event.target instanceof Element
-          ? event.target.closest<HTMLAnchorElement>("a[href*='/out/']")
+          ? event.target.closest<HTMLAnchorElement>(
+              "a[href*='/out/'], a[data-affiliate-provider]",
+            )
           : null;
       if (!target) return;
+      if (!window.gtag) return;
       const href = target.getAttribute("href") ?? "";
       const placement =
         new URLSearchParams(href.split("?")[1] ?? "").get("placement") ?? "unknown";
@@ -48,7 +59,7 @@ export function AffiliateClickTracker() {
       const destination = readAttr(target, "data-affiliate-destination");
       const cta = readAttr(target, "data-affiliate-cta");
 
-      window.gtag?.("event", "affiliate_click", {
+      window.gtag("event", "affiliate_click", {
         event_category: "affiliate",
         event_label: placement,
         page_location: window.location.href,
