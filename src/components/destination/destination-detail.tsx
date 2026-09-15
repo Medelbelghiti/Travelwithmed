@@ -18,6 +18,7 @@ import { ActivityCard } from "@/components/affiliate/activity-card";
 import { ArticleCard } from "@/components/article-card";
 import { AffiliateButton } from "@/components/affiliate/affiliate-button";
 import { AffiliateDisclosure } from "@/components/affiliate/disclosure";
+import { TravelpayoutsProgramGrid } from "@/components/affiliate/travelpayouts-programs";
 import { NewsletterCta } from "@/components/newsletter-cta";
 import { prisma } from "@/lib/prisma";
 import { faqSchema, touristDestinationSchema } from "@/lib/seo";
@@ -374,6 +375,12 @@ export async function DestinationDetail({ destination }: DestinationDetailProps)
             </div>
             <div className="mt-6">
               <AffiliateDisclosure short />
+            </div>
+            <div className="mt-8 border-t border-line/70 pt-6">
+              <p className="text-xs font-semibold uppercase tracking-wide text-ink-muted">
+                Book directly with our partners
+              </p>
+              <TravelpayoutsProgramGrid className="mt-4" />
             </div>
           </div>
         </section>
