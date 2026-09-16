@@ -1,10 +1,27 @@
+const CANONICAL_HOST = "riversmag.com";
+
+function resolveSiteUrl(): string {
+  const fallback = `https://${CANONICAL_HOST}`;
+  const raw = process.env.NEXT_PUBLIC_SITE_URL?.trim();
+  if (!raw) return fallback;
+  try {
+    const url = new URL(raw);
+    if (url.hostname === `www.${CANONICAL_HOST}`) {
+      url.hostname = CANONICAL_HOST;
+    }
+    return url.origin;
+  } catch {
+    return raw.replace(/\/+$/, "");
+  }
+}
+
 export const siteConfig = {
   name: "Riversmag",
   shortName: "Riversmag",
   description:
     "Discover destinations, plan unforgettable trips, compare hotels and activities, and find smart travel recommendations with Riversmag.",
   tagline: "Plan smarter. Travel better.",
-  url: process.env.NEXT_PUBLIC_SITE_URL || "https://riversmag.com",
+  url: resolveSiteUrl(),
   ogImage: "/images/og-default.jpg",
   keywords: [
     "travel guides",

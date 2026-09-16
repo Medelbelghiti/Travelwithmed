@@ -99,7 +99,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
     return (
       <div className="container-x section-pad">
         <Breadcrumbs items={buildCrumbs([{ name: "Search", href: "/search" }])} />
-        <SectionHeading title="Search Riversmag" description="Search destinations, travel guides, hotels, itineraries and more." />
+        <SectionHeading level={1} title="Search Riversmag" description="Search destinations, travel guides, hotels, itineraries and more." />
         <Card className="p-10 text-center">
           <p className="text-ink-muted">Enter at least two characters to start searching.</p>
         </Card>
@@ -129,6 +129,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
     <div className="container-x section-pad">
       <Breadcrumbs items={buildCrumbs([{ name: "Search", href: "/search" }])} />
       <SectionHeading
+        level={1}
         title={total > 0 ? `${total} result${total > 1 ? "s" : ""} for “${query}”` : `No results for “${query}”`}
         description={total === 0 ? "Try a different search term or browse our destination guides." : undefined}
       />

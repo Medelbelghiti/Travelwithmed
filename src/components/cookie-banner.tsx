@@ -1,40 +1,22 @@
 "use client";
 
-import { useState, useSyncExternalStore } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Cookie } from "lucide-react";
-
-const STORAGE_KEY = "roamora-consent";
-
-function getSnapshot() {
-  try {
-    return window.localStorage.getItem(STORAGE_KEY) === null;
-  } catch {
-    return false;
-  }
-}
-
-function subscribe() {
-  return () => {};
-}
-
-function getServerSnapshot() {
-  return false;
-}
+import { setConsent, useConsent, type ConsentChoice } from "@/lib/consent";
 
 export function CookieBanner() {
-  const [dismissed, setDismissed] = useState(false);
-  const showBanner = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+  const [mounted, setMounted] = useState(false);
+  const consent = useConsent();
 
-  if (!showBanner || dismissed) return null;
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
-  function decide(choice: "accepted" | "essential") {
-    try {
-      window.localStorage.setItem(STORAGE_KEY, choice);
-    } catch {
-      // ignore
-    }
-    setDismissed(true);
+  if (!mounted || consent !== "unknown") return null;
+
+  function decide(choice: ConsentChoice) {
+    setConsent(choice);
   }
 
   return (

@@ -1,5 +1,4 @@
 import type { Metadata, Viewport } from "next";
-import Script from "next/script";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { Header } from "@/components/layout/header";
@@ -7,6 +6,7 @@ import { Footer } from "@/components/layout/footer";
 import { CookieBanner } from "@/components/cookie-banner";
 import { PlausibleAnalytics } from "@/components/plausible-analytics";
 import { GoogleAnalytics } from "@/components/google-analytics";
+import { TravelpayoutsDrive } from "@/components/travelpayouts-drive";
 import { AffiliateClickTracker } from "@/components/affiliate-click-tracker";
 import { TripBadge } from "@/components/trip/add-to-trip";
 import { siteConfig } from "@/lib/site";
@@ -85,12 +85,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <CookieBanner />
         <PlausibleAnalytics />
         <GoogleAnalytics />
+        <TravelpayoutsDrive />
         <AffiliateClickTracker />
         <TripBadge />
-        <Script
-          src="https://tpembars.com/NTczMjQx.js?t=573241"
-          strategy="afterInteractive"
-        />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}

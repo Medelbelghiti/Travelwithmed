@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { CategoryListing } from "@/components/category-listing";
+import { ResourceGuide } from "@/components/resources/resource-guides";
 import { Breadcrumbs, buildCrumbs } from "@/components/ui/breadcrumbs";
 import { AffiliateDisclosure } from "@/components/affiliate/disclosure";
 import { buildMetadata } from "@/lib/seo";
@@ -38,6 +39,9 @@ export default async function ResourcePage({ params }: { params: Promise<{ slug:
         description={resource.blurb}
         categorySlugs={[slug]}
       />
+      <div className="mt-16">
+        <ResourceGuide slug={slug} />
+      </div>
       <div className="mt-12">
         <AffiliateDisclosure />
       </div>

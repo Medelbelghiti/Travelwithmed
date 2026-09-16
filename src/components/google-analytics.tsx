@@ -1,9 +1,14 @@
+"use client";
+
 import Script from "next/script";
+import { useConsent } from "@/lib/consent";
 
 const GA_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID ?? "G-9GZ1VE5H72";
 
 export function GoogleAnalytics() {
-  if (!GA_ID) return null;
+  const consent = useConsent();
+
+  if (!GA_ID || consent !== "accepted") return null;
 
   return (
     <>

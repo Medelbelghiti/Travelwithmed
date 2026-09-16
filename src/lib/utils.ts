@@ -1,5 +1,6 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
+import { siteConfig } from "./site";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -45,9 +46,8 @@ export function truncate(text: string, length = 140): string {
 }
 
 export function absoluteUrl(path: string): string {
-  const base = process.env.NEXT_PUBLIC_SITE_URL || "https://riversmag.com";
   if (path.startsWith("http")) return path;
-  return `${base}${path.startsWith("/") ? path : `/${path}`}`;
+  return `${siteConfig.url}${path.startsWith("/") ? path : `/${path}`}`;
 }
 
 export function getInitials(name: string): string {
