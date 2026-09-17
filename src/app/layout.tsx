@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google";
+import { Inter, Playfair_Display } from "next/font/google";
 import "./globals.css";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
@@ -15,6 +15,12 @@ import { isShopEnabled } from "@/lib/fourthwall";
 
 const inter = Inter({
   variable: "--font-inter",
+  subsets: ["latin"],
+  display: "swap",
+});
+
+const playfair = Playfair_Display({
+  variable: "--font-playfair",
   subsets: ["latin"],
   display: "swap",
 });
@@ -68,7 +74,7 @@ const jsonLd = [websiteSchema(), organizationSchema()];
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   const shopEnabled = isShopEnabled();
   return (
-    <html lang="en" className={`${inter.variable} h-full antialiased`}>
+    <html lang="en" className={`${inter.variable} ${playfair.variable} h-full antialiased`}>
       <body className="flex min-h-full flex-col">
         <meta {...({ name: "impact-site-verification", value: "d5fe8a36-5fa2-4d62-bfc2-8539a534229c" } as Record<string, string>)} />{" "}
         <a

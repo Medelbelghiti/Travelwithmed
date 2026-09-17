@@ -53,7 +53,7 @@ export function NewsletterForm({
 
   if (status === "success") {
     return (
-      <div className="rounded-2xl border border-success/30 bg-success/10 px-5 py-4">
+      <div role="status" aria-live="polite" className="rounded-2xl border border-success/30 bg-success/10 px-5 py-4">
         <p className="font-medium text-success">{variant === "lead" ? "It’s on its way!" : "You’re in!"} 🎉</p>
         <p className="mt-1 text-sm text-ink-soft">{message}</p>
         {variant === "lead" && downloadPath && (
@@ -97,6 +97,8 @@ export function NewsletterForm({
           required
           value={email}
           onChange={(e) => setEmail(e.target.value)}
+          aria-invalid={status === "error"}
+          aria-describedby={status === "error" ? "newsletter-status" : undefined}
           placeholder="you@example.com"
           className="w-full rounded-xl border border-line bg-white px-4 py-2.5 text-sm outline-none transition-colors focus:border-brand"
         />
@@ -142,7 +144,11 @@ export function NewsletterForm({
             : "Get smarter travel tips"}
       </button>
 
-      {status === "error" && <p className="text-sm text-danger">{message}</p>}
+      {status === "error" && (
+        <p id="newsletter-status" role="alert" className="text-sm text-danger">
+          {message}
+        </p>
+      )}
     </form>
   );
 }

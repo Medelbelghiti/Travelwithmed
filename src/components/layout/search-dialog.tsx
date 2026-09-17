@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Search, CornerDownLeft, X, Compass, FileText, Map, BedDouble } from "lucide-react";
@@ -32,6 +32,8 @@ export function SearchDialog() {
   const [results, setResults] = useState<SearchResult[]>([]);
   const [loading, setLoading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
+  const restoreFocusRef = useRef<HTMLElement | null>(null);
   const router = useRouter();
   const controllerRef = useRef<AbortController | null>(null);
 
@@ -48,15 +50,40 @@ export function SearchDialog() {
   }, []);
 
   useEffect(() => {
-    if (open) {
-      const t = setTimeout(() => {
-        setQuery("");
-        setResults([]);
-        inputRef.current?.focus();
-      }, 0);
-      return () => clearTimeout(t);
-    }
+    if (!open) return;
+    restoreFocusRef.current = document.activeElement as HTMLElement | null;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const t = setTimeout(() => {
+      setQuery("");
+      setResults([]);
+      inputRef.current?.focus();
+    }, 0);
+    return () => {
+      clearTimeout(t);
+      document.body.style.overflow = previousOverflow;
+      restoreFocusRef.current?.focus?.();
+    };
   }, [open]);
+
+  function trapFocus(e: ReactKeyboardEvent) {
+    if (e.key !== "Tab") return;
+    const panel = panelRef.current;
+    if (!panel) return;
+    const focusables = panel.querySelectorAll<HTMLElement>(
+      'a[href], button:not([disabled]), input, [tabindex]:not([tabindex="-1"])',
+    );
+    if (focusables.length === 0) return;
+    const first = focusables[0];
+    const last = focusables[focusables.length - 1];
+    if (e.shiftKey && document.activeElement === first) {
+      e.preventDefault();
+      last.focus();
+    } else if (!e.shiftKey && document.activeElement === last) {
+      e.preventDefault();
+      first.focus();
+    }
+  }
 
   const runSearch = useCallback(async (value: string) => {
     const q = value.trim();
@@ -105,14 +132,19 @@ export function SearchDialog() {
   return (
     <div
       className="fixed inset-0 z-[100] flex items-start justify-center bg-ink/40 p-4 pt-20 backdrop-blur-sm"
-      onClick={() => setOpen(false)}
-      role="dialog"
-      aria-modal="true"
-      aria-label="Site search"
     >
       <div
-        className="w-full max-w-xl overflow-hidden rounded-2xl border border-line bg-white shadow-2xl"
-        onClick={(e) => e.stopPropagation()}
+        className="absolute inset-0"
+        onClick={() => setOpen(false)}
+        aria-hidden
+      />
+      <div
+        ref={panelRef}
+        onKeyDown={trapFocus}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Site search"
+        className="relative w-full max-w-xl overflow-hidden rounded-2xl border border-line bg-white shadow-2xl"
       >
         <div className="flex items-center gap-3 border-b border-line px-5">
           <Search className="h-5 w-5 text-ink-muted" aria-hidden />
