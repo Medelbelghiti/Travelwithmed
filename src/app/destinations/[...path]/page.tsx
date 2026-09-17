@@ -1,5 +1,5 @@
 import { DestinationDetail } from "@/components/destination/destination-detail";
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { buildMetadata } from "@/lib/seo";
 
@@ -22,7 +22,7 @@ export async function generateMetadata({ params }: { params: Promise<{ path: str
   return buildMetadata({
     title: seo?.title ?? `${destination.name} Travel Guide`,
     description: seo?.description ?? (destination.tagline ?? `The complete guide to ${destination.name}: best places to visit, where to stay, tours, itineraries, travel tips and practical advice.`),
-    canonicalPath: seo?.canonicalUrl ?? `/destinations/${path.join("/")}`,
+    canonicalPath: seo?.canonicalUrl ?? `/destinations/${slug}`,
     ogImage: seo?.ogImage ?? destination.coverImage ?? undefined,
     ogType: "website",
     keywords: seo?.keywords ? seo.keywords.split(",").map((k) => k.trim()) : undefined,
@@ -36,6 +36,11 @@ export default async function DestinationCatchAll({
 }) {
   const { path } = await params;
   const slug = path[path.length - 1];
+
+  // Destinations live at a single canonical depth (/destinations/{slug}).
+  // Collapse any deeper hierarchy path (e.g. /destinations/europe/france/paris)
+  // to the canonical URL so search engines index one version only.
+  if (path.length > 1) permanentRedirect(`/destinations/${slug}`);
 
   let destination: Awaited<ReturnType<typeof fetchDestination>> | null = null;
   try {

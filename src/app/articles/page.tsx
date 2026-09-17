@@ -1,4 +1,5 @@
 ﻿import { prisma } from "@/lib/prisma";
+import { notFound } from "next/navigation";
 import { ArticleCard } from "@/components/article-card";
 import { SectionHeading } from "@/components/ui/card";
 import { Breadcrumbs, buildCrumbs } from "@/components/ui/breadcrumbs";
@@ -57,6 +58,10 @@ export default async function ArticlesIndex({
   ]);
 
   const totalPages = Math.max(1, Math.ceil(total / PER_PAGE));
+
+  // Out-of-range pages would render an empty grid with a self-canonical
+  // (a soft 404). Fail properly instead.
+  if (currentPage > totalPages) notFound();
 
   if (total === 0) {
     return (

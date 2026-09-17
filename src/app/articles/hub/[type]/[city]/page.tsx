@@ -80,6 +80,10 @@ export default async function HubPage({ params }: HubPageProps) {
       activityLink = null;
     }
 
+    // No real experiences => the hub would be thin content. Serve 404 so it is
+    // never indexed (and it is likewise excluded from the sitemap).
+    if (activities.length === 0) notFound();
+
     const itineraries = destination.itineraries.map((it) => ({
       id: it.id,
       title: it.title,
@@ -126,6 +130,9 @@ export default async function HubPage({ params }: HubPageProps) {
     hotels = [];
     hotelLink = null;
   }
+
+  // No hotels => thin hub; 404 (also excluded from the sitemap).
+  if (hotels.length === 0) notFound();
 
   const hub: HotelsHubData = {
     hubType,

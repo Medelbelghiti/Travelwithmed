@@ -1,17 +1,32 @@
 const CANONICAL_HOST = "riversmag.com";
+const WWW_HOST = `www.${CANONICAL_HOST}`;
+const LOCAL_HOSTS = new Set(["localhost", "127.0.0.1", "::1", "[::1]"]);
 
+/**
+ * Resolve the single canonical site origin used by canonicals, sitemap, Open
+ * Graph and JSON-LD. Only the apex domain is ever trusted in production so a
+ * staging/preview value can never leak into indexable output; localhost stays
+ * usable during local development.
+ */
 function resolveSiteUrl(): string {
   const fallback = `https://${CANONICAL_HOST}`;
   const raw = process.env.NEXT_PUBLIC_SITE_URL?.trim();
   if (!raw) return fallback;
   try {
     const url = new URL(raw);
-    if (url.hostname === `www.${CANONICAL_HOST}`) {
+    const host = url.hostname.toLowerCase();
+    if (host === WWW_HOST || host === CANONICAL_HOST) {
       url.hostname = CANONICAL_HOST;
+      url.protocol = "https:";
+      url.port = "";
+      return url.origin;
     }
-    return url.origin;
+    if (process.env.NODE_ENV !== "production" && LOCAL_HOSTS.has(host)) {
+      return url.origin;
+    }
+    return fallback;
   } catch {
-    return raw.replace(/\/+$/, "");
+    return fallback;
   }
 }
 

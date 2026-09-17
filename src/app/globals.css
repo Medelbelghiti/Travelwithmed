@@ -39,6 +39,7 @@
   --color-brand-deep: var(--brand-deep);
   --color-brand-light: var(--brand-light);
   --color-brand-soft: var(--brand-soft);
+  --color-card: var(--card);
   --color-card-hover: var(--card-hover);
   --color-accent: var(--accent);
   --color-accent-dark: var(--accent-dark);

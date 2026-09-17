@@ -57,7 +57,7 @@ export default async function DealsPage() {
           dangerouslySetInnerHTML={{
             __html: JSON.stringify(
               itemListSchema(
-                live.map((d) => ({ name: d.dealTitle ?? d.productName, url: `/deals#${d.id}` })),
+                live.map((d) => ({ name: d.dealTitle ?? d.productName })),
               ),
             ),
           }}
