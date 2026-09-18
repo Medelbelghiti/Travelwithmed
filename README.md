@@ -1,12 +1,12 @@
-# Roamora — Travel Media & Affiliate Platform
+# Riversmag — Travel Media & Affiliate Platform
 
-Roamora is a production-ready, SEO-first travel media site built to monetize through affiliate marketing. It pairs a polished editorial front-end with a full content-management system for destinations, guides, itineraries, hotels, activities, products and centrally-managed affiliate links.
+Riversmag is a production-ready, SEO-first travel media site built to monetize through affiliate marketing. It pairs a polished editorial front-end with a full content-management system for destinations, guides, itineraries, hotels, activities, products and centrally-managed affiliate links.
 
 > **Plan smarter. Travel better.**
 
 ## Highlights
 
-- **Affiliate engine** — every link lives in one table, is tracked through `/go/[id]` (click count, device, country, referrer, UTM) and can be attached to articles, destinations, hotels, activities or products. No hardcoded networks.
+- **Affiliate engine** — every link lives in one table, is tracked through `/out/[id]` (click count, device, country, referrer, UTM) and can be attached to articles, destinations, hotels, activities or products. No hardcoded networks.
 - **Deals & promos** — featured deals with promo codes and expiry dates are managed in the admin and surfaced on `/deals`, the homepage strip and partner CTAs.
 - **Full admin** — articles (block editor + SEO fields), destinations tree, categories, authors, hotels, activities, products, affiliate links, media library, itineraries, site settings and analytics.
 - **SEO tooling** — dynamic sitemap, robots.txt, schema.org (Article, FAQ, BreadcrumbList, ItemList, Hotel, TouristAttraction, WebSite), per-page Open Graph (with a dynamic branded OG image generator), canonicals, noindex support.
@@ -20,7 +20,7 @@ Roamora is a production-ready, SEO-first travel media site built to monetize thr
 - **Next.js 16** (App Router, Turbopack) + **TypeScript**
 - **Tailwind CSS 4** (semantic design tokens, editorial serif + sans)
 - **Prisma 7** + **PostgreSQL** (adapter-pg, `prisma.config.ts`)
-- **next-auth** (credentials, role-based access), **next/og** ImageResponse
+- **Custom credentials auth** (bcrypt + HttpOnly session cookies, admin-only server actions), **next/og** ImageResponse
 
 ## Getting started
 
@@ -53,7 +53,7 @@ C:\Users\pc\pgsql\pgsql\bin\pg_ctl.exe -D C:\Users\pc\pgdata -w start
 Create the database, generate the client, migrate and seed:
 
 ```bash
-# with psql: CREATE DATABASE roamora;
+# with psql: CREATE DATABASE riversmag;
 npm run db:generate
 npm run db:migrate     # applies existing migrations (name-aware: npx prisma migrate dev --name init)
 npm run db:seed        # demo content + admin user

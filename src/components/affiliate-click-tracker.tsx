@@ -41,7 +41,7 @@ function readAttr(anchor: HTMLAnchorElement, name: string): string | undefined {
  */
 export function AffiliateClickTracker() {
   useEffect(() => {
-    function onClick(event: MouseEvent) {
+    function handle(event: MouseEvent) {
       const target =
         event.target instanceof Element
           ? event.target.closest<HTMLAnchorElement>(
@@ -60,8 +60,6 @@ export function AffiliateClickTracker() {
       const cta = readAttr(target, "data-affiliate-cta");
 
       window.gtag("event", "affiliate_click", {
-        event_category: "affiliate",
-        event_label: placement,
         page_location: window.location.href,
         page_path: window.location.pathname,
         affiliate_category: category ?? undefined,
@@ -69,12 +67,27 @@ export function AffiliateClickTracker() {
         affiliate_destination: destination ?? undefined,
         affiliate_cta: cta ?? undefined,
         affiliate_placement: placement,
-        non_interaction: false,
+        transport_type: "beacon",
       });
     }
 
+    // 'click' covers primary-button and keyboard activation; 'auxclick'
+    // covers middle-click so new-tab opens are still attributed.
+    const onClick = (event: MouseEvent) => {
+      if (event.button !== 0) return;
+      handle(event);
+    };
+    const onAux = (event: MouseEvent) => {
+      if (event.button !== 1) return;
+      handle(event);
+    };
+
     document.addEventListener("click", onClick);
-    return () => document.removeEventListener("click", onClick);
+    document.addEventListener("auxclick", onAux);
+    return () => {
+      document.removeEventListener("click", onClick);
+      document.removeEventListener("auxclick", onAux);
+    };
   }, []);
 
   return null;

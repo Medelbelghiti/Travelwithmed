@@ -1,11 +1,24 @@
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { prisma } from "@/lib/prisma";
+import { getClientIp, rateLimit } from "@/lib/rate-limit";
+
+const querySchema = z.string().trim().min(2, "Query too short").max(80, "Query too long");
 
 export async function GET(request: NextRequest) {
-  const q = request.nextUrl.searchParams.get("q")?.trim();
-  if (!q || q.length < 2) {
+  const ip = getClientIp(request);
+  if (!rateLimit(`search:${ip}`, 60, 60_000)) {
+    return NextResponse.json(
+      { results: [], error: "Too many search requests. Please try again shortly." },
+      { status: 429 },
+    );
+  }
+
+  const parsed = querySchema.safeParse(request.nextUrl.searchParams.get("q"));
+  if (!parsed.success) {
     return NextResponse.json({ results: [] });
   }
+  const q = parsed.data;
 
   const [articles, destinations, itineraries, hotels] = await Promise.all([
     prisma.article.findMany({

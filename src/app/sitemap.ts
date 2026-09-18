@@ -1,4 +1,5 @@
 import type { MetadataRoute } from "next";
+import { unstable_cache } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { siteConfig } from "@/lib/site";
 import { isShopEnabled } from "@/lib/fourthwall";
@@ -11,89 +12,98 @@ type PathEntry = { path: string; lastModified?: Date };
 const firstDefined = (...values: (Date | null | undefined)[]): Date | undefined =>
   values.find((v): v is Date => v instanceof Date);
 
-async function fetchDynamicPaths(): Promise<{ destinations: PathEntry[]; articles: PathEntry[]; itineraries: PathEntry[]; hotels: PathEntry[]; activities: PathEntry[]; hubs: PathEntry[] }> {
-  const [destinations, articles, itineraries, hotels, activities, hotelGroups, activityGroups] = await Promise.all([
-    prisma.destination.findMany({
-      where: { isActive: true },
-      select: { id: true, slug: true, updatedAt: true, type: true },
-    }),
-    prisma.article.findMany({
-      where: { status: "PUBLISHED", allowIndexing: true },
-      select: { slug: true, updatedAt: true, updatedDate: true, publishedAt: true },
-    }),
-    prisma.itinerary.findMany({
-      where: { isActive: true },
-      select: { slug: true, updatedAt: true, publishedAt: true },
-    }),
-    prisma.hotel.findMany({
-      where: { isActive: true },
-      select: { slug: true, updatedAt: true },
-    }),
-    prisma.activity.findMany({
-      where: { isActive: true },
-      select: { slug: true, updatedAt: true },
-    }),
-    prisma.hotel.groupBy({
-      by: ["destinationId"],
-      where: { isActive: true, destinationId: { not: null } },
-      _count: { _all: true },
-    }),
-    prisma.activity.groupBy({
-      by: ["destinationId"],
-      where: { isActive: true, destinationId: { not: null } },
-      _count: { _all: true },
-    }),
-  ]);
+const fetchDynamicPaths = unstable_cache(
+  async (): Promise<{
+    destinations: PathEntry[];
+    articles: PathEntry[];
+    itineraries: PathEntry[];
+    hotels: PathEntry[];
+    activities: PathEntry[];
+    hubs: PathEntry[];
+  }> => {
+    const [destinations, articles, itineraries, hotels, activities, hotelGroups, activityGroups] = await Promise.all([
+      prisma.destination.findMany({
+        where: { isActive: true },
+        select: { id: true, slug: true, updatedAt: true, type: true },
+      }),
+      prisma.article.findMany({
+        where: { status: "PUBLISHED", allowIndexing: true },
+        select: { slug: true, updatedAt: true, updatedDate: true, publishedAt: true },
+      }),
+      prisma.itinerary.findMany({
+        where: { isActive: true },
+        select: { slug: true, updatedAt: true, publishedAt: true },
+      }),
+      prisma.hotel.findMany({
+        where: { isActive: true },
+        select: { slug: true, updatedAt: true },
+      }),
+      prisma.activity.findMany({
+        where: { isActive: true },
+        select: { slug: true, updatedAt: true },
+      }),
+      prisma.hotel.groupBy({
+        by: ["destinationId"],
+        where: { isActive: true, destinationId: { not: null } },
+        _count: { _all: true },
+      }),
+      prisma.activity.groupBy({
+        by: ["destinationId"],
+        where: { isActive: true, destinationId: { not: null } },
+        _count: { _all: true },
+      }),
+    ]);
 
-  // Only advertise hub pages that actually have data; empty "best hotels in X"
-  // style pages are thin content and must not enter the index.
-  const hotelHubs = new Set(
-    hotelGroups.map((g) => g.destinationId).filter((id): id is string => Boolean(id)),
-  );
-  const activityHubs = new Set(
-    activityGroups.map((g) => g.destinationId).filter((id): id is string => Boolean(id)),
-  );
-  const HOTEL_HUB_TYPES: HubTypeSlug[] = ["best-hotels", "where-to-stay"];
-  const TOUR_HUB_TYPES: HubTypeSlug[] = ["best-tours", "things-to-do"];
+    const hotelHubs = new Set(
+      hotelGroups.map((g) => g.destinationId).filter((id): id is string => Boolean(id)),
+    );
+    const activityHubs = new Set(
+      activityGroups.map((g) => g.destinationId).filter((id): id is string => Boolean(id)),
+    );
+    const HOTEL_HUB_TYPES: HubTypeSlug[] = ["best-hotels", "where-to-stay"];
+    const TOUR_HUB_TYPES: HubTypeSlug[] = ["best-tours", "things-to-do"];
 
-  const hubs: PathEntry[] = [];
-  for (const d of destinations) {
-    if (hotelHubs.has(d.id)) {
-      for (const hubType of HOTEL_HUB_TYPES) {
-        hubs.push({ path: `/articles/hub/${hubType}/${d.slug}`, lastModified: d.updatedAt });
+    const hubs: PathEntry[] = [];
+    for (const d of destinations) {
+      if (hotelHubs.has(d.id)) {
+        for (const hubType of HOTEL_HUB_TYPES) {
+          hubs.push({ path: `/articles/hub/${hubType}/${d.slug}`, lastModified: d.updatedAt });
+        }
+      }
+      if (activityHubs.has(d.id)) {
+        for (const hubType of TOUR_HUB_TYPES) {
+          hubs.push({ path: `/articles/hub/${hubType}/${d.slug}`, lastModified: d.updatedAt });
+        }
       }
     }
-    if (activityHubs.has(d.id)) {
-      for (const hubType of TOUR_HUB_TYPES) {
-        hubs.push({ path: `/articles/hub/${hubType}/${d.slug}`, lastModified: d.updatedAt });
-      }
-    }
-  }
 
-  return {
-    destinations: destinations.map((d): PathEntry => ({
-      path: `/destinations/${d.slug}`,
-      lastModified: d.updatedAt,
-    })),
-    articles: articles.map((a): PathEntry => ({
-      path: `/articles/${a.slug}`,
-      lastModified: firstDefined(a.updatedAt, a.updatedDate, a.publishedAt),
-    })),
-    itineraries: itineraries.map((i): PathEntry => ({
-      path: `/itineraries/${i.slug}`,
-      lastModified: firstDefined(i.updatedAt, i.publishedAt),
-    })),
-    hotels: hotels.map((h): PathEntry => ({
-      path: `/hotels/${h.slug}`,
-      lastModified: h.updatedAt,
-    })),
-    activities: activities.map((a): PathEntry => ({
-      path: `/activities/${a.slug}`,
-      lastModified: a.updatedAt,
-    })),
-    hubs,
-  };
-}
+    return {
+      destinations: destinations.map((d): PathEntry => ({
+        path: `/destinations/${d.slug}`,
+        lastModified: d.updatedAt,
+      })),
+      articles: articles.map((a): PathEntry => ({
+        path: `/articles/${a.slug}`,
+        lastModified: firstDefined(a.updatedAt, a.updatedDate, a.publishedAt),
+      })),
+      itineraries: itineraries.map((i): PathEntry => ({
+        path: `/itineraries/${i.slug}`,
+        lastModified: firstDefined(i.updatedAt, i.publishedAt),
+      })),
+      hotels: hotels.map((h): PathEntry => ({
+        path: `/hotels/${h.slug}`,
+        lastModified: h.updatedAt,
+      })),
+      activities: activities.map((a): PathEntry => ({
+        path: `/activities/${a.slug}`,
+        lastModified: a.updatedAt,
+      })),
+      hubs,
+    };
+  },
+  ["sitemap", "dynamic-paths"],
+  { tags: ["sitemap"], revalidate: 3600 },
+);
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   let destinations: PathEntry[] = [];

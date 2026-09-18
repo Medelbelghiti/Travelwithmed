@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { trackAffiliateClick } from "@/lib/affiliate";
+import {
+  resolveAffiliateTargetUrl,
+  trackAffiliateClick,
+} from "@/lib/affiliate";
 import { prisma } from "@/lib/prisma";
 
 export async function GET(
@@ -33,10 +36,13 @@ export async function GET(
     console.error("Affiliate click error", error);
   }
 
-  // Fallback: look up link target directly
+  // Fallback: look up link target directly without tracking.
+  // The URL is re-validated so a malformed or non-http(s) target can never
+  // become an open redirect; unverifiable ID target URLs fall back home.
   const link = await prisma.affiliateLink.findUnique({ where: { id } });
-  if (link?.active) {
-    return NextResponse.redirect(link.targetUrl, { status: 302 });
+  const safeTarget = link?.active ? resolveAffiliateTargetUrl(link.targetUrl) : null;
+  if (safeTarget) {
+    return NextResponse.redirect(safeTarget, { status: 302 });
   }
 
   return NextResponse.redirect(new URL("/", request.url), { status: 302 });

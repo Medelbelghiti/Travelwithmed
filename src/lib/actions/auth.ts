@@ -1,7 +1,9 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { headers } from "next/headers";
 import { prisma } from "@/lib/prisma";
+import { rateLimit } from "@/lib/rate-limit";
 import {
   createSession,
   destroySession,
@@ -11,6 +13,27 @@ import {
   verifyPassword,
 } from "@/lib/auth";
 
+const LOGIN_ATTEMPTS_LIMIT = 5;
+const LOGIN_WINDOW_MS = 15 * 60 * 1000;
+const LOGIN_IP_LIMIT = 30;
+const PASSWORD_MIN_LENGTH = 12;
+
+async function getActionClientIp(): Promise<string> {
+  try {
+    const h = await headers();
+    const forwarded = h.get("x-forwarded-for");
+    if (forwarded) {
+      const ip = forwarded.split(",")[0]?.trim();
+      if (ip) return ip;
+    }
+    const realIp = h.get("x-real-ip");
+    if (realIp) return realIp.trim();
+  } catch {
+    // not in a request scope
+  }
+  return "unknown";
+}
+
 export async function loginAction(formData: FormData) {
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
   const password = String(formData.get("password") ?? "");
@@ -19,13 +42,27 @@ export async function loginAction(formData: FormData) {
     return { error: "Email and password are required." };
   }
 
+  const ip = await getActionClientIp();
+
   const user = await prisma.user.findUnique({ where: { email } });
-  if (!user || !user.passwordHash || !user.isActive) {
+  if (!user?.passwordHash || !user.isActive) {
+    if (
+      !rateLimit(`login:${email}|${ip}`, LOGIN_ATTEMPTS_LIMIT, LOGIN_WINDOW_MS) ||
+      !rateLimit(`login-ip:${ip}`, LOGIN_IP_LIMIT, LOGIN_WINDOW_MS)
+    ) {
+      return { error: "Too many attempts. Please try again later." };
+    }
     return { error: "Invalid email or password." };
   }
 
   const valid = await verifyPassword(password, user.passwordHash);
   if (!valid) {
+    if (
+      !rateLimit(`login:${email}|${ip}`, LOGIN_ATTEMPTS_LIMIT, LOGIN_WINDOW_MS) ||
+      !rateLimit(`login-ip:${ip}`, LOGIN_IP_LIMIT, LOGIN_WINDOW_MS)
+    ) {
+      return { error: "Too many attempts. Please try again later." };
+    }
     return { error: "Invalid email or password." };
   }
 
@@ -39,8 +76,10 @@ export async function loginAction(formData: FormData) {
 export async function logoutAction() {
   const { cookies } = await import("next/headers");
   const cookieStore = await cookies();
-  const token = cookieStore.get("roamora_session")?.value;
+  const token =
+    cookieStore.get("riversmag_session")?.value ?? cookieStore.get("roamora_session")?.value;
   if (token) await destroySession(token);
+  cookieStore.delete("riversmag_session");
   cookieStore.delete("roamora_session");
   redirect("/admin/login");
 }
@@ -55,8 +94,13 @@ export async function requireAdminRedirect() {
 }
 
 export async function setPasswordForUser(userId: string, newPassword: string) {
-  if (newPassword.length < 8) {
-    return { error: "Password must be at least 8 characters." };
+  try {
+    await requireRole("ADMIN");
+  } catch {
+    return { error: "You do not have permission to change passwords." };
+  }
+  if (newPassword.length < PASSWORD_MIN_LENGTH) {
+    return { error: `Password must be at least ${PASSWORD_MIN_LENGTH} characters.` };
   }
   const passwordHash = await hashPassword(newPassword);
   await prisma.user.update({ where: { id: userId }, data: { passwordHash } });

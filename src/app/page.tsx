@@ -18,6 +18,7 @@ import { ActivityCard } from "@/components/affiliate/activity-card";
 import { SectionHeading } from "@/components/ui/card";
 import { NewsletterForm } from "@/components/newsletter-form";
 import { AffiliateDisclosure } from "@/components/affiliate/disclosure";
+import { unstable_cache } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { siteConfig } from "@/lib/site";
 import { buildMetadata } from "@/lib/seo";
@@ -42,59 +43,77 @@ const PLAN_FLOWS = [
   { label: "Get around", href: "/resources/car-rental", icon: Car, eyebrow: "Car rental" },
 ];
 
-async function fetchFeatured() {
-  return prisma.destination.findMany({
-    where: { isActive: true, slug: { in: FEATURED_SLUGS } },
-    include: {
-      _count: { select: { hotels: true, activities: true, itineraries: true } },
-    },
-    orderBy: { sortOrder: "asc" },
-  });
-}
+const fetchFeatured = unstable_cache(
+  async () =>
+    prisma.destination.findMany({
+      where: { isActive: true, slug: { in: FEATURED_SLUGS } },
+      include: {
+        _count: { select: { hotels: true, activities: true, itineraries: true } },
+      },
+      orderBy: { sortOrder: "asc" },
+    }),
+  ["home", "featured-destinations"],
+  { tags: ["home"], revalidate: 3600 },
+);
 
-async function fetchTrending() {
-  return prisma.destination.findMany({
-    where: { isActive: true, type: { in: ["CITY", "COUNTRY"] }, slug: { notIn: FEATURED_SLUGS } },
-    include: { _count: { select: { articles: true } } },
-    orderBy: { sortOrder: "asc" },
-    take: 4,
-  });
-}
+const fetchTrending = unstable_cache(
+  async () =>
+    prisma.destination.findMany({
+      where: { isActive: true, type: { in: ["CITY", "COUNTRY"] }, slug: { notIn: FEATURED_SLUGS } },
+      include: { _count: { select: { articles: true } } },
+      orderBy: { sortOrder: "asc" },
+      take: 4,
+    }),
+  ["home", "trending-destinations"],
+  { tags: ["home"], revalidate: 3600 },
+);
 
-async function fetchArticles() {
-  return prisma.article.findMany({
-    where: { status: "PUBLISHED" },
-    include: { author: true },
-    orderBy: [{ publishedAt: "desc" }, { viewCount: "desc" }],
-    take: 6,
-  });
-}
+const fetchArticles = unstable_cache(
+  async () =>
+    prisma.article.findMany({
+      where: { status: "PUBLISHED" },
+      include: { author: true },
+      orderBy: [{ publishedAt: "desc" }, { viewCount: "desc" }],
+      take: 6,
+    }),
+  ["home", "articles"],
+  { tags: ["home"], revalidate: 3600 },
+);
 
-async function fetchHotels() {
-  return prisma.hotel.findMany({
-    where: { isActive: true },
-    include: { affiliateLinks: { where: { active: true }, take: 1 } },
-    orderBy: [{ guestRating: "desc" }, { sorts: "asc" }],
-    take: 6,
-  });
-}
+const fetchHotels = unstable_cache(
+  async () =>
+    prisma.hotel.findMany({
+      where: { isActive: true },
+      include: { affiliateLinks: { where: { active: true }, take: 1 } },
+      orderBy: [{ guestRating: "desc" }, { sorts: "asc" }],
+      take: 6,
+    }),
+  ["home", "hotels"],
+  { tags: ["home"], revalidate: 3600 },
+);
 
-async function fetchActivities() {
-  return prisma.activity.findMany({
-    where: { isActive: true },
-    include: { affiliateLinks: { where: { active: true }, take: 1 } },
-    orderBy: { rating: "desc" },
-    take: 6,
-  });
-}
+const fetchActivities = unstable_cache(
+  async () =>
+    prisma.activity.findMany({
+      where: { isActive: true },
+      include: { affiliateLinks: { where: { active: true }, take: 1 } },
+      orderBy: { rating: "desc" },
+      take: 6,
+    }),
+  ["home", "activities"],
+  { tags: ["home"], revalidate: 3600 },
+);
 
-async function fetchDeals() {
-  return prisma.affiliateLink.findMany({
-    where: { active: true, featuredDeal: true, OR: [{ dealExpiresAt: null }, { dealExpiresAt: { gt: new Date() } }] },
-    orderBy: [{ priority: "desc" }, { clickCount: "desc" }],
-    take: 3,
-  });
-}
+const fetchDeals = unstable_cache(
+  async () =>
+    prisma.affiliateLink.findMany({
+      where: { active: true, featuredDeal: true, OR: [{ dealExpiresAt: null }, { dealExpiresAt: { gt: new Date() } }] },
+      orderBy: [{ priority: "desc" }, { clickCount: "desc" }],
+      take: 3,
+    }),
+  ["home", "deals"],
+  { tags: ["home"], revalidate: 3600 },
+);
 
 export default async function HomePage() {
   let featuredDestinations: Awaited<ReturnType<typeof fetchFeatured>> = [];

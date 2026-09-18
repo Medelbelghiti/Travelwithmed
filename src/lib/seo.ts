@@ -227,9 +227,17 @@ export function hotelSchema(params: {
     "@type": "Hotel",
     name: params.name,
     address: params.address ? { "@type": "PostalAddress", streetAddress: params.address } : undefined,
-    aggregateRating: params.rating
-      ? { "@type": "AggregateRating", ratingValue: params.rating, bestRating: 5, reviewCount: params.reviewCount ?? 1 }
-      : undefined,
+    aggregateRating:
+      params.rating !== undefined && params.rating !== null &&
+      params.reviewCount !== undefined && params.reviewCount !== null &&
+      params.rating >= 0 && params.rating <= 5 && params.reviewCount > 0
+        ? {
+            "@type": "AggregateRating",
+            ratingValue: params.rating,
+            bestRating: 5,
+            reviewCount: params.reviewCount,
+          }
+        : undefined,
     priceRange: params.priceRange ?? undefined,
     url: params.url ?? undefined,
     image: params.image ? absoluteUrl(params.image) : undefined,

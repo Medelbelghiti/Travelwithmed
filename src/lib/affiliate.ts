@@ -1,6 +1,8 @@
-﻿import type { Prisma } from "@prisma/client";
+﻿import { randomUUID } from "node:crypto";
+import type { Prisma } from "@prisma/client";
 import { AffiliateCategory } from "@prisma/client";
 import { prisma } from "./prisma";
+import { siteConfig } from "./site";
 
 export type AffiliateLinkRow = Prisma.AffiliateLinkGetPayload<{
   include: { article: { select: { slug: true; title: true } } };
@@ -42,7 +44,28 @@ const CTAS = [
   "See current price",
 ];
 
-function buildUtmUrl(
+/**
+ * Generates the single click identifier used for one affiliate redirect.
+ * The value is created exactly once per click and reused everywhere: the
+ * stored AffiliateClick record, the redirect URL, the tracking parameter
+ * and any downstream analytics.
+ */
+export function generateClickId(): string {
+  return randomUUID();
+}
+
+/**
+ * Builds the final affiliate destination URL. `clickId` must come from
+ * `generateClickId()` so the same identifier is used for storage and
+ * redirect. Relative target URLs resolve against the canonical site origin.
+ *
+ * The optional `trackingParameter` is a deterministic template normalized to
+ * exactly one query parameter:
+ *  - `subid={click_id}`  ->  `subid=<clickId>` (placeholder replaced)
+ *  - `subid`             ->  `subid=<clickId>` (bare name)
+ *  - `partner=travel`    ->  `partner=travel` (static value)
+ */
+export function buildAffiliateUrl(
   targetUrl: string,
   params: {
     trackingParameter?: string | null;
@@ -52,9 +75,13 @@ function buildUtmUrl(
     utmContent?: string | null;
     placement?: string | null;
   },
+  clickId: string,
 ): string {
-  const url = new URL(targetUrl, "https://riversmag.com");
-  const utmSource = params.utmSource || "riversmag";
+  const url = new URL(targetUrl, siteConfig.url);
+  // Legacy rows may still carry utm_source=roamora; never leak the old brand
+  // into affiliate URLs — normalize it to Riversmag.
+  const utmSource =
+    params.utmSource && params.utmSource !== "roamora" ? params.utmSource : "riversmag";
   const utmMedium = params.utmMedium || "affiliate";
   const utmCampaign = params.utmCampaign || "general";
   const utmContent = params.utmContent || params.placement || "default";
@@ -62,16 +89,36 @@ function buildUtmUrl(
   url.searchParams.set("utm_medium", utmMedium);
   url.searchParams.set("utm_campaign", utmCampaign);
   url.searchParams.set("utm_content", utmContent);
-  if (params.trackingParameter) {
-    // If the tracking param contains a placeholder token, replace it.
-    if (params.trackingParameter.includes("{click_id}")) {
-      const clickId = Math.random().toString(36).slice(2, 10);
-      url.searchParams.set("click_id", clickId);
+  const template = params.trackingParameter?.trim();
+  if (template) {
+    const eq = template.indexOf("=");
+    if (eq === -1) {
+      url.searchParams.set(template, clickId);
     } else {
-      url.searchParams.set(params.trackingParameter, "/"); // marker for param presence
+      const name = template.slice(0, eq).trim();
+      const value = template.slice(eq + 1).startsWith("{click_id}")
+        ? clickId
+        : template.slice(eq + 1).replaceAll("{click_id}", clickId);
+      url.searchParams.set(name, value);
     }
   }
   return url.toString();
+}
+
+/**
+ * Resolves a stored target URL into a redirectable absolute http(s) URL.
+ * Rejects non-http(s) protocols (javascript:, data:, ...) so the `/out/[id]`
+ * route can never become an open redirect. Returns null when unsafe/invalid.
+ */
+export function resolveAffiliateTargetUrl(raw: string | null | undefined): string | null {
+  if (!raw) return null;
+  try {
+    const url = new URL(raw, siteConfig.url);
+    if (url.protocol !== "https:" && url.protocol !== "http:") return null;
+    return url.toString();
+  } catch {
+    return null;
+  }
 }
 
 function detectDeviceType(userAgent?: string | null): string {
@@ -99,42 +146,43 @@ export async function trackAffiliateClick(params: {
   const deviceType = detectDeviceType(params.userAgent);
   const ctaLabel = params.ctaLabel || AFFILIATE_CTA_LABELS[link.category] || "Find out more";
 
-  await prisma.affiliateClick.create({
-    data: {
-      url: buildUtmUrl(link.targetUrl, {
-        trackingParameter: link.trackingParameter,
-        utmSource: link.utmSource,
-        utmMedium: link.utmMedium,
-        utmCampaign: link.utmCampaign,
-        utmContent: link.utmContent,
-        placement: params.placement,
-      }),
-      affiliateLinkId: link.id,
-      articleId: params.articleId ?? link.articleId,
-      referrer: params.referrer,
-      ip: params.ip,
-      userAgent: params.userAgent,
-      deviceType,
-      country: params.country,
-      placement: params.placement,
-      ctaLabel,
-    },
-  });
-
-  await prisma.affiliateLink.update({
-    where: { id: link.id },
-    data: { clickCount: { increment: 1 } },
-  });
-
-  return {
-    redirectUrl: buildUtmUrl(link.targetUrl, {
+  const clickId = generateClickId();
+  const redirectUrl = buildAffiliateUrl(
+    link.targetUrl,
+    {
       trackingParameter: link.trackingParameter,
       utmSource: link.utmSource,
       utmMedium: link.utmMedium,
       utmCampaign: link.utmCampaign,
       utmContent: link.utmContent,
       placement: params.placement,
+    },
+    clickId,
+  );
+
+  await prisma.$transaction([
+    prisma.affiliateClick.create({
+      data: {
+        url: redirectUrl,
+        affiliateLinkId: link.id,
+        articleId: params.articleId ?? link.articleId,
+        referrer: params.referrer,
+        ip: params.ip,
+        userAgent: params.userAgent,
+        deviceType,
+        country: params.country,
+        placement: params.placement,
+        ctaLabel,
+      },
     }),
+    prisma.affiliateLink.update({
+      where: { id: link.id },
+      data: { clickCount: { increment: 1 } },
+    }),
+  ]);
+
+  return {
+    redirectUrl,
     ctaLabel,
   };
 }

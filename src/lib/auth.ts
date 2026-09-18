@@ -5,7 +5,8 @@ import bcrypt from "bcryptjs";
 import { prisma } from "./prisma";
 import type { Role } from "@prisma/client";
 
-const SESSION_COOKIE = "roamora_session";
+const SESSION_COOKIE = "riversmag_session";
+const LEGACY_SESSION_COOKIE = "roamora_session";
 const SESSION_DURATION_MS = 1000 * 60 * 60 * 24 * 30; // 30 days
 
 export async function hashPassword(password: string): Promise<string> {
@@ -48,11 +49,15 @@ export async function setSessionCookie(token: string): Promise<void> {
 export async function clearSessionCookie(): Promise<void> {
   const cookieStore = await cookies();
   cookieStore.delete(SESSION_COOKIE);
+  cookieStore.delete(LEGACY_SESSION_COOKIE);
 }
 
 export const getSessionUser = cache(async () => {
   const cookieStore = await cookies();
-  const token = cookieStore.get(SESSION_COOKIE)?.value;
+  // Accept the legacy "roamora_session" cookie so existing authenticated
+  // sessions survive the rename; new sessions always use the new name.
+  const token =
+    cookieStore.get(SESSION_COOKIE)?.value ?? cookieStore.get(LEGACY_SESSION_COOKIE)?.value;
   if (!token) return null;
 
   const session = await prisma.session.findUnique({
