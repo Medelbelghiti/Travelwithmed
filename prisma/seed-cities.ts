@@ -94,6 +94,7 @@ async function main() {
 
   // Regions
   for (const r of [{ name: "Oceania", slug: "oceania", overview: "Sun-drenched islands, reef wonders and cosmopolitan harbours.", type: "REGION", isActive: true }]) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     await prisma.destination.upsert({ where: { slug: r.slug }, update: { ...r } as any, create: r as any });
     n++;
   }
@@ -103,6 +104,7 @@ async function main() {
   for (const r of await prisma.destination.findMany({ where: { type: "REGION" } })) regionIds[r.slug] = r.id;
    for (const c of [{ name: "United States", slug: "united-states", region: "americas", type: "COUNTRY", parentId: regionIds["americas"], isActive: true }, { name: "Canada", slug: "canada", region: "americas", type: "COUNTRY", parentId: regionIds["americas"], isActive: true }, { name: "Mexico", slug: "mexico", region: "americas", type: "COUNTRY", parentId: regionIds["americas"], isActive: true }, { name: "Thailand", slug: "thailand", region: "asia", type: "COUNTRY", parentId: regionIds["asia"], isActive: true }, { name: "Greece", slug: "greece", region: "europe", type: "COUNTRY", parentId: regionIds["europe"], isActive: true }, { name: "Portugal", slug: "portugal", region: "europe", type: "COUNTRY", parentId: regionIds["europe"], isActive: true }, { name: "Egypt", slug: "egypt", region: "middle-east", type: "COUNTRY", parentId: regionIds["middle-east"], isActive: true }, { name: "South Africa", slug: "south-africa", region: "africa", type: "COUNTRY", parentId: regionIds["africa"], isActive: true }, { name: "Brazil", slug: "brazil", region: "americas", type: "COUNTRY", parentId: regionIds["americas"], isActive: true }, { name: "Tanzania", slug: "tanzania", region: "africa", type: "COUNTRY", parentId: regionIds["africa"], isActive: true }, { name: "Kenya", slug: "kenya", region: "africa", type: "COUNTRY", parentId: regionIds["africa"], isActive: true }]) {
     const { region, ...rest } = c;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const row = await prisma.destination.upsert({ where: { slug: c.slug }, update: { name: c.name, isActive: true } as any, create: { ...rest, type: "COUNTRY", parentId: regionIds[region], isActive: true } as any });
     regionIds[c.slug] = row.id;
     n++;
@@ -112,6 +114,7 @@ async function main() {
   const countryIds: Record<string, string> = {};
   for (const c of await prisma.destination.findMany({ where: { type: "COUNTRY" } })) countryIds[c.slug] = c.id;
   for (const c of cities) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     await prisma.destination.upsert({ where: { slug: c.slug }, update: { name: c.name, isActive: true, tagline: c.tagline, overview: c.overview, bestTimeToVisit: c.bestTime, howToGetThere: c.getThere, transportation: c.transport, budget: c.budget, safety: c.safety, visaInfo: c.visa, esimInfo: c.esim, currency: c.currency, language: c.language, timezone: c.tz } as any, create: { name: c.name, slug: c.slug, tagline: c.tagline, overview: c.overview, bestTimeToVisit: c.bestTime, howToGetThere: c.getThere, transportation: c.transport, budget: c.budget, safety: c.safety, visaInfo: c.visa, esimInfo: c.esim, currency: c.currency, language: c.language, timezone: c.tz, type: "CITY", parentId: countryIds[c.country], isActive: true } as any });
     n++;
   }
@@ -169,7 +172,7 @@ async function main() {
     try {
       await prisma.$executeRaw`INSERT INTO "AffiliateLink" ("id", "partnerName", "category", "productName", "destinationText", "destinationId", "targetUrl", "dealTitle", "promoCode", "active", "priority", "utmCampaign", "createdAt", "updatedAt") VALUES (${crypto.randomUUID()}, ${a.partnerName}, ${a.category}, ${a.productName}, ${a.destinationText}, ${a.destinationId}, ${a.targetUrl}, ${a.dealTitle}, NULL, true, ${a.priority}, ${a.utmCampaign}, NOW(), NOW()) ON CONFLICT DO NOTHING`;
       affCount++;
-    } catch (e) { /* duplicate or other error - skip */ }
+    } catch { /* duplicate or other error - skip */ }
   }
   console.log(`Affiliate links created/updated: ${affCount}`);
 }

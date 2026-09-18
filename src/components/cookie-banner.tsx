@@ -1,17 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { Cookie } from "lucide-react";
 import { setConsent, useConsent, type ConsentChoice } from "@/lib/consent";
 
 export function CookieBanner() {
-  const [mounted, setMounted] = useState(false);
+  const [mounted] = useState(() => typeof window !== "undefined");
   const consent = useConsent();
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   if (!mounted || consent !== "unknown") return null;
 

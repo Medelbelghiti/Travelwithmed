@@ -28,7 +28,6 @@ async function upsertArticle(
 ) {
   const text = blocksToText(input.blocks);
   const wordCount = text.trim() ? text.trim().split(/\s+/).length : 0;
-  const existing = await prisma.article.findUnique({ where: { slug: input.slug } });
   const article = await prisma.article.upsert({
     where: { slug: input.slug },
     update: {
