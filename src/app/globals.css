@@ -133,51 +133,51 @@ h6 {
   @apply py-14 md:py-20;
 }
 
-.prose-roamora {
+.prose-riversmag {
   @apply text-ink-soft leading-relaxed text-base md:text-lg;
 }
 
-.prose-roamora p {
+.prose-riversmag p {
   @apply mb-5;
 }
 
-.prose-roamora h2 {
+.prose-riversmag h2 {
   @apply text-2xl md:text-3xl mb-4 mt-10 text-ink;
 }
 
-.prose-roamora h3 {
+.prose-riversmag h3 {
   @apply text-xl md:text-2xl mb-3 mt-8 text-ink;
 }
 
-.prose-roamora ul {
+.prose-riversmag ul {
   @apply list-disc pl-6 mb-5 space-y-2;
 }
 
-.prose-roamora ol {
+.prose-riversmag ol {
   @apply list-decimal pl-6 mb-5 space-y-2;
 }
 
-.prose-roamora a {
+.prose-riversmag a {
   @apply text-brand underline underline-offset-4 decoration-brand/40 hover:decoration-brand;
 }
 
-.prose-roamora blockquote {
+.prose-riversmag blockquote {
   @apply border-l-4 border-accent pl-5 italic text-ink-soft mb-5;
 }
 
-.prose-roamora img {
+.prose-riversmag img {
   @apply rounded-2xl my-6;
 }
 
-.prose-roamora table {
+.prose-riversmag table {
   @apply w-full text-left text-sm mb-6 border-collapse;
 }
 
-.prose-roamora th {
+.prose-riversmag th {
   @apply bg-brand-light font-semibold px-4 py-3 text-ink;
 }
 
-.prose-roamora td {
+.prose-riversmag td {
   @apply border-b border-line px-4 py-3 align-top;
 }
 

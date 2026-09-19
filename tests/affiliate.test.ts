@@ -1,5 +1,7 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { generateClickId, buildAffiliateUrl, resolveAffiliateTargetUrl } from "../src/lib/affiliate";
 
 describe("generateClickId", () => {
@@ -87,6 +89,30 @@ describe("buildAffiliateUrl", () => {
     const parsed = new URL(url);
     assert.equal(parsed.searchParams.has("click_id"), false);
     assert.equal(parsed.searchParams.has("subid"), false);
+  });
+});
+
+describe("trackAffiliateClick clickId persistence (regression guard)", () => {
+  // The single canonical clickId generated per click must be stored on the
+  // AffiliateClick row — otherwise the id in the redirect URL and the id in
+  // the database diverge and attribution breaks. This guards against
+  // regressions where the `clickId` field is dropped from the create payload
+  // (the column has a `cuid()` default, so Prisma would silently succeed).
+  it("passes the generated clickId into affiliateClick.create", () => {
+    const source = readFileSync(join(__dirname, "..", "src", "lib", "affiliate.ts"), "utf8");
+    const createBlock = source.slice(
+      source.indexOf("prisma.affiliateClick.create("),
+      source.indexOf("prisma.affiliateLink.update("),
+    );
+    assert.ok(createBlock.length > 0, "expected an affiliateClick.create call");
+    assert.match(createBlock, /clickId,\s*\n?\s*url: redirectUrl/, "clickId must be persisted alongside the redirect URL");
+  });
+
+  it("generates the clickId exactly once per click", () => {
+    const source = readFileSync(join(__dirname, "..", "src", "lib", "affiliate.ts"), "utf8");
+    const fnBody = source.slice(source.indexOf("export async function trackAffiliateClick"));
+    const generations = fnBody.match(/generateClickId\(\)/g) ?? [];
+    assert.equal(generations.length, 1, "clickId must be generated exactly once per click");
   });
 });
 

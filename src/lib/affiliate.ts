@@ -163,6 +163,7 @@ export async function trackAffiliateClick(params: {
   await prisma.$transaction([
     prisma.affiliateClick.create({
       data: {
+        clickId,
         url: redirectUrl,
         affiliateLinkId: link.id,
         articleId: params.articleId ?? link.articleId,
@@ -182,6 +183,7 @@ export async function trackAffiliateClick(params: {
   ]);
 
   return {
+    clickId,
     redirectUrl,
     ctaLabel,
   };

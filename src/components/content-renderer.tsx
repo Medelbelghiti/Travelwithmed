@@ -67,7 +67,7 @@ export async function ContentRenderer({ content, articleId, destinationId }: Ren
 
     switch (block.type) {
       case "p":
-        rendered.push(<p key={key} className="prose-roamora">{block.text}</p>);
+        rendered.push(<p key={key} className="prose-riversmag">{block.text}</p>);
         break;
       case "h2":
         rendered.push(<h2 key={key} id={`section-${i}`}>{block.text}</h2>);
@@ -77,7 +77,7 @@ export async function ContentRenderer({ content, articleId, destinationId }: Ren
         break;
       case "ul":
         rendered.push(
-          <ul key={key} className="prose-roamora">
+          <ul key={key} className="prose-riversmag">
             {block.items.map((item, j) => (
               <li key={j}>{item}</li>
             ))}
@@ -86,7 +86,7 @@ export async function ContentRenderer({ content, articleId, destinationId }: Ren
         break;
       case "ol":
         rendered.push(
-          <ol key={key} className="prose-roamora">
+          <ol key={key} className="prose-riversmag">
             {block.items.map((item, j) => (
               <li key={j}>{item}</li>
             ))}
@@ -95,7 +95,7 @@ export async function ContentRenderer({ content, articleId, destinationId }: Ren
         break;
       case "quote":
         rendered.push(
-          <blockquote key={key} className="prose-roamora">
+          <blockquote key={key} className="prose-riversmag">
             {block.text}
           </blockquote>,
         );
@@ -118,7 +118,7 @@ export async function ContentRenderer({ content, articleId, destinationId }: Ren
       case "table":
         rendered.push(
           <div key={key} className="overflow-x-auto rounded-2xl border border-line">
-            <table className="prose-roamora m-0">
+            <table className="prose-riversmag m-0">
               <thead>
                 <tr>
                   {block.headers.map((h, j) => (
@@ -338,7 +338,7 @@ export async function ContentRenderer({ content, articleId, destinationId }: Ren
   }
 
   return (
-    <div className="prose-roamora">
+    <div className="prose-riversmag">
       {rendered}
       {hasAffiliateBlocks && <AffiliateDisclosure />}
     </div>

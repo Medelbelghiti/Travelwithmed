@@ -9,7 +9,7 @@ export function ResourceGuide({ slug }: { slug: string }) {
 
 function TravelInsuranceGuide() {
   return (
-    <div className="prose-roamora">
+    <div className="prose-riversmag">
       <h2>Why travel insurance is worth the ten minutes</h2>
       <p>
         Travel insurance is the least exciting purchase you will make for a trip, and the one you are most
@@ -130,7 +130,7 @@ function TravelInsuranceGuide() {
 
 function VisaGuide() {
   return (
-    <div className="prose-roamora">
+    <div className="prose-riversmag">
       <h2>Visa rules change — so verify, don&rsquo;t assume</h2>
       <p>
         Visa requirements are the part of trip planning most likely to change without warning. Fees rise,
@@ -243,7 +243,7 @@ function VisaGuide() {
 
 function CarRentalGuide() {
   return (
-    <div className="prose-roamora">
+    <div className="prose-riversmag">
       <h2>What you are actually paying for</h2>
       <p>
         A rental car quote is rarely the final price. The headline rate covers the car and basic use, while the

@@ -8,8 +8,15 @@ async function main() {
   console.log("Seeding Riversmag…");
 
   // ---------- Admin user ----------
+  // Never fall back to a default password: seeding an admin with a predictable
+  // credential would silently create a production backdoor.
   const adminEmail = process.env.ADMIN_EMAILS?.split(",")[0]?.trim() ?? "admin@riversmag.com";
-  const password = process.env.SEED_ADMIN_PASSWORD ?? "riversmag-admin";
+  const password = process.env.SEED_ADMIN_PASSWORD;
+  if (!password) {
+    throw new Error(
+      "SEED_ADMIN_PASSWORD is required to seed the admin user. Set it in your environment and re-run the seed.",
+    );
+  }
   const passwordHash = await bcrypt.hash(password, 12);
   await prisma.user.upsert({
     where: { email: adminEmail },

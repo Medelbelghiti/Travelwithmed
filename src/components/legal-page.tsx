@@ -18,7 +18,7 @@ export function LegalPage({
       <article className="mx-auto max-w-3xl">
         <h1 className="text-4xl font-semibold">{title}</h1>
         <p className="mt-2 text-sm text-ink-muted">Last updated: {updated}</p>
-        <div className="prose-roamora mt-8">{children}</div>
+        <div className="prose-riversmag mt-8">{children}</div>
       </article>
     </main>
   );

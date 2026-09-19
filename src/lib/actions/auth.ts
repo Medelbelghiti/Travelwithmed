@@ -44,25 +44,22 @@ export async function loginAction(formData: FormData) {
 
   const ip = await getActionClientIp();
 
+  // Enforce the limit before touching the database so both user enumeration
+  // and password guessing are throttled; every attempt consumes one slot.
+  if (
+    !rateLimit(`login:${email}|${ip}`, LOGIN_ATTEMPTS_LIMIT, LOGIN_WINDOW_MS) ||
+    !rateLimit(`login-ip:${ip}`, LOGIN_IP_LIMIT, LOGIN_WINDOW_MS)
+  ) {
+    return { error: "Too many attempts. Please try again later." };
+  }
+
   const user = await prisma.user.findUnique({ where: { email } });
   if (!user?.passwordHash || !user.isActive) {
-    if (
-      !rateLimit(`login:${email}|${ip}`, LOGIN_ATTEMPTS_LIMIT, LOGIN_WINDOW_MS) ||
-      !rateLimit(`login-ip:${ip}`, LOGIN_IP_LIMIT, LOGIN_WINDOW_MS)
-    ) {
-      return { error: "Too many attempts. Please try again later." };
-    }
     return { error: "Invalid email or password." };
   }
 
   const valid = await verifyPassword(password, user.passwordHash);
   if (!valid) {
-    if (
-      !rateLimit(`login:${email}|${ip}`, LOGIN_ATTEMPTS_LIMIT, LOGIN_WINDOW_MS) ||
-      !rateLimit(`login-ip:${ip}`, LOGIN_IP_LIMIT, LOGIN_WINDOW_MS)
-    ) {
-      return { error: "Too many attempts. Please try again later." };
-    }
     return { error: "Invalid email or password." };
   }
 

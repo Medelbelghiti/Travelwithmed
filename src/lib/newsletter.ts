@@ -62,7 +62,11 @@ export async function subscribeToNewsletter(params: {
 }): Promise<SubscribeResult> {
   const email = params.email.trim().toLowerCase();
   const firstName = params.firstName?.trim().slice(0, 100) || null;
-  const interests = (params.interests ?? []).slice(0, 20);
+  const interests = (params.interests ?? [])
+    .filter((i): i is string => typeof i === "string")
+    .map((i) => i.trim().slice(0, 60))
+    .filter((i) => i.length > 0)
+    .slice(0, 20);
 
   const upsert = await prisma.newsletterSubscriber.upsert({
     where: { email },

@@ -66,14 +66,14 @@ npm run db:images      # assign high-quality images (Unsplash CDN) to seeded rec
 npm run dev     # http://localhost:3000
 ```
 
-Admin: `http://localhost:3000/admin/login` — seeded user is `admin@roamora.com` (password from `SEED_ADMIN_PASSWORD`, default `roamora-admin`).
+Admin: `http://localhost:3000/admin/login` — seeded user is the first address in `ADMIN_EMAILS` (default `admin@riversmag.com`). Seeding requires `SEED_ADMIN_PASSWORD` to be set; there is no default password.
 
 ## Monetizing with affiliate links
 
 1. Add partners in **Admin → Affiliate Links** (`/admin/affiliate-links`). Fill the affiliate URL, optional tracking parameter (use `{click_id}` for dynamic IDs) and UTM campaign.
 2. Optional **deal fields** promote the partner on `/deals` (deal title, promo code, expiry, featured).
 3. Attach the link to an article, destination, hotel or activity so the right link resolves automatically.
-4. Every CTA goes through `/go/[id]?placement=...` — the click is recorded (count, referrer, device, country, UTM content) before redirecting.
+4. Every CTA goes through `/out/[id]?placement=...` — the click is recorded (count, referrer, device, country, UTM content) before redirecting.
 5. Watch performance in **Admin → Analytics** (clicks per category, top articles, live clicks).
 
 Editing a link updates it site-wide instantly; contexts and auto-resolution live in `src/lib/affiliate.ts`.

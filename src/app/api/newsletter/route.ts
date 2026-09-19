@@ -10,7 +10,13 @@ export async function POST(request: NextRequest) {
     const body = await request.json().catch(() => null);
     const firstName = typeof body?.firstName === "string" ? body.firstName.slice(0, 100) : null;
     const email = typeof body?.email === "string" ? body.email.trim().toLowerCase() : null;
-    const interests = Array.isArray(body?.interests) ? body.interests.slice(0, 20) : [];
+    const interests = Array.isArray(body?.interests)
+      ? (body.interests as unknown[])
+          .filter((i): i is string => typeof i === "string")
+          .map((i) => i.trim().slice(0, 60))
+          .filter((i) => i.length > 0)
+          .slice(0, 20)
+      : [];
 
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) {
       return NextResponse.json({ error: "Please enter a valid email address." }, { status: 400 });
