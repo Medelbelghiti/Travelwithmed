@@ -4,6 +4,7 @@ import {
   trackAffiliateClick,
 } from "@/lib/affiliate";
 import { prisma } from "@/lib/prisma";
+import { siteConfig } from "@/lib/site";
 
 export async function GET(
   request: NextRequest,
@@ -45,5 +46,5 @@ export async function GET(
     return NextResponse.redirect(safeTarget, { status: 302 });
   }
 
-  return NextResponse.redirect(new URL("/", request.url), { status: 302 });
+  return NextResponse.redirect(new URL("/", siteConfig.url), { status: 302 });
 }

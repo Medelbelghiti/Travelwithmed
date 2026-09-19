@@ -49,6 +49,17 @@ const nextConfig: NextConfig = {
   images: {
     remotePatterns: imageHosts.map((hostname) => ({ protocol: "https" as const, hostname })),
   },
+  async redirects() {
+    return [
+      {
+        source: "/:path*",
+        has: [{ type: "host", value: "www.riversmag.com" }],
+        destination: "https://riversmag.com/:path*",
+        permanent: true,
+      },
+    ];
+  },
+
   async headers() {
     return [
       {
