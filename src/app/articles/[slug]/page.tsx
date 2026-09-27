@@ -28,7 +28,9 @@ async function fetchArticle(slug: string) {
 
 async function fetchRelatedArticles(articleId: string) {
   return prisma.relatedArticle.findMany({
-    where: { articleId },
+    // Status filter matches fetchRelatedByDestination: a RelatedArticle row can
+    // point at a DRAFT, and rendering one would put a 404 link on a live page.
+    where: { articleId, relatedArticle: { status: "PUBLISHED" } },
     include: { relatedArticle: { include: { author: true } } },
     orderBy: { relevanceScore: "desc" },
     take: 3,
