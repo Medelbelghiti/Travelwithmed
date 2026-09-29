@@ -14,6 +14,8 @@ const eslintConfig = defineConfig([
     "build/**",
     "next-env.d.ts",
     "start.js",
+    // Throwaway audit working directory (caches, one-off crawl scripts).
+    ".audit/**",
   ]),
 ]);
 

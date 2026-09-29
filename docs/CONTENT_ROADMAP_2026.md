@@ -1,5 +1,11 @@
 # Content Roadmap — 2026
 
+Status note (2026-09-28): the current record is `docs/AUDIT_2026-09-27.md`. Image and affiliate
+state has moved on since this plan was written — see that file §4.0 (affiliate platform policy)
+and §4.1 (cover images). In short: 22 dead images were repaired in production, 9 of 12 empty
+country/region covers are resolved and 3 are still open, and every category Travelpayouts covers
+now points at `tp.media`.
+
 Date: 2026-09-27
 Owner action required: every step below needs an editor or the site owner. Nothing here has been
 published.
@@ -78,7 +84,17 @@ Two image rules that must hold site-wide:
   inline must be a 3:2 crop. A photo in another ratio will be stretched.
 - `prisma/seed-seo.ts` must not be re-run as-is. Several of its destination mappings point at the
   wrong city — Lisbon gets a Tokyo photo, London gets the Eiffel Tower, Athens gets the Colosseum.
-  Details in `docs/FINAL_AUDIT.md` §6.
+  Details in `docs/FINAL_AUDIT.md` §6. **This is fixed as of 2026-09-28:** the wrong-city photos
+  were repaired in production by `prisma/fix-dead-images.ts`, and `seed-seo.ts` was made
+  non-destructive (repair-plus-fill, never overwriting a live curated value).
+- **Country and region covers.** 12 destinations had no `coverImage` at all. 9 are now filled from
+  Unsplash candidates whose photographer geotag or tags name the place; `greece`, `south-africa`
+  and `kenya` remain open because no candidate's metadata named those places. Those 9 were chosen
+  on metadata evidence, **not** on visual inspection — the model used cannot view images. Confirm
+  them in `.audit/review.html` before they reach production.
+- **Attribution.** Unsplash does not require it but requests it. The photographer and photo page
+  are recorded in `.audit/image-candidates.json` for the 9 new covers; nothing on the site renders
+  that credit yet.
 
 ---
 

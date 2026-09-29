@@ -64,6 +64,12 @@ export function generateClickId(): string {
  *  - `subid={click_id}`  ->  `subid=<clickId>` (placeholder replaced)
  *  - `subid`             ->  `subid=<clickId>` (bare name)
  *  - `partner=travel`    ->  `partner=travel` (static value)
+ *
+ * Travelpayouts `tp.media` redirect URLs are passed through UNMODIFIED apart
+ * from the click-id subid. Their `marker`/`trs` pair is the contractual
+ * attribution for the whole account, and `src/lib/travelpayouts.ts` documents
+ * those URLs as verbatim; appending UTM parameters to them would alter a URL
+ * the site owner committed on purpose.
  */
 export function buildAffiliateUrl(
   targetUrl: string,
@@ -78,17 +84,34 @@ export function buildAffiliateUrl(
   clickId: string,
 ): string {
   const url = new URL(targetUrl, siteConfig.url);
-  // Legacy rows may still carry utm_source=roamora; never leak the old brand
-  // into affiliate URLs — normalize it to Riversmag.
+  // The site was renamed Roamora -> Riversmag in Sept 2026, and some stored
+  // target URLs still carry the old brand in their UTM values. Normalize those
+  // here rather than trusting the stored value.
+  //
+  // DELIBERATELY NOT TOUCHED: the partner's own account identifiers
+  // (associateid, AID, PID, partner_id, referenceID, tag, marker, trs). Those
+  // are contractual - they identify the Riversmag account inside the partner's
+  // network. Rewriting `associateid=roamora` to `riversmag` would silently break
+  // Skyscanner attribution until a matching account is provisioned, which loses
+  // revenue rather than fixing a cosmetic issue. Renaming it is a manual task
+  // for the site owner, done in the partner dashboard first. See
+  // docs/AUDIT_2026-09-27.md finding 6.8.
   const utmSource =
     params.utmSource && params.utmSource !== "roamora" ? params.utmSource : "riversmag";
   const utmMedium = params.utmMedium || "affiliate";
   const utmCampaign = params.utmCampaign || "general";
   const utmContent = params.utmContent || params.placement || "default";
-  url.searchParams.set("utm_source", utmSource);
-  url.searchParams.set("utm_medium", utmMedium);
-  url.searchParams.set("utm_campaign", utmCampaign);
-  url.searchParams.set("utm_content", utmContent);
+
+  // Travelpayouts tracking already lives in marker/trs on the URL itself.
+  // Appending UTM parameters there would change a URL the owner committed to
+  // verbatim, so only the click-id subid is added.
+  const isTravelpayouts = url.hostname === "tp.media" || url.hostname.endsWith(".tp.media");
+  if (!isTravelpayouts) {
+    url.searchParams.set("utm_source", utmSource);
+    url.searchParams.set("utm_medium", utmMedium);
+    url.searchParams.set("utm_campaign", utmCampaign);
+    url.searchParams.set("utm_content", utmContent);
+  }
   const template = params.trackingParameter?.trim();
   if (template) {
     const eq = template.indexOf("=");

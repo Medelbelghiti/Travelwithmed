@@ -23,6 +23,73 @@ function resolveTitle(title: string | undefined, fallback: string): string {
   return `${base} | ${siteConfig.name}`;
 }
 
+/** SERP titles are truncated in results at roughly 60 characters. */
+export const META_TITLE_MAX = 60;
+/** Below this a title wastes SERP space without adding information. */
+export const META_TITLE_MIN = 30;
+
+/**
+ * Builds a SERP title for an article that has no curated metaTitle.
+ *
+ * The previous seed pattern was `${title} — ${destination} Guide | Riversmag`,
+ * which produced titles of 77-89 characters for the eSIM articles and was
+ * clipped in search results. This version:
+ *
+ *   - does not repeat the destination when the title already names it
+ *   - never exceeds META_TITLE_MAX, dropping trailing clauses before truncating
+ *   - never emits an ellipsis, because "Best Things to Do in..." reads as broken
+ *
+ * It only ever runs for titles with no curated value, so an editor's wording is
+ * never rewritten.
+ */
+export function buildMetaTitle(
+  articleTitle: string | null | undefined,
+  destinationName?: string | null,
+): string {
+  const brand = siteConfig.name;
+  const title = (articleTitle ?? "").trim().replace(/\s+/g, " ");
+  if (!title) {
+    return destinationName
+      ? `${destinationName} Travel Guide | ${brand}`
+      : `Travel Guide | ${brand}`;
+  }
+
+  const namesDestination =
+    !!destinationName && title.toLowerCase().includes(destinationName.trim().toLowerCase());
+
+  let candidate = namesDestination
+    ? `${title} | ${brand}`
+    : destinationName
+      ? `${title} — ${destinationName} | ${brand}`
+      : `${title} | ${brand}`;
+
+  if (candidate.length <= META_TITLE_MAX) return candidate;
+
+  // Too long: keep the leading clause only ("eSIM in Rome: Stay Connected"
+  // -> "eSIM in Rome"), then re-attach the brand.
+  const head = title.split(/[:—–|]/)[0].trim();
+  if (head && head !== title) {
+    candidate = `${head} | ${brand}`;
+    if (candidate.length <= META_TITLE_MAX) return candidate;
+    // Still too long: hard-clamp the leading clause, keeping whole words.
+  }
+
+  const budget = META_TITLE_MAX - (brand.length + 3); // " | " separator
+  const words = head.split(/\s+/).filter(Boolean);
+  const kept: string[] = [];
+  for (const w of words) {
+    // +1 for the space that will join this word to the previous one.
+    const projected = kept.length ? kept.join(" ").length + 1 + w.length : w.length;
+    if (projected > budget) break;
+    kept.push(w);
+  }
+  const clamped = kept.join(" ").trim();
+  if (clamped) return `${clamped} | ${brand}`;
+
+  // Degenerate case: a single word longer than the whole budget.
+  return `${title.slice(0, budget).trimEnd()} | ${brand}`;
+}
+
 export function buildMetadata({
   title,
   description,

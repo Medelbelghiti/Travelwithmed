@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Map, CalendarDays } from "lucide-react";
 import { prisma } from "@/lib/prisma";
+import { rethrowIfDatabaseUnavailable } from "@/lib/db-errors";
 import { buildMetadata } from "@/lib/seo";
 import { SectionHeading } from "@/components/ui/card";
 import { Breadcrumbs, buildCrumbs } from "@/components/ui/breadcrumbs";
@@ -26,7 +27,8 @@ export default async function ItinerariesIndex() {
   let itineraries: Awaited<ReturnType<typeof fetchItineraries>> = [];
   try {
     itineraries = await fetchItineraries();
-  } catch {
+  } catch (error) {
+    rethrowIfDatabaseUnavailable(error);
     itineraries = [];
   }
 
@@ -52,10 +54,10 @@ export default async function ItinerariesIndex() {
             >
               <div className="flex items-center justify-between bg-brand-dark px-6 py-4">
                 <span className="inline-flex items-center gap-2 font-serif text-lg font-semibold text-white">
-                  <CalendarDays className="h-5 w-5 text-accent" aria-hidden />
+                  <CalendarDays className="h-5 w-5 text-accent-on-dark" aria-hidden />
                   {itinerary.days} days
                 </span>
-                <Map className="h-5 w-5 text-accent" aria-hidden />
+                <Map className="h-5 w-5 text-accent-on-dark" aria-hidden />
               </div>
               <div className="flex flex-1 flex-col p-6">
                 <h2 className="font-serif text-xl font-semibold text-ink group-hover:text-brand">{itinerary.title}</h2>

@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { MapPin, Sun, UtensilsCrossed, Hotel, Bus, Wallet, CheckCircle2 } from "lucide-react";
 import { prisma } from "@/lib/prisma";
+import { rethrowIfDatabaseUnavailable } from "@/lib/db-errors";
 import { buildMetadata } from "@/lib/seo";
 import { AffiliateButton } from "@/components/affiliate/affiliate-button";
 import { AffiliateDisclosure } from "@/components/affiliate/disclosure";
@@ -35,7 +36,8 @@ export async function generateMetadata({ params }: ItineraryProps) {
   let itinerary: Awaited<ReturnType<typeof fetchItineraryMeta>> | null = null;
   try {
     itinerary = await fetchItineraryMeta(slug);
-  } catch {
+  } catch (error) {
+    rethrowIfDatabaseUnavailable(error);
     itinerary = null;
   }
   if (!itinerary) return { title: "Itinerary not found" };
@@ -57,11 +59,30 @@ export default async function ItineraryPage({ params }: ItineraryProps) {
   let itinerary: Awaited<ReturnType<typeof fetchItinerary>> | null = null;
   try {
     itinerary = await fetchItinerary(slug);
-  } catch {
+  } catch (error) {
+    rethrowIfDatabaseUnavailable(error);
     itinerary = null;
   }
 
   if (!itinerary || !itinerary.isActive) notFound();
+
+  // Itinerary day blocks store a raw linkId, so they bypass the `active: true`
+  // filter applied to every included relation above. /out/[id] sends an inactive
+  // link to the homepage, so rendering these would give readers a dead CTA.
+  // Keep only ids that still resolve to an active link.
+  const dayLinkIds = new Set<string>();
+  for (const day of itinerary.daysList ?? []) {
+    for (const raw of (day.affiliateLinks ?? []) as { linkId?: string }[]) {
+      if (raw?.linkId) dayLinkIds.add(raw.linkId);
+    }
+  }
+  const activeDayLinkIds = new Set<string>();
+  if (dayLinkIds.size > 0) {
+    const rows = await prisma.affiliateLink
+      .findMany({ where: { id: { in: [...dayLinkIds] }, active: true }, select: { id: true } })
+      .catch(() => []);
+    for (const r of rows) activeDayLinkIds.add(r.id);
+  }
 
   const crumbs = buildCrumbs([
     { name: "Itineraries", href: "/itineraries" },
@@ -211,7 +232,9 @@ export default async function ItineraryPage({ params }: ItineraryProps) {
 
                   {day.affiliateLinks && Array.isArray(day.affiliateLinks) && (day.affiliateLinks as unknown[]).length > 0 ? (
                     <div className="mt-5 flex flex-wrap gap-2">
-                      {(day.affiliateLinks as { text?: string; label?: string; linkId: string }[]).map((link, i) => (
+                      {(day.affiliateLinks as { text?: string; label?: string; linkId: string }[])
+                        .filter((link) => activeDayLinkIds.has(link.linkId))
+                        .map((link, i) => (
                         <AffiliateButton key={i} linkId={link.linkId} label={link.label ?? link.text ?? "Check prices"} size="sm" placement={`itinerary-day-${day.dayNumber}`} />
                       ))}
                     </div>

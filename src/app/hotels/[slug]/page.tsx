@@ -13,6 +13,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import { prisma } from "@/lib/prisma";
+import { rethrowIfDatabaseUnavailable } from "@/lib/db-errors";
 import { buildMetadata } from "@/lib/seo";
 import { Breadcrumbs, buildCrumbs, JsonLdBreadcrumbs } from "@/components/ui/breadcrumbs";
 import { SectionHeading } from "@/components/ui/card";
@@ -61,7 +62,8 @@ export async function generateMetadata({ params }: HotelPageProps) {
   let hotel: Awaited<ReturnType<typeof fetchHotelMeta>> | null = null;
   try {
     hotel = await fetchHotelMeta(slug);
-  } catch {
+  } catch (error) {
+    rethrowIfDatabaseUnavailable(error);
     hotel = null;
   }
   if (!hotel || !hotel.isActive) return { title: "Hotel not found" };
@@ -89,7 +91,8 @@ export default async function HotelPage({ params }: HotelPageProps) {
   let hotel: Awaited<ReturnType<typeof fetchHotel>> | null = null;
   try {
     hotel = await fetchHotel(slug);
-  } catch {
+  } catch (error) {
+    rethrowIfDatabaseUnavailable(error);
     hotel = null;
   }
 
@@ -114,7 +117,8 @@ export default async function HotelPage({ params }: HotelPageProps) {
   if (destinationRef) {
     try {
       similarHotels = await fetchSimilarHotels(destinationRef.id, hotel.id);
-    } catch {
+    } catch (error) {
+      rethrowIfDatabaseUnavailable(error);
       similarHotels = [];
     }
   }

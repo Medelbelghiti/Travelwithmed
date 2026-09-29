@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { MapPin, Star } from "lucide-react";
 import { prisma } from "@/lib/prisma";
+import { rethrowIfDatabaseUnavailable } from "@/lib/db-errors";
 import { buildMetadata } from "@/lib/seo";
 import { Breadcrumbs, buildCrumbs, JsonLdBreadcrumbs } from "@/components/ui/breadcrumbs";
 import { AffiliateButton } from "@/components/affiliate/affiliate-button";
@@ -67,7 +68,8 @@ export async function generateMetadata({ params }: ActivityPageProps) {
   let activity: Awaited<ReturnType<typeof fetchActivityMeta>> | null = null;
   try {
     activity = await fetchActivityMeta(slug);
-  } catch {
+  } catch (error) {
+    rethrowIfDatabaseUnavailable(error);
     activity = null;
   }
   if (!activity || !activity.isActive) return { title: "Activity not found" };
@@ -95,7 +97,8 @@ export default async function ActivityPage({ params }: ActivityPageProps) {
   let activity: Awaited<ReturnType<typeof fetchActivity>> | null = null;
   try {
     activity = await fetchActivity(slug);
-  } catch {
+  } catch (error) {
+    rethrowIfDatabaseUnavailable(error);
     activity = null;
   }
 
@@ -104,7 +107,8 @@ export default async function ActivityPage({ params }: ActivityPageProps) {
   let affLink: Awaited<ReturnType<typeof fetchAffLink>> = null;
   try {
     affLink = activity.affiliateLinks[0] ?? (activity.affiliateLinkId ? await fetchAffLink(activity.affiliateLinkId) : null);
-  } catch {
+  } catch (error) {
+    rethrowIfDatabaseUnavailable(error);
     affLink = null;
   }
   const destinationRef = activity.destination;

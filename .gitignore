@@ -45,3 +45,6 @@ prisma/dev.db*
 # netlify local state
 .netlify
 
+
+# Throwaway audit working directory (crawls, caches, one-off scripts)
+.audit/

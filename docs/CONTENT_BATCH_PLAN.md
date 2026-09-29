@@ -1,5 +1,11 @@
 # Destination Guide Batch — Editorial & Build Plan
 
+Status note (2026-09-28): the current record is `docs/AUDIT_2026-09-27.md`. Section 6 below
+describes the ten guides sourced by `seed-images-batch.ts`. Twelve **country and region** covers
+were a separate, later gap; 9 of those 12 are now resolved and 3 remain open. See
+`docs/AUDIT_2026-09-27.md` §4.1. Nothing in either batch has been applied to production since
+2026-09-28.
+
 Status: **Part B and Part C complete, exercised end-to-end against a disposable database.**
 All 10 guides carry a verified hero plus two inline 3:2 photos, and five destinations that did
 not exist at all have been added (§7). Nothing has been written to production; `--apply` has

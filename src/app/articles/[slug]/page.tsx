@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Calendar, Clock, RefreshCw, User } from "lucide-react";
 import { prisma } from "@/lib/prisma";
+import { rethrowIfDatabaseUnavailable } from "@/lib/db-errors";
 import { buildMetadata, articleSchema } from "@/lib/seo";
 import { parseContentBlocks, blocksToText } from "@/lib/content";
 import { ContentRenderer } from "@/components/content-renderer";
@@ -58,7 +59,8 @@ export async function generateMetadata({ params }: ArticlePageProps) {
   let article: Awaited<ReturnType<typeof fetchArticleMeta>> | null = null;
   try {
     article = await fetchArticleMeta(slug);
-  } catch {
+  } catch (error) {
+    rethrowIfDatabaseUnavailable(error);
     article = null;
   }
   if (!article || article.status !== "PUBLISHED") return { title: "Article not found" };
@@ -88,7 +90,8 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
   let article: Awaited<ReturnType<typeof fetchArticle>> | null = null;
   try {
     article = await fetchArticle(slug);
-  } catch {
+  } catch (error) {
+    rethrowIfDatabaseUnavailable(error);
     article = null;
   }
 
@@ -104,7 +107,8 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
       article.destinationId ? fetchRelatedByDestination(article.destinationId, article.id) : Promise.resolve([]),
       article.destinationId ? fetchHotelLinks(article.destinationId) : Promise.resolve([]),
     ]);
-  } catch {
+  } catch (error) {
+    rethrowIfDatabaseUnavailable(error);
     related = [];
     relatedByDestination = [];
     recommendedHotelLinks = [];

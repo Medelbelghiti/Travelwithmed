@@ -1,5 +1,6 @@
 import { DestinationDetail } from "@/components/destination/destination-detail";
 import { notFound, permanentRedirect } from "next/navigation";
+import { rethrowIfDatabaseUnavailable } from "@/lib/db-errors";
 import { prisma } from "@/lib/prisma";
 import { buildMetadata } from "@/lib/seo";
 
@@ -14,7 +15,8 @@ export async function generateMetadata({ params }: { params: Promise<{ path: str
       where: { slug },
       include: { seoMetadata: true },
     });
-  } catch {
+  } catch (error) {
+    rethrowIfDatabaseUnavailable(error);
     destination = null;
   }
   if (!destination) return { title: "Destination not found" };
@@ -45,7 +47,8 @@ export default async function DestinationCatchAll({
   let destination: Awaited<ReturnType<typeof fetchDestination>> | null = null;
   try {
     destination = await fetchDestination(slug);
-  } catch {
+  } catch (error) {
+    rethrowIfDatabaseUnavailable(error);
     destination = null;
   }
 

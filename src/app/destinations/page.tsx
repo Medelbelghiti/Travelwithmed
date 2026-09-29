@@ -4,6 +4,7 @@ import { DestinationCard, RegionCard } from "@/components/destination-card";
 import { SectionHeading } from "@/components/ui/card";
 import { Breadcrumbs, buildCrumbs } from "@/components/ui/breadcrumbs";
 import { prisma } from "@/lib/prisma";
+import { rethrowIfDatabaseUnavailable } from "@/lib/db-errors";
 import { buildMetadata } from "@/lib/seo";
 
 export const metadata = buildMetadata({
@@ -46,7 +47,8 @@ async function fetchDestinations() {
   try {
     const [regions, countries, cities] = await Promise.all([fetchRegions(), fetchCountries(), fetchCities()]);
     return { regions, countries, cities };
-  } catch {
+  } catch (error) {
+    rethrowIfDatabaseUnavailable(error);
     return empty;
   }
 }

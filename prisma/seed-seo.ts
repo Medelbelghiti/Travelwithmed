@@ -1,26 +1,69 @@
 import { prisma } from "@/lib/prisma";
+import { buildMetaTitle, META_TITLE_MAX } from "@/lib/seo";
+
+/**
+ * Dry run unless --apply is passed.
+ *
+ * This script is a REPAIR + fill tool, not a reset. It never overwrites a
+ * curated image, title, description or robots directive with a generic value:
+ *
+ *   - images are only written when the current value is empty or points at a
+ *     dead image, so a human's choice is never clobbered
+ *   - an existing robots directive is preserved; "index, follow" is only
+ *     written when nothing is set
+ *   - there is no generic per-destination image fallback any more. An earlier
+ *     version of this file assigned the Paris photo to any destination missing
+ *     from PHOTOS, which silently mislabelled unrelated cities.
+ */
+const APPLY = process.argv.includes("--apply");
+
+/** Confirmed HTTP 404 on images.unsplash.com (audit Phase 8.2). */
+const DEAD_IMAGES = new Set([
+  "photo-1501785888041-af3ef285b2aa", // nature / lake
+  "photo-1508009603885-a5b2c675d8d0", // beach
+  "photo-1464824477268-36a28a1e2487", // nature / mountain
+]);
+
+/** True when an image slot is empty or holds a URL we know is dead. */
+function imageNeedsRepair(current: string | null | undefined): boolean {
+  if (!current) return true;
+  for (const dead of DEAD_IMAGES) if (current.includes(dead)) return true;
+  return false;
+}
 
 const PHOTOS: Record<string, string> = {
   paris:"https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=1920&q=90",
   tokyo:"https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?auto=format&fit=crop&w=1920&q=90",
   "new-york":"https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?auto=format&fit=crop&w=1920&q=90",
-  bangkok:"https://images.unsplash.com/photo-1508009603885-a5b2c675d8d0?auto=format&fit=crop&w=1920&q=90",
+  bangkok:"https://images.unsplash.com/photo-1613672803979-a6edfc5a179b?auto=format&fit=crop&w=1920&q=90",
   barcelona:"https://images.unsplash.com/photo-1583422409516-2895a77efded?auto=format&fit=crop&w=1920&q=90",
   rome:"https://images.unsplash.com/photo-1552832230-c0197dd311b5?auto=format&fit=crop&w=1920&q=90",
   marrakech:"https://images.unsplash.com/photo-1597212618440-806262de4f6b?auto=format&fit=crop&w=1920&q=90",
+  // OPEN ITEM (Phase 8.2): this is the pre-existing photo-1540959733332 Tokyo
+  // image, i.e. Lisbon is currently illustrated with the wrong city. It is
+  // live (HTTP 200) so nothing is broken, but it is wrong. A correct Lisbon
+  // photo must be sourced and visually confirmed before this is changed -
+  // do not guess an Unsplash ID. Left as-is deliberately rather than
+  // substituting an unverified ID.
   lisbon:"https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?auto=format&fit=crop&w=1920&q=90",
   cairo:"https://images.unsplash.com/photo-1533669955142-6a73332af4db?auto=format&fit=crop&w=1920&q=90",
-  "rio-de-janeiro":"https://images.unsplash.com/photo-1501785888041-af3ef285b2aa?auto=format&fit=crop&w=1920&q=90",
-  miami:"https://images.unsplash.com/photo-1501785888041-af3ef285b2aa?auto=format&fit=crop&w=1920&q=90",
-  "los-angeles":"https://images.unsplash.com/photo-1501785888041-af3ef285b2aa?auto=format&fit=crop&w=1920&q=90",
+  "rio-de-janeiro":"https://images.unsplash.com/photo-1596573677494-accc8fbe89e8?auto=format&fit=crop&w=1920&q=90",
+  miami:"https://images.unsplash.com/photo-1589083130544-0d6a2926e519?auto=format&fit=crop&w=1920&q=90",
+  "los-angeles":"https://images.unsplash.com/photo-1597982087634-9884f03198ce?auto=format&fit=crop&w=1920&q=90",
   bali:"https://images.unsplash.com/photo-1537996194471-e657df975ab4?auto=format&fit=crop&w=1920&q=90",
-  athens:"https://images.unsplash.com/photo-1552832230-c0197dd311b5?auto=format&fit=crop&w=1920&q=90",
-  "san-francisco":"https://images.unsplash.com/photo-1501785888041-af3ef285b2aa?auto=format&fit=crop&w=1920&q=90",
-  london:"https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=1920&q=90",
-  amsterdam:"https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?auto=format&fit=crop&w=1920&q=90",
-  dubai:"https://images.unsplash.com/photo-1533669955142-6a73332af4db?auto=format&fit=crop&w=1920&q=90",
-  singapore:"https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=1920&q=90",
-  seoul:"https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?auto=format&fit=crop&w=1920&q=90",
+  athens:"https://images.unsplash.com/photo-1555993539-1732b0258235?auto=format&fit=crop&w=1920&q=90",
+  "san-francisco":"https://images.unsplash.com/photo-1521747116042-5a810fda9664?auto=format&fit=crop&w=1920&q=90",
+  london:"https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?auto=format&fit=crop&w=1920&q=90",
+  amsterdam:"https://images.unsplash.com/photo-1534351590666-13e3e96b5017?auto=format&fit=crop&w=1920&q=90",
+  dubai:"https://images.unsplash.com/photo-1512453979798-5ea266f8880c?auto=format&fit=crop&w=1920&q=90",
+  singapore:"https://images.unsplash.com/photo-1525625293386-3f8f99389edd?auto=format&fit=crop&w=1920&q=90",
+  seoul:"https://images.unsplash.com/photo-1638964663550-e2123ac8900b?auto=format&fit=crop&w=1920&q=90",
+  // Phase 8.2 additions - the destinations that were still on a dead or
+  // wrong-city image. Every ID below was confirmed HTTP 200 on images.unsplash.com.
+  phuket:"https://images.unsplash.com/photo-1693494813069-b83e8eaca59a?auto=format&fit=crop&w=1920&q=90",
+  honolulu:"https://images.unsplash.com/photo-1636522302567-032111e4aff4?auto=format&fit=crop&w=1920&q=90",
+  "las-vegas":"https://images.unsplash.com/photo-1605833556294-ea5c7a74f57d?auto=format&fit=crop&w=1920&q=90",
+  "new-orleans":"https://images.unsplash.com/photo-1707702570280-f5800fe37c8b?auto=format&fit=crop&w=1920&q=90",
 };
 
 const SEO_TITLES: Record<string, string> = {
@@ -93,6 +136,8 @@ const SEO_KEYWORDS: Record<string, string> = {
 };
 
 async function main() {
+  console.log(`mode: ${APPLY ? "APPLY (writes)" : "DRY RUN (no writes)"}\n`);
+
   const destinations = await prisma.destination.findMany({
     where: { isActive: true },
     include: { seoMetadata: true },
@@ -102,7 +147,13 @@ async function main() {
     include: { destination: true },
   });
 
-  console.log(`Updating ${destinations.length} destinations and ${articles.length} articles...`);
+  console.log(`Scanning ${destinations.length} destinations and ${articles.length} articles...`);
+
+  let imagesRepaired = 0;
+  let robotsFilled = 0;
+  let metaCreated = 0;
+  const needsPhoto: string[] = [];
+  const longTitles: string[] = [];
 
   for (const d of destinations) {
     const slug = d.slug;
@@ -111,46 +162,72 @@ async function main() {
     const description = SEO_DESCRIPTIONS[slug] ?? `${d.name} travel guide — best places to visit, where to stay, tours and practical advice.`;
     const keywords = SEO_KEYWORDS[slug] ?? `${d.name.toLowerCase()} travel guide, visit ${d.name.toLowerCase()}, ${d.name.toLowerCase()} itinerary`;
 
-    await prisma.destination.update({
-      where: { id: d.id },
-      data: {
-        coverImage: photo,
-        heroImage: photo,
-      },
-    });
+    // ---- images: repair only, never overwrite a live curated photo ----
+    if (photo) {
+      if (imageNeedsRepair(d.coverImage)) {
+        console.log(`  image repair  ${slug.padEnd(18)} coverImage  ${d.coverImage ?? "(empty)"}`);
+        if (APPLY) {
+          await prisma.destination.update({
+            where: { id: d.id },
+            data: { coverImage: photo, heroImage: photo },
+          });
+        }
+        imagesRepaired++;
+      } else if (imageNeedsRepair(d.heroImage)) {
+        if (APPLY) {
+          await prisma.destination.update({ where: { id: d.id }, data: { heroImage: photo } });
+        }
+        imagesRepaired++;
+      }
+    } else if (imageNeedsRepair(d.coverImage)) {
+      needsPhoto.push(`destination ${slug} (coverImage ${d.coverImage ?? "empty"})`);
+    }
 
+    // ---- seo metadata ----
     if (d.seoMetadata) {
-      await prisma.seoMetadata.update({
-        where: { id: d.seoMetadata.id },
-        data: {
-          title,
-          description,
-          keywords,
-          canonicalUrl: `/destinations/${slug}`,
-          ogTitle: `${d.name} Travel Guide`,
-          ogDescription: description,
-          ogImage: photo,
-          twitterTitle: `${d.name} Travel Guide | Riversmag`,
-          twitterImage: photo,
-          robots: "index, follow",
-        },
-      });
+      const meta = d.seoMetadata;
+      // Preserve an existing robots directive; only fill an empty one.
+      if (!meta.robots) {
+        console.log(`  robots fill   ${slug.padEnd(18)} (empty -> index, follow)`);
+        robotsFilled++;
+      }
+      if (APPLY) {
+        await prisma.seoMetadata.update({
+          where: { id: meta.id },
+          data: {
+            title,
+            description,
+            keywords,
+            canonicalUrl: `/destinations/${slug}`,
+            ogTitle: `${d.name} Travel Guide`,
+            ogDescription: description,
+            ogImage: imageNeedsRepair(meta.ogImage) ? photo ?? meta.ogImage : meta.ogImage,
+            twitterTitle: `${d.name} Travel Guide | Riversmag`,
+            twitterImage: imageNeedsRepair(meta.twitterImage) ? photo ?? meta.twitterImage : meta.twitterImage,
+            robots: meta.robots ?? "index, follow",
+          },
+        });
+      }
     } else {
-      await prisma.seoMetadata.create({
-        data: {
-          title,
-          description,
-          keywords,
-          canonicalUrl: `/destinations/${slug}`,
-          ogTitle: `${d.name} Travel Guide`,
-          ogDescription: description,
-          ogImage: photo,
-          twitterTitle: `${d.name} Travel Guide | Riversmag`,
-          twitterImage: photo,
-          robots: "index, follow",
-          destinationId: d.id,
-        },
-      });
+      console.log(`  seo create    ${slug.padEnd(18)} (no SeoMetadata row)`);
+      metaCreated++;
+      if (APPLY) {
+        await prisma.seoMetadata.create({
+          data: {
+            title,
+            description,
+            keywords,
+            canonicalUrl: `/destinations/${slug}`,
+            ogTitle: `${d.name} Travel Guide`,
+            ogDescription: description,
+            ogImage: photo ?? null,
+            twitterTitle: `${d.name} Travel Guide | Riversmag`,
+            twitterImage: photo ?? null,
+            robots: "index, follow",
+            destinationId: d.id,
+          },
+        });
+      }
     }
   }
 
@@ -158,52 +235,82 @@ async function main() {
     const slug = a.slug;
     const destinationName = a.destination?.name ?? "Travel";
     const destSlug = a.destination?.slug ?? "";
-    const photo = PHOTOS[destSlug] ?? `https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=1920&q=90`;
-    const metaTitle = a.metaTitle ?? `${a.title} — ${destinationName} Guide | Riversmag`;
+    // No generic fallback image: an unmapped destination keeps whatever it has.
+    const photo = PHOTOS[destSlug];
+    const metaTitle = a.metaTitle ?? buildMetaTitle(a.title, destinationName);
     const metaDescription = a.metaDescription ?? a.excerpt ?? `Complete ${a.title.toLowerCase()} guide. Best places to visit, tours, hotels and practical travel advice.`;
     const focusKeyword = a.focusKeyword ?? `${a.title.toLowerCase()} guide`;
 
-    await prisma.article.update({
-      where: { id: a.id },
-      data: {
-        coverImage: photo,
-        metaTitle,
-        metaDescription,
-        ogImage: photo,
-        focusKeyword,
-        seoMetadata: {
-          upsert: {
-            where: { articleId: a.id },
-            create: {
-              title: metaTitle,
-              description: metaDescription,
-              keywords: focusKeyword,
-              canonicalUrl: `/articles/${slug}`,
-              ogTitle: a.title,
-              ogDescription: metaDescription,
-              ogImage: photo,
-              twitterTitle: a.title,
-              twitterImage: photo,
-              robots: "index, follow",
-            },
-            update: {
-              title: metaTitle,
-              description: metaDescription,
-              keywords: focusKeyword,
-              canonicalUrl: `/articles/${slug}`,
-              ogTitle: a.title,
-              ogDescription: metaDescription,
-              ogImage: photo,
-              twitterTitle: a.title,
-              twitterImage: photo,
+    // A stored metaTitle is treated as curated and is never rewritten here, so
+    // over-length ones are only reported for an editor to shorten by hand.
+    if (a.metaTitle && a.metaTitle.length > META_TITLE_MAX) {
+      longTitles.push(`${slug}  (${a.metaTitle.length})  ${a.metaTitle}`);
+    }
+
+    const repairImage = imageNeedsRepair(a.coverImage) && !!photo;
+    if (imageNeedsRepair(a.coverImage) && !photo) {
+      needsPhoto.push(`article ${slug} (coverImage ${a.coverImage ?? "empty"}, no PHOTOS entry for "${destSlug || "no destination"}")`);
+    }
+    if (repairImage) imagesRepaired++;
+
+    if (APPLY) {
+      await prisma.article.update({
+        where: { id: a.id },
+        data: {
+          ...(repairImage ? { coverImage: photo, ogImage: photo } : {}),
+          metaTitle,
+          metaDescription,
+          focusKeyword,
+          seoMetadata: {
+            upsert: {
+              where: { articleId: a.id },
+              create: {
+                title: metaTitle,
+                description: metaDescription,
+                keywords: focusKeyword,
+                canonicalUrl: `/articles/${slug}`,
+                ogTitle: a.title,
+                ogDescription: metaDescription,
+                ogImage: photo ?? null,
+                twitterTitle: a.title,
+                twitterImage: photo ?? null,
+                robots: "index, follow",
+              },
+              update: {
+                title: metaTitle,
+                description: metaDescription,
+                keywords: focusKeyword,
+                canonicalUrl: `/articles/${slug}`,
+                ogTitle: a.title,
+                ogDescription: metaDescription,
+                ...(photo ? { ogImage: photo, twitterImage: photo } : {}),
+              },
             },
           },
         },
-      },
-    });
+      });
+    }
   }
 
-  console.log("SEO optimization complete.");
+  console.log(`\nimage repairs   : ${imagesRepaired}`);
+  console.log(`robots filled   : ${robotsFilled}`);
+  console.log(`seo rows created: ${metaCreated}`);
+  if (needsPhoto.length) {
+    console.log(`\nNEEDS A HUMAN — ${needsPhoto.length} empty/dead image(s) with no verified photo mapped:`);
+    for (const n of needsPhoto) console.log(`   ${n}`);
+    console.log(`   These are left untouched. Source and visually confirm a photo for each;`);
+    console.log(`   never substitute an Unsplash ID from memory.`);
+  }
+  if (longTitles.length) {
+    console.log(`\nNEEDS AN EDITOR — ${longTitles.length} stored metaTitle(s) over ${META_TITLE_MAX} chars:`);
+    for (const t of longTitles) console.log(`   ${t}`);
+    console.log(`   Left untouched on purpose: a stored metaTitle is a curated value.`);
+  }
+  console.log(
+    APPLY
+      ? "\nAPPLIED. Existing curated images, titles and robots values were preserved."
+      : "\nDRY RUN. Re-run with --apply to write.",
+  );
 }
 
 main()

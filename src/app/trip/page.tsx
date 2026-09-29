@@ -171,12 +171,12 @@ export default function TripDashboard() {
                   value={planName}
                   onChange={(e) => setPlanName(e.target.value)}
                   placeholder="e.g. Rome in May"
-                  className="mt-2 w-full rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-sm text-white placeholder:text-white/40 focus:border-accent focus:outline-none"
+                  className="mt-2 w-full rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-sm text-white placeholder:text-white/40 focus:border-accent-on-dark focus:outline-none"
                 />
               </div>
 
               <p className="mt-5 flex items-start gap-2 text-xs text-white/60">
-                <Check className="mt-0.5 h-4 w-4 shrink-0 text-accent" />
+                <Check className="mt-0.5 h-4 w-4 shrink-0 text-accent-on-dark" />
                 Your shortlist is saved on this device. Booking is handled securely on our partner sites after you
                 select each experience.
               </p>

@@ -10,7 +10,10 @@ const base =
 
 const variants: Record<Variant, string> = {
   primary: "bg-brand text-white hover:bg-brand-dark shadow-sm shadow-brand/30 hover:shadow-md",
-  secondary: "bg-brand-light text-white hover:bg-brand/40",
+  // brand-light is a pale teal tint on the light palette, so the label must be
+  // deep teal. It was text-white when the site was dark-first and brand-light
+  // was #241a3d, which made this unreadable once the palette changed.
+  secondary: "bg-brand-light text-brand-dark hover:bg-brand/40",
   outline: "border border-line bg-card text-ink hover:border-brand hover:text-brand",
   ghost: "text-ink-soft hover:text-brand hover:bg-brand-light",
   accent: "bg-accent text-white hover:bg-accent-dark shadow-sm shadow-accent/20",

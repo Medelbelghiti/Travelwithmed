@@ -90,6 +90,70 @@ describe("buildAffiliateUrl", () => {
     assert.equal(parsed.searchParams.has("click_id"), false);
     assert.equal(parsed.searchParams.has("subid"), false);
   });
+
+  // Phase 8.5 regression guards. The eSIM links were repointed from direct
+  // Airalo referral URLs to Travelpayouts (tp.media) URLs. Two properties must
+  // hold or revenue is silently lost.
+  describe("Travelpayouts tp.media URLs", () => {
+    const AIRALO_TP =
+      "https://tp.media/r?campaign_id=541&marker=776824&p=8310&trs=573241&u=https%3A%2F%2Fairalo.com";
+
+    it("never mutates the contractual marker/trs on a tp.media URL", () => {
+      const url = buildAffiliateUrl(AIRALO_TP, { utmSource: "riversmag" }, "click-1");
+      const parsed = new URL(url);
+      assert.equal(parsed.searchParams.get("marker"), "776824");
+      assert.equal(parsed.searchParams.get("trs"), "573241");
+      assert.equal(parsed.searchParams.get("campaign_id"), "541");
+      assert.equal(parsed.searchParams.get("p"), "8310");
+      // get() decodes percent-encoding; toString() must keep it encoded.
+      assert.equal(parsed.searchParams.get("u"), "https://airalo.com");
+      assert.ok(url.includes("u=https%3A%2F%2Fairalo.com"), "u param must stay percent-encoded");
+    });
+
+    it("does not append UTM params to tp.media (owner committed to it verbatim)", () => {
+      const url = buildAffiliateUrl(AIRALO_TP, { utmSource: "riversmag", utmCampaign: "esim" }, "click-1");
+      const parsed = new URL(url);
+      assert.equal(parsed.searchParams.has("utm_source"), false);
+      assert.equal(parsed.searchParams.has("utm_medium"), false);
+      assert.equal(parsed.searchParams.has("utm_campaign"), false);
+      assert.equal(parsed.searchParams.has("utm_content"), false);
+    });
+
+    it("still records the per-click subid on tp.media so tracking survives", () => {
+      const url = buildAffiliateUrl(
+        AIRALO_TP,
+        { trackingParameter: "subid={click_id}" },
+        "click-xyz",
+      );
+      assert.equal(new URL(url).searchParams.get("subid"), "click-xyz");
+    });
+
+    it("still appends UTM params to non-Travelpayouts partners", () => {
+      const url = buildAffiliateUrl(
+        "https://www.booking.com/searchresults?ss=Rome",
+        { utmSource: "riversmag" },
+        "click-2",
+      );
+      const parsed = new URL(url);
+      assert.equal(parsed.searchParams.get("utm_source"), "riversmag");
+      assert.equal(parsed.searchParams.get("ss"), "Rome");
+    });
+  });
+
+  it("preserves partner account identifiers such as associateid", () => {
+    // associateid identifies the Riversmag account inside the partner's network.
+    // It is contractual: rewriting it would break attribution until the partner
+    // provisions a matching value, which loses revenue rather than fixing a
+    // cosmetic brand inconsistency. Guarded here so it cannot be "cleaned up".
+    const url = buildAffiliateUrl(
+      "https://www.skyscanner.net/transport/flights/lhr/otp/?associateid=roamora&aid=associate",
+      { utmSource: "riversmag" },
+      "click-3",
+    );
+    const parsed = new URL(url);
+    assert.equal(parsed.searchParams.get("associateid"), "roamora");
+    assert.equal(parsed.searchParams.get("aid"), "associate");
+  });
 });
 
 describe("trackAffiliateClick clickId persistence (regression guard)", () => {

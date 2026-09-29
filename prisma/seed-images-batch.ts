@@ -233,13 +233,24 @@ const BATCH_IMAGES: Record<string, Config> = {
 };
 
 /**
+ * IDs confirmed to return HTTP 404 on images.unsplash.com (audit Phase 8.2).
+ * They were live once and appear in older seed files, so they are blocklisted
+ * explicitly rather than left to fail the generic reachability check: a reuse
+ * attempt should say why, and must never be added to ALLOWED_SHARED.
+ */
+const DEAD_IMAGE_IDS: Record<string, string> = {
+  "photo-1501785888041-af3ef285b2aa": "nature/lake shot, 404 since Phase 8.2",
+  "photo-1508009603885-a5b2c675d8d0": "beach shot, 404 since Phase 8.2",
+  "photo-1464824477268-36a28a1e2487": "nature/mountain shot, 404 since Phase 8.2",
+};
+
+/**
  * IDs already used elsewhere in the repo, mapped to where. A batch image that
  * collides with one of these is refused unless it also appears in
  * ALLOWED_SHARED, which is a deliberate editorial decision, recorded with its
  * reason. This list was generated from prisma/ and src/, not written by hand.
  */
 const USED_ELSEWHERE: Record<string, string> = {
-  "photo-1464824477268-36a28a1e2487": "seed-cities.ts:17",
   "photo-1467269204594-9661b134dd2b": "seed-articles-2.ts:307, seed-cities.ts:14, seed-images.ts:27",
   "photo-1473968512647-3e447244af8f": "seed-articles-2.ts:149, seed-articles-6.ts:523",
   "photo-1488646953014-85cb44e25828": "seed-articles-2.ts:277, seed-articles-2.ts:376, seed-articles-6.ts:577, +1 more",
@@ -247,10 +258,8 @@ const USED_ELSEWHERE: Record<string, string> = {
   "photo-1493976040374-85c8e12f0c0e": "seed-articles-1.ts:305, seed-articles-5.ts:178, seed-articles-7.ts:314, +3 more",
   "photo-1496442226666-8d4d0e62e6e9": "seed-seo.ts:6",
   "photo-1499856871958-5b9627545d1a": "seed-images.ts:65",
-  "photo-1501785888041-af3ef285b2aa": "seed-cities.ts:16, seed-seo.ts:13, seed-seo.ts:14, +2 more",
   "photo-1502602898657-3e91760cbb34": "seed-cities.ts:10, seed-images.ts:13, seed-images.ts:21, +5 more",
   "photo-1503220317375-aaad61436b1b": "seed-articles-2.ts:222, seed-articles-6.ts:320",
-  "photo-1508009603885-a5b2c675d8d0": "seed-seo.ts:7",
   "photo-1512756290469-ec264b7fbf87": "seed-images.ts:47",
   "photo-1512918728675-ed5a9ecdebfd": "seed-articles-3.ts:291, seed-images.ts:42",
   "photo-1512941937669-90a1b58e7e9c": "seed-articles-6.ts:373, seed-images.ts:57",
@@ -323,6 +332,7 @@ async function verify(id: string): Promise<boolean> {
 type Rejection = string | null;
 /** An ID is usable only if it resolves and is not an unapproved duplicate. */
 async function check(id: string): Promise<Rejection> {
+  if (DEAD_IMAGE_IDS[id]) return `DEAD (404): ${DEAD_IMAGE_IDS[id]}`;
   if (!(await verify(id))) return "unreachable (not a valid photo ID)";
   if (ALLOWED_SHARED[id]) return null;
   if (USED_ELSEWHERE[id]) return `duplicate of ${USED_ELSEWHERE[id]}`;

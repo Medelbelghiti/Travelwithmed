@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 import { unstable_cache } from "next/cache";
 import { prisma } from "@/lib/prisma";
+import { reportDatabaseUnavailable } from "@/lib/db-errors";
 import { siteConfig } from "@/lib/site";
 import { isShopEnabled } from "@/lib/fourthwall";
 import type { HubTypeSlug } from "@/lib/hubs";
@@ -149,8 +150,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     hotels = result.hotels;
     activities = result.activities;
     hubs = result.hubs;
-  } catch {
-    // DB unavailable — return static paths only
+  } catch (error) {
+    // A partial sitemap beats no sitemap: static paths still get listed.
+    // Log it so a dead database is visible instead of silent.
+    reportDatabaseUnavailable(error);
   }
 
   const staticEntries = staticPaths.map((s): MetadataRoute.Sitemap[number] => ({

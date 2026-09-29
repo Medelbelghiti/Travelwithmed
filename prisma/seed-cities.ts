@@ -13,8 +13,24 @@ const IMG = {
   osaka: "photo-1553413077-190dd305871c", kyoto: "photo-1493976040374-85c8e12f0c0e",
   europe: "photo-1467269204594-9661b134dd2b", asia: "photo-1528360983277-13d401cdc186",
   africa: "photo-1547471080-7cc2caa01a7e", desert: "photo-1533669955142-6a73332af4db",
-  beach: "photo-1501785888041-af3ef285b2aa", temple: "photo-1560998086-bb8f9e7b5b0a",
-  city: "photo-1464824477268-36a28a1e2487",
+  temple: "photo-1560998086-bb8f9e7b5b0a",
+  // Phase 8.2: the shared "beach" and "city" keys pointed at photo IDs that
+  // Unsplash now serves as 404, which broke the cover image of 9 destinations
+  // (Los Angeles, San Francisco, Phuket, Rio, Miami, Honolulu, Bangkok, Las
+  // Vegas, New Orleans) and 3 of the eSIM articles. Shared generic keys were
+  // the underlying mistake: one dead ID took out many cities at once. Every
+  // city below now has its own verified image, each confirmed HTTP 200 and
+  // visually checked to actually depict that city.
+  laBeach: "photo-1597982087634-9884f03198ce",      // palm-lined road, LA skyline at golden hour
+  sfBridge: "photo-1521747116042-5a810fda9664",     // Golden Gate Bridge
+  phuketBeach: "photo-1693494813069-b83e8eaca59a",  // beach with palms, Phuket
+  rioBeach: "photo-1596573677494-accc8fbe89e8",      // Copacabana beach, Rio
+  miamiCoast: "photo-1589083130544-0d6a2926e519",   // aerial, Miami Beach high-rises
+  honoluluBeach: "photo-1636522302567-032111e4aff4",// Waikiki beach walk
+  bangkokTemple: "photo-1613672803979-a6edfc5a179b",// Wat Arun, Chao Phraya
+  vegasStrip: "photo-1605833556294-ea5c7a74f57d",   // Las Vegas Strip
+  nolaBalconies: "photo-1707702570280-f5800fe37c8b",// French Quarter wrought-iron balconies
+  newYork: "photo-1496442226666-8d4d0e62e6e9",     // New York skyline
   // Added with the Part C batch: each verified to depict the city it is assigned to.
   casablanca: "photo-1758382255691-d698ab95c59b", agadir: "photo-1665303655457-cd9655b4ff9d",
   istanbul: "photo-1769299118857-c6d8402291e3", dubai: "photo-1512453979798-5ea266f8880c",
@@ -141,11 +157,11 @@ async function main() {
     rome:"colosseum", florence:"colosseum", venice:"eiffel", naples:"colosseum", milan:"barca",
     marrakech:"marrakech", fes:"marrakech", tangier:"marrakech", chefchaouen:"marrakech", essaouira:"marrakech",
     casablanca:"casablanca", agadir:"agadir", istanbul:"istanbul", dubai:"dubai", london:"london",
-    "new-york":"city", "san-francisco":"beach", "los-angeles":"beach", miami:"beach", "las-vegas":"city", honolulu:"beach", "new-orleans":"city",
-    bangkok:"temple", "chiang-mai":"asia", phuket:"beach",
+    "new-york":"newYork", "san-francisco":"sfBridge", "los-angeles":"laBeach", miami:"miamiCoast", "las-vegas":"vegasStrip", honolulu:"honoluluBeach", "new-orleans":"nolaBalconies",
+    bangkok:"bangkokTemple", "chiang-mai":"asia", phuket:"phuketBeach",
     athens:"colosseum", santorini:"eiffel",
     lisbon:"eiffel", porto:"barca",
-    "rio-de-janeiro":"beach", cairo:"marrakech",
+    "rio-de-janeiro":"rioBeach", cairo:"marrakech",
   };
   let imgCount = 0;
   for (const [slug, key] of Object.entries(CITY_IMAGES)) {

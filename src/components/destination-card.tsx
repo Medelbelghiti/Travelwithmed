@@ -35,8 +35,14 @@ export function DestinationCard({ destination, className }: { destination: Desti
           </div>
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-ink/70 via-transparent to-transparent" aria-hidden />
-        <div className="absolute inset-x-0 bottom-0 p-4">
-          <h3 className="font-serif text-xl font-semibold text-white drop-shadow">{name}</h3>
+        {/* This text stack is absolutely positioned inside a fixed aspect-[4/3]
+            box with overflow-hidden. An unclamped destination name wraps, the
+            stack grows upward past the top of the image and gets clipped -
+            which is what produced the "text overlapping the image" report at
+            375px. Clamp the name to 2 lines and cap the stack height so the
+            overlay can never outgrow the frame. */}
+        <div className="absolute inset-x-0 bottom-0 max-h-[70%] overflow-hidden p-4">
+          <h3 className="line-clamp-2 font-serif text-xl font-semibold leading-tight text-white drop-shadow">{name}</h3>
           {tagline && <p className="mt-0.5 line-clamp-1 text-sm text-white/85">{tagline}</p>}
           {typeof articleCount === "number" && articleCount > 0 && (
             <p className="mt-1 text-xs font-medium text-accent">{articleCount} guides</p>

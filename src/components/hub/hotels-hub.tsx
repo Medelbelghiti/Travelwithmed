@@ -103,7 +103,7 @@ export function HotelsHub({ hub }: { hub: HotelsHubData }) {
       <div className="relative overflow-hidden bg-brand-dark">
         <div className="container-x relative py-16 md:py-20">
           <Breadcrumbs items={crumbs} />
-          <p className="text-xs font-bold uppercase tracking-[0.2em] text-accent">{hubType.eyebrow}</p>
+          <p className="text-xs font-bold uppercase tracking-[0.2em] text-accent-on-dark">{hubType.eyebrow}</p>
           <h1 className="mt-3 max-w-3xl text-4xl font-semibold text-white md:text-5xl">{hubType.title(destination.name)}</h1>
           <p className="mt-4 max-w-2xl text-lg text-white/80">{hub.pageDescription}</p>
           <div className="mt-6 flex flex-wrap gap-2">

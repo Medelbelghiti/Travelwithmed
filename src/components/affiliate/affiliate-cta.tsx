@@ -45,7 +45,7 @@ export function AffiliateCTA({
       )}
     >
       <h3 className="flex items-center gap-2 text-lg font-semibold">
-        <Ticket className="h-5 w-5 text-accent" aria-hidden />
+        <Ticket className="h-5 w-5 text-accent-on-dark" aria-hidden />
         {title}
       </h3>
       {subtitle && <p className="mt-2 text-sm text-white/70">{subtitle}</p>}

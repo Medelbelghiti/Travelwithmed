@@ -122,12 +122,12 @@ export async function DestinationDetail({ destination }: DestinationDetailProps)
           <h1 className="max-w-3xl text-4xl font-semibold text-white md:text-6xl">{destination.name}</h1>
           {destination.tagline && <p className="mt-4 max-w-2xl text-lg text-white/80">{destination.tagline}</p>}
 
-          <div className="mt-5 flex flex-wrap gap-2 text-xs font-semibold uppercase tracking-wider text-accent">
-            {categoryLinks.hotels && <span className="rounded-full border border-accent/40 px-3 py-1">Hotels</span>}
-            {categoryLinks.activities && <span className="rounded-full border border-accent/40 px-3 py-1">Activities</span>}
-            {categoryLinks.esim && <span className="rounded-full border border-accent/40 px-3 py-1">eSIM</span>}
-            {categoryLinks.flights && <span className="rounded-full border border-accent/40 px-3 py-1">Flights</span>}
-            {categoryLinks.insurance && <span className="rounded-full border border-accent/40 px-3 py-1">Insurance</span>}
+          <div className="mt-5 flex flex-wrap gap-2 text-xs font-semibold uppercase tracking-wider text-accent-on-dark">
+            {categoryLinks.hotels && <span className="rounded-full border border-accent-on-dark/40 px-3 py-1">Hotels</span>}
+            {categoryLinks.activities && <span className="rounded-full border border-accent-on-dark/40 px-3 py-1">Activities</span>}
+            {categoryLinks.esim && <span className="rounded-full border border-accent-on-dark/40 px-3 py-1">eSIM</span>}
+            {categoryLinks.flights && <span className="rounded-full border border-accent-on-dark/40 px-3 py-1">Flights</span>}
+            {categoryLinks.insurance && <span className="rounded-full border border-accent-on-dark/40 px-3 py-1">Insurance</span>}
           </div>
         </div>
       </div>

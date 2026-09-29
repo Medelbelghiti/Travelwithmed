@@ -61,6 +61,27 @@ export async function ContentRenderer({ content, articleId, destinationId }: Ren
   const rendered = [];
   let hasAffiliateBlocks = false;
 
+  // An "affiliate_link" block stores a concrete link id, so it bypasses
+  // resolveAffiliateLink and therefore the `active: true` filter every other CTA
+  // path goes through. /out/[id] redirects an inactive link to the homepage, so
+  // rendering a disabled link produced a dead CTA that dumped the reader on "/".
+  // Resolve the whole set up front: one query instead of one per block, and a
+  // database problem degrades to "render no affiliate CTA" rather than throwing.
+  const explicitLinkIds = [
+    ...new Set(
+      blocks
+        .filter((b) => b.type === "affiliate_link" && b.linkId)
+        .map((b) => (b as { linkId: string }).linkId),
+    ),
+  ];
+  const activeExplicitLinkIds = new Set<string>();
+  if (explicitLinkIds.length > 0) {
+    const active = await prisma.affiliateLink
+      .findMany({ where: { id: { in: explicitLinkIds }, active: true }, select: { id: true } })
+      .catch(() => []);
+    for (const row of active) activeExplicitLinkIds.add(row.id);
+  }
+
   for (let i = 0; i < blocks.length; i++) {
     const block = blocks[i];
     const key = `${block.type}-${i}`;
@@ -164,12 +185,14 @@ export async function ContentRenderer({ content, articleId, destinationId }: Ren
         break;
       }
       case "affiliate_link": {
-        rendered.push(
-          <p key={key} className="my-6">
-            <AffiliateButton linkId={block.linkId} label={block.label ?? "Check prices"} placement={articleId} />
-          </p>,
-        );
-        hasAffiliateBlocks = true;
+        if (activeExplicitLinkIds.has(block.linkId)) {
+          rendered.push(
+            <p key={key} className="my-6">
+              <AffiliateButton linkId={block.linkId} label={block.label ?? "Check prices"} placement={articleId} />
+            </p>,
+          );
+          hasAffiliateBlocks = true;
+        }
         break;
       }
       case "faq":

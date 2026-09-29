@@ -36,7 +36,7 @@ export function ArticleCard({ article }: { article: ArticleCardData }) {
       href={href}
       className="group flex flex-col overflow-hidden rounded-2xl border border-line bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg"
     >
-      <div className="relative aspect-[16/10] overflow-hidden bg-sand">
+      <div className="relative aspect-[16/10] shrink-0 overflow-hidden bg-sand">
         {article.coverImage ? (
           <Image
             src={article.coverImage}
@@ -55,8 +55,12 @@ export function ArticleCard({ article }: { article: ArticleCardData }) {
           {ARTICLE_TYPE_LABELS[article.type]}
         </span>
       </div>
-      <div className="flex flex-1 flex-col p-5">
-        <h3 className="font-serif text-lg font-semibold text-ink leading-snug group-hover:text-brand transition-colors">
+      <div className="flex min-w-0 flex-1 flex-col p-5">
+        {/* min-w-0 lets long unbroken words (URLs, place names) shrink and wrap
+            inside the flex column instead of forcing the card wider than its
+            grid track. The 3-line clamp keeps grid rows visually even; the
+            footer stays pinned to the bottom via mt-auto. */}
+        <h3 className="line-clamp-3 font-serif text-lg font-semibold text-ink leading-snug group-hover:text-brand transition-colors">
           {article.title}
         </h3>
         {article.excerpt && (

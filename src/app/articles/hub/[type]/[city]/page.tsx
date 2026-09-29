@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
+import { rethrowIfDatabaseUnavailable } from "@/lib/db-errors";
 import { resolveAffiliateLink } from "@/lib/affiliate";
 import { HUB_TYPES, isHubTypeSlug, type HubTypeSlug } from "@/lib/hubs";
 import { HotelsHub, HubMetadata, type HotelsHubData } from "@/components/hub/hotels-hub";
@@ -58,7 +59,8 @@ export default async function HubPage({ params }: HubPageProps) {
   let destination: Awaited<ReturnType<typeof fetchDestination>> | null = null;
   try {
     destination = await fetchDestination(city);
-  } catch {
+  } catch (error) {
+    rethrowIfDatabaseUnavailable(error);
     destination = null;
   }
   if (!destination || !destination.isActive) notFound();

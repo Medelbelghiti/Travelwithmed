@@ -2,6 +2,7 @@ import { Breadcrumbs, buildCrumbs } from "@/components/ui/breadcrumbs";
 import Image from "next/image";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
+import { rethrowIfDatabaseUnavailable } from "@/lib/db-errors";
 import { buildMetadata } from "@/lib/seo";
 import { HotelsFilter } from "@/components/hotels-filter";
 import { SectionHeading } from "@/components/ui/card";
@@ -31,7 +32,8 @@ export default async function HotelsPage() {
   let hotels: Awaited<ReturnType<typeof fetchHotels>> = [];
   try {
     hotels = await fetchHotels();
-  } catch {
+  } catch (error) {
+    rethrowIfDatabaseUnavailable(error);
     hotels = [];
   }
 

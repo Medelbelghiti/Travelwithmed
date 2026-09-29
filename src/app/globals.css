@@ -1,27 +1,49 @@
 @import "tailwindcss";
 
+/* Phase 9 — "warm paper + deep teal", an editorial print direction.
+ *
+ * Contrast was checked, not eyeballed. Ratios are against --background
+ * (#FBF9F5), the page colour:
+ *
+ *   ink        #1C1A17   15.9:1   body text, headings
+ *   ink-soft   #4A453D    8.5:1   secondary body
+ *   ink-muted  #6F6759    4.9:1   captions, metadata (AA at normal size)
+ *   brand      #0F5257    8.8:1   links, primary buttons, focus ring
+ *   accent     #A8501F    5.2:1   editorial accent, small labels
+ *   white on brand        8.8:1
+ *   white on accent       5.5:1
+ *
+ * --accent is a burnt sienna rather than a bright one on purpose: at the
+ * brighter #C2612F it measured 3.98:1 and the accent is used for 12px card
+ * labels, which need 4.5:1.
+ */
 :root {
-  --background: #0a0910;
-  --foreground: #f4f1f7;
-  --ink: #f4f1f7;
-  --ink-soft: #cbc4d6;
-  --ink-muted: #8d859e;
-  --brand: #8b5cf6;
-  --brand-dark: #7c3aed;
-  --brand-deep: #4c1d95;
-  --brand-light: #241a3d;
-  --brand-soft: #c4b5fd;
-  --accent: #ff2d78;
-  --accent-dark: #e01e63;
-  --sand: #14111c;
-  --sand-dark: #0e0c15;
-  --line: #262033;
-  --card: #181422;
-  --card-hover: #201a2e;
-  --success: #34d399;
-  --danger: #f87171;
-  --info: #60a5fa;
-  --warning: #fbbf24;
+  --background: #fbf9f5;
+  --foreground: #1c1a17;
+  --ink: #1c1a17;
+  --ink-soft: #4a453d;
+  --ink-muted: #6f6759;
+  --brand: #0f5257;
+  --brand-dark: #0b3f43;
+  --brand-deep: #07292c;
+  --brand-light: #e2efee;
+  --brand-soft: #6ba5a2;
+  /* Light-on-dark companions. The dark surfaces (hero, brand-deep panels) need
+     their own teal and sienna: --brand and --accent are dark by design and
+     would be invisible on a dark panel. 8.7:1 and 7.6:1 on --brand-deep. */
+  --brand-on-dark: #7fd1cb;
+  --accent-on-dark: #e8a87c;
+  --accent: #a8501f;
+  --accent-dark: #8c4219;
+  --sand: #f2eee4;
+  --sand-dark: #e8e1d3;
+  --line: #ded6c6;
+  --card: #ffffff;
+  --card-hover: #fdfbf7;
+  --success: #15803d;
+  --danger: #b91c1c;
+  --info: #1d4ed8;
+  --warning: #a16207;
   --radius: 1.25rem;
   --radius-lg: 1.75rem;
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
@@ -39,6 +61,8 @@
   --color-brand-deep: var(--brand-deep);
   --color-brand-light: var(--brand-light);
   --color-brand-soft: var(--brand-soft);
+  --color-brand-on-dark: var(--brand-on-dark);
+  --color-accent-on-dark: var(--accent-on-dark);
   --color-card: var(--card);
   --color-card-hover: var(--card-hover);
   --color-accent: var(--accent);
@@ -55,29 +79,31 @@
   --radius-lg: var(--radius);
 }
 
-/* Dark / night theme is the default for the whole site (premium look).
-   Light surfaces are intentionally not restored: the brand is dark-first. */
+/* The site is light-first: warm paper stock, deep teal ink.
+   The previous dark-first overrides that forced white surfaces to dark and
+   lifted brand text for a night theme have been removed, because they inverted
+   the intended palette. `bg-white` now means white, which is the card colour
+   on paper. */
 
-/* Solid white card surfaces become the dark card color.
-   Opacity variants (bg-white/10, bg-white/95) and text-white are untouched. */
-.bg-white {
-  background-color: var(--card);
+/* Light, slightly warm elevation shadows. Replaces the dark-theme softening,
+   whose hard-coded black alpha looked muddy against paper. */
+.shadow-sm {
+  box-shadow: 0 1px 2px rgb(28 26 23 / 0.06), 0 1px 3px rgb(28 26 23 / 0.05) !important;
 }
-
-/* Badges / icon chips that pair a dark brand-light tint with dark text:
-   lift the text to a bright soft violet so it stays readable on the night theme. */
-.bg-brand-light.text-brand-dark {
-  color: var(--brand-soft);
+.shadow {
+  box-shadow: 0 1px 3px rgb(28 26 23 / 0.07), 0 2px 6px rgb(28 26 23 / 0.05) !important;
 }
-
-/* Soften shadows on dark surfaces */
-.shadow-sm,
-.shadow,
-.shadow-md,
-.shadow-lg,
-.shadow-xl,
+.shadow-md {
+  box-shadow: 0 2px 4px rgb(28 26 23 / 0.06), 0 4px 12px rgb(28 26 23 / 0.07) !important;
+}
+.shadow-lg {
+  box-shadow: 0 4px 8px rgb(28 26 23 / 0.06), 0 8px 24px rgb(28 26 23 / 0.08) !important;
+}
+.shadow-xl {
+  box-shadow: 0 8px 16px rgb(28 26 23 / 0.07), 0 16px 40px rgb(28 26 23 / 0.1) !important;
+}
 .shadow-2xl {
-  box-shadow: 0 1px 2px rgb(0 0 0 / 0.35), 0 1px 3px rgb(0 0 0 / 0.45) !important;
+  box-shadow: 0 12px 24px rgb(28 26 23 / 0.08), 0 24px 60px rgb(28 26 23 / 0.12) !important;
 }
 
 * {

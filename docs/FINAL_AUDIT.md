@@ -1,6 +1,10 @@
 # Riversmag — Final Technical & Content Audit
 
 Date: 2026-09-27
+Superseded in part on 2026-09-28 by `docs/AUDIT_2026-09-27.md`, which is the current record.
+Read that file for production state, the applied repairs, the affiliate platform policy
+(`§4.0`) and the cover-image workflow (`§4.1`). This file is kept as the earlier baseline and
+its reasoning trail; where the two disagree, the newer file is correct.
 Scope: `riversmag.com` Next.js application, production affiliate and consent behaviour, the
 15-destination content brief, and the image pipeline.
 Method: source review, `npm run lint` / `typecheck` / `test` / `next build`, Prisma schema and
@@ -162,12 +166,15 @@ front of the writer.
 | miami, los-angeles, san-francisco | `photo-1501785888041-af3ef285b2aa` | Rio de Janeiro |
 | dubai, cairo | `photo-1533669955142-6a73332af4db` | generic desert |
 
-`prisma/seed-images.ts` maps the same destinations correctly. Whichever seed last wrote each row
-determines what production shows, and there is no production database access from here to check.
+**RESOLVED 2026-09-28.** Production writes were performed on 2026-09-28 after a verified
+`pg_dump` backup, so "there is no production database access from here to check" no longer
+applies. The wrong-city photos were repaired by `prisma/fix-dead-images.ts` (22 rows across
+Destination, Article and SeoMetadata) and verified in production. `seed-seo.ts` was made
+non-destructive and is now repair-plus-fill; it never overwrites a live curated value. See
+`docs/AUDIT_2026-09-27.md` §0 and §3.1 for which script is authoritative.
 
-**Action for the owner:** in the admin, spot-check the destination cover for Lisbon and London
-before publishing anything. `seed-seo.ts` should not be re-run as-is; its `PHOTOS` map needs the
-same treatment the new guides got, or the file should be retired in favour of `seed-images.ts`.
+`prisma/seed-images.ts` maps the same destinations correctly. Whichever seed last wrote each row
+determines what production shows.
 
 This is also why the new guides do **not** borrow IDs from `seed-seo.ts`. The only photo reused
 for Marrakech is the one already serving as the Marrakech destination cover.
@@ -212,20 +219,25 @@ Nothing was invented. Every ID in the file was returned by the API and confirmed
 - A throwaway cluster created with `initdb` starts correctly and accepts connections, then dies
   with `0xC0000142` when a child process is spawned.
 
-The `0xC0000142` turns out to be self-inflicted, not a platform fault: PostgreSQL was running
-fine, and the child died when an over-long shell command was terminated and took the process tree
-with it. Starting the postmaster detached, with its output redirected to a file rather than a
-pipe, keeps it alive. That is how the seed and the build were verified for this audit.
+`0xC0000142` is self-inflicted, not a platform fault: PostgreSQL was running fine, and the child
+died when an over-long shell command was terminated and took the process tree with it. Starting
+the postmaster detached, with its output redirected to a file rather than a pipe, keeps it alive.
 
-`.env` still points at `localhost:5432`, which nothing is listening on. Either restore a local
-cluster on 5432 or update `.env`.
+**RESOLVED 2026-09-28.** A stable disposable cluster now runs on `127.0.0.1:55432`, database
+`roamora`, default postgres credentials, and was used to exercise every repair script, the
+affiliate migration (apply, rollback, idempotency) and the cover-image apply. Pass that host as
+`DATABASE_URL` for local work rather than repointing `.env` at the throwaway cluster. The
+connection string is deliberately not written down here — build it from host, port, database and
+the default local credentials.
 
 ---
 
 ## 9. Not verified
 
-- **No production database access.** Every claim about live content comes from the public HTTP
-  surface, not from the database.
+- **Production state as of this file (2026-09-27).** Superseded: production was inspected and
+  written on 2026-09-28, then the Neon credential was rotated. See `docs/AUDIT_2026-09-27.md` §0.
+  The affiliate migration, the 9 cover images and the two inactive-link rendering guards are
+  still **not** applied to production and remain unverified there.
 - **No browser.** Core Web Vitals (LCP, CLS, INP) were not measured directly, and GA was not
   confirmed to fire after consent in a real session.
 - **CSP remains report-only.** No violation data has been collected, so enforcement is not safe

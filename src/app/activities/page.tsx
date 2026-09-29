@@ -2,6 +2,7 @@ import { Breadcrumbs, buildCrumbs } from "@/components/ui/breadcrumbs";
 import Image from "next/image";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
+import { rethrowIfDatabaseUnavailable } from "@/lib/db-errors";
 import { buildMetadata } from "@/lib/seo";
 import { ActivitiesFilter } from "@/components/activities-filter";
 import { SectionHeading } from "@/components/ui/card";
@@ -38,7 +39,8 @@ export default async function ActivitiesPage({
 
   try {
     activities = await fetchActivities();
-  } catch {
+  } catch (error) {
+    rethrowIfDatabaseUnavailable(error);
     activities = [];
   }
 

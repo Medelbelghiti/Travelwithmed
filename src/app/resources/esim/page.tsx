@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { MapPin, ChevronRight } from "lucide-react";
 import { prisma } from "@/lib/prisma";
+import { rethrowIfDatabaseUnavailable } from "@/lib/db-errors";
 import { buildMetadata } from "@/lib/seo";
 import { Breadcrumbs, buildCrumbs } from "@/components/ui/breadcrumbs";
 import { SectionHeading } from "@/components/ui/card";
@@ -32,7 +33,8 @@ export default async function EsimHubPage() {
       fetchEsimGuides(),
       buildCityEsimGroups(),
     ]));
-  } catch {
+  } catch (error) {
+    rethrowIfDatabaseUnavailable(error);
     providers = [];
     guides = [];
     cityGroups = [];

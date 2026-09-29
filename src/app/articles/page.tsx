@@ -1,4 +1,5 @@
-﻿import { prisma } from "@/lib/prisma";
+import { prisma } from "@/lib/prisma";
+import { rethrowIfDatabaseUnavailable } from "@/lib/db-errors";
 import { notFound } from "next/navigation";
 import { ArticleCard } from "@/components/article-card";
 import { SectionHeading } from "@/components/ui/card";
@@ -50,7 +51,8 @@ export default async function ArticlesIndex({
     (async () => {
       try {
         return await prisma.article.count({ where: { status: "PUBLISHED" } });
-      } catch {
+      } catch (error) {
+    rethrowIfDatabaseUnavailable(error);
         return 0;
       }
     })(),
