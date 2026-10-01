@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { DestinationCard, RegionCard } from "@/components/destination-card";
 import { SectionHeading } from "@/components/ui/card";
+import { LinkIndex } from "@/components/ui/link-index";
 import { Breadcrumbs, buildCrumbs } from "@/components/ui/breadcrumbs";
 import { prisma } from "@/lib/prisma";
 import { rethrowIfDatabaseUnavailable } from "@/lib/db-errors";
@@ -25,7 +26,6 @@ async function fetchCountries() {
     where: { isActive: true, type: "COUNTRY" },
     include: { _count: { select: { articles: true } } },
     orderBy: { name: "asc" },
-    take: 30,
   });
 }
 
@@ -34,7 +34,6 @@ async function fetchCities() {
     where: { isActive: true, type: "CITY" },
     include: { _count: { select: { articles: true } } },
     orderBy: { name: "asc" },
-    take: 24,
   });
 }
 
@@ -53,8 +52,32 @@ async function fetchDestinations() {
   }
 }
 
+/**
+ * Every destination, listed as text.
+ *
+ * The grids above are the browsing experience, but a grid that renders 76
+ * cards is unusable, so the full crawlable list lives here instead: one link
+ * per destination so no guide is orphaned, and PageRank flows from this hub to
+ * the whole tree.
+ */
+async function fetchAllDestinations() {
+  try {
+    return await prisma.destination.findMany({
+      where: { isActive: true },
+      select: { name: true, slug: true, type: true },
+      orderBy: [{ type: "asc" }, { name: "asc" }],
+    });
+  } catch (error) {
+    rethrowIfDatabaseUnavailable(error);
+    return [];
+  }
+}
+
 export default async function DestinationsIndex() {
-  const { regions, countries, cities } = await fetchDestinations();
+  const [{ regions, countries, cities }, allDestinations] = await Promise.all([
+    fetchDestinations(),
+    fetchAllDestinations(),
+  ]);
 
   return (
     <main className="container-x section-pad">
@@ -113,6 +136,15 @@ export default async function DestinationsIndex() {
           </Link>
         </div>
       </div>
+    <LinkIndex
+        title={`All destination guides (${allDestinations.length})`}
+        description="Every guide we publish, in one list."
+        columns={4}
+        items={allDestinations.map((d) => ({
+          name: d.name,
+          href: `/destinations/${d.slug}`,
+        }))}
+      />
     </main>
   );
 }

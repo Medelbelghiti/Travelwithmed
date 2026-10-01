@@ -5,6 +5,7 @@ import { ArticleCard } from "@/components/article-card";
 import { SectionHeading } from "@/components/ui/card";
 import { Breadcrumbs, buildCrumbs } from "@/components/ui/breadcrumbs";
 import { Pagination } from "@/components/pagination";
+import { LinkIndex } from "@/components/ui/link-index";
 import { buildMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
@@ -38,6 +39,27 @@ export async function generateMetadata({
   });
 }
 
+/**
+ * Every published guide, as flat crawlable links.
+ *
+ * The grid paginates 12 at a time, so this page otherwise links only the
+ * current slice of the library. Crawlers reach the rest via pagination, which
+ * spreads authority thin and leaves most guides weakly linked from within the
+ * site. This index links all of them from the hub itself.
+ */
+async function fetchAllArticleLinks() {
+  try {
+    return await prisma.article.findMany({
+      where: { status: "PUBLISHED" },
+      select: { title: true, slug: true },
+      orderBy: { title: "asc" },
+    });
+  } catch (error) {
+    rethrowIfDatabaseUnavailable(error);
+    return [];
+  }
+}
+
 export default async function ArticlesIndex({
   searchParams,
 }: {
@@ -47,7 +69,7 @@ export default async function ArticlesIndex({
   const requested = Number(pageParam ?? "1");
   const currentPage = Number.isFinite(requested) && requested >= 1 ? Math.floor(requested) : 1;
 
-  const [total, articles] = await Promise.all([
+  const [total, articles, allArticles] = await Promise.all([
     (async () => {
       try {
         return await prisma.article.count({ where: { status: "PUBLISHED" } });
@@ -57,6 +79,7 @@ export default async function ArticlesIndex({
       }
     })(),
     fetchArticles(currentPage, PER_PAGE).catch(() => [] as Awaited<ReturnType<typeof fetchArticles>>),
+    fetchAllArticleLinks(),
   ]);
 
   const totalPages = Math.max(1, Math.ceil(total / PER_PAGE));
@@ -102,6 +125,12 @@ export default async function ArticlesIndex({
         ))}
       </div>
       <Pagination currentPage={currentPage} totalPages={totalPages} basePath="/articles" />
+      <LinkIndex
+        title={`Every guide (${allArticles.length})`}
+        description="The complete library, indexable in one pass."
+        columns={3}
+        items={allArticles.map((a) => ({ name: a.title, href: `/articles/${a.slug}` }))}
+      />
     </main>
   );
 }
