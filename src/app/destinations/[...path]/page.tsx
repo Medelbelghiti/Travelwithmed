@@ -2,7 +2,8 @@ import { DestinationDetail } from "@/components/destination/destination-detail";
 import { notFound, permanentRedirect } from "next/navigation";
 import { rethrowIfDatabaseUnavailable } from "@/lib/db-errors";
 import { prisma } from "@/lib/prisma";
-import { buildMetadata } from "@/lib/seo";
+import { buildMetadata, articleSchema } from "@/lib/seo";
+import { absoluteUrl } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -26,7 +27,7 @@ export async function generateMetadata({ params }: { params: Promise<{ path: str
     description: seo?.description ?? (destination.tagline ?? `The complete guide to ${destination.name}: best places to visit, where to stay, tours, itineraries, travel tips and practical advice.`),
     canonicalPath: seo?.canonicalUrl ?? `/destinations/${slug}`,
     ogImage: seo?.ogImage ?? destination.coverImage ?? undefined,
-    ogType: "website",
+    ogType: "article",
     keywords: seo?.keywords ? seo.keywords.split(",").map((k) => k.trim()) : undefined,
   });
 }
@@ -54,7 +55,33 @@ export default async function DestinationCatchAll({
 
   if (!destination || !destination.isActive) notFound();
 
-  return <DestinationDetail destination={destination} />;
+  const seo = destination.seoMetadata;
+
+  /*
+   * A destination guide is editorial content that changes when prices, visa
+   * rules or transport options move. Emitting it as an Article with a
+   * dateModified lets search engines treat it as a living page instead of a
+   * flat web page, which is how the big travel publishers rank destination
+   * pages at all. ogType "website" plus a bare name gave Google no freshness
+   * signal and no author.
+   */
+  const schema = articleSchema({
+    title: seo?.title ?? `${destination.name} Travel Guide`,
+    description: seo?.description ?? destination.tagline ?? undefined,
+    url: absoluteUrl(`/destinations/${slug}`),
+    image: seo?.ogImage ?? destination.coverImage ?? null,
+    modifiedTime: destination.updatedAt,
+  });
+
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+      />
+      <DestinationDetail destination={destination} />
+    </>
+  );
 }
 
 async function fetchDestination(slug: string) {
