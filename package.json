@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "npm run db:migrate:deploy || echo 'migration skipped, continuing build' && next build",
+    "build": "npm run db:migrate:deploy || echo 'migration skipped, continuing build' && next build --webpack",
     "db:migrate:deploy": "prisma migrate deploy",
     "start": "node start.js",
     "lint": "eslint",
