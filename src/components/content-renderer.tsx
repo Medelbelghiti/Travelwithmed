@@ -5,9 +5,6 @@ import { parseContentBlocks } from "@/lib/content";
 import { resolveAffiliateLink, AFFILIATE_CTA_LABELS } from "@/lib/affiliate";
 import { prisma } from "@/lib/prisma";
 import { AffiliateButton } from "@/components/affiliate/affiliate-button";
-import { HotelCard } from "@/components/affiliate/hotel-card";
-import { ActivityCard } from "@/components/affiliate/activity-card";
-import { GearCard } from "@/components/affiliate/gear-card";
 import { AffiliateModule } from "@/components/affiliate/affiliate-module";
 import { AffiliateDisclosure } from "@/components/affiliate/disclosure";
 import { getProducts, isShopEnabled, formatMoney } from "@/lib/fourthwall";
@@ -224,24 +221,94 @@ export async function ContentRenderer({ content, articleId, destinationId }: Ren
         if (hotels.length > 0) {
           hasAffiliateBlocks = true;
           rendered.push(
-            <div key={key} className="my-8">
-              {block.title && <h3>{block.title}</h3>}
-              <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-                {hotels.map((hotel) => (
-                  <HotelCard
-                    key={hotel.id}
-                    hotel={{
-                      id: hotel.id,
-                      name: hotel.name,
-                      image: hotel.image,
-                      location: hotel.city ? `${hotel.city}${hotel.country ? `, ${hotel.country}` : ""}` : null,
-                      rating: hotel.guestRating,
-                      priceRange: hotel.priceRange,
-                      bestFor: hotel.bestFor,
-                      affiliateLinkId: hotel.affiliateLinks[0]?.id ?? null,
-                    }}
-                  />
-                ))}
+            <div key={key} className="my-10">
+              {block.title && <h2>{block.title}</h2>}
+
+              {/*
+               * Same treatment as the products block: the top-rated hotel
+               * becomes a full AffiliateModule, the rest become comparable
+               * rows. Guest rating, price and best-for sit next to each other
+               * so the choice is explicit rather than decorative. Guest ratings
+               * are the property's own number, which the copy makes clear, as
+               * opposed to our editorial score in AffiliateModule.
+               */}
+              <div className="mt-5 space-y-4">
+                {hotels.map((hotel, index) => {
+                  const linkId = hotel.affiliateLinks[0]?.id;
+                  const pros = (hotel.pros as string[] | null) ?? null;
+                  const cons = (hotel.cons as string[] | null) ?? null;
+                  const location = hotel.city
+                    ? `${hotel.city}${hotel.country ? `, ${hotel.country}` : ""}`
+                    : hotel.country;
+
+                  if (index === 0 && linkId) {
+                    return (
+                      <AffiliateModule
+                        key={hotel.id}
+                        linkId={linkId}
+                        name={hotel.name}
+                        rating={hotel.guestRating}
+                        reviewCount={hotel.reviewCount}
+                        bestFor={hotel.bestFor}
+                        verdict={hotel.description}
+                        pros={pros}
+                        cons={cons}
+                        category="hotel"
+                        provider={hotel.name}
+                        placement={articleId}
+                        ctaLabel="See rates"
+                      />
+                    );
+                  }
+
+                  return (
+                    <div
+                      key={hotel.id}
+                      className="grid gap-4 rounded-2xl border border-line bg-white p-5 shadow-sm sm:grid-cols-[1fr_auto] sm:items-center"
+                    >
+                      <div className="min-w-0">
+                        <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                          <h3 className="text-base font-semibold text-ink">{hotel.name}</h3>
+                          {hotel.guestRating ? (
+                            <span className="inline-flex items-center gap-1 text-sm text-ink-soft">
+                              <Star className="h-4 w-4 fill-amber-400 text-amber-400" aria-hidden />
+                              <span className="font-semibold text-ink">
+                                {hotel.guestRating.toFixed(1)}
+                              </span>
+                              <span className="text-ink-muted">guest rating</span>
+                            </span>
+                          ) : null}
+                          {hotel.starRating ? (
+                            <span className="text-xs text-ink-muted">
+                              {"*".repeat(Math.max(0, Math.min(5, hotel.starRating)))}
+                            </span>
+                          ) : null}
+                        </div>
+                        {location ? <p className="mt-1 text-sm text-ink-soft">{location}</p> : null}
+                        {hotel.bestFor ? (
+                          <p className="mt-1 text-sm text-ink-soft">
+                            <span className="font-semibold text-ink">Best for: </span>
+                            {hotel.bestFor}
+                          </p>
+                        ) : null}
+                        {hotel.priceRange ? (
+                          <p className="mt-1 text-sm font-medium text-ink">{hotel.priceRange}</p>
+                        ) : null}
+                      </div>
+
+                      {linkId ? (
+                        <AffiliateButton
+                          linkId={linkId}
+                          label="See rates"
+                          variant="outline"
+                          placement={articleId}
+                          category="hotel"
+                          provider={hotel.name}
+                        />
+                      ) : null}
+                    </div>
+                  );
+                })}
               </div>
             </div>,
           );
@@ -258,25 +325,72 @@ export async function ContentRenderer({ content, articleId, destinationId }: Ren
         if (activities.length > 0) {
           hasAffiliateBlocks = true;
           rendered.push(
-            <div key={key} className="my-8">
-              {block.title && <h3>{block.title}</h3>}
-              <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-                {activities.map((activity) => (
-                  <ActivityCard
-                    key={activity.id}
-                    activity={{
-                      id: activity.id,
-                      name: activity.name,
-                      image: activity.image,
-                      description: activity.description,
-                      duration: activity.duration,
-                      priceRange: activity.priceRange,
-                      rating: activity.rating,
-                      category: activity.category,
-                      affiliateLinkId: activity.affiliateLinks[0]?.id ?? null,
-                    }}
-                  />
-                ))}
+            <div key={key} className="my-10">
+              {block.title && <h2>{block.title}</h2>}
+              <div className="mt-5 space-y-4">
+                {activities.map((activity, index) => {
+                  const linkId = activity.affiliateLinks[0]?.id;
+                  // Activity records factual inclusions rather than an
+                  // editorial pros/cons pair, so reuse those columns instead of
+                  // leaving the module's verdict unsupported.
+                  const included = (activity.included as string[] | null) ?? null;
+                  const notIncluded = (activity.notIncluded as string[] | null) ?? null;
+
+                  if (index === 0 && linkId) {
+                    return (
+                      <AffiliateModule
+                        key={activity.id}
+                        linkId={linkId}
+                        name={activity.name}
+                        rating={activity.rating}
+                        reviewCount={activity.reviewCount}
+                        bestFor={activity.bestFor}
+                        verdict={activity.description}
+                        pros={included}
+                        cons={notIncluded}
+                        category={activity.category ?? "activity"}
+                        placement={articleId}
+                        ctaLabel="See prices"
+                      />
+                    );
+                  }
+
+                  return (
+                    <div
+                      key={activity.id}
+                      className="grid gap-4 rounded-2xl border border-line bg-white p-5 shadow-sm sm:grid-cols-[1fr_auto] sm:items-center"
+                    >
+                      <div className="min-w-0">
+                        <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                          <h3 className="text-base font-semibold text-ink">{activity.name}</h3>
+                          {activity.rating ? (
+                            <span className="inline-flex items-center gap-1 text-sm text-ink-soft">
+                              <Star className="h-4 w-4 fill-amber-400 text-amber-400" aria-hidden />
+                              <span className="font-semibold text-ink">{activity.rating.toFixed(1)}</span>
+                              <span className="text-ink-muted">/5</span>
+                            </span>
+                          ) : null}
+                        </div>
+                        <div className="mt-1 flex flex-wrap gap-x-3 text-sm text-ink-soft">
+                          {activity.duration ? <span>{activity.duration}</span> : null}
+                          {activity.priceRange ? (
+                            <span className="font-medium text-ink">{activity.priceRange}</span>
+                          ) : null}
+                        </div>
+                      </div>
+
+                      {linkId ? (
+                        <AffiliateButton
+                          linkId={linkId}
+                          label="See prices"
+                          variant="outline"
+                          placement={articleId}
+                          category={activity.category ?? "activity"}
+                        />
+                      ) : null}
+                    </div>
+                  );
+                })}
               </div>
             </div>,
           );
