@@ -4,8 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "npm run db:migrate:deploy || echo 'migration skipped, continuing build' && next build",
-    "db:migrate:deploy": "prisma migrate deploy",
+    "build": "next build",
+    "migrate": "prisma migrate deploy",
     "start": "node start.js",
     "lint": "eslint",
     "test": "node --import tsx --test tests/**/*.test.ts",
