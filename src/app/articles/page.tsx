@@ -3,6 +3,7 @@ import { rethrowIfDatabaseUnavailable } from "@/lib/db-errors";
 import { notFound } from "next/navigation";
 import { ArticleCard } from "@/components/article-card";
 import { SectionHeading } from "@/components/ui/card";
+import Link from "next/link";
 import { Breadcrumbs, buildCrumbs } from "@/components/ui/breadcrumbs";
 import { Pagination } from "@/components/pagination";
 import { LinkIndex } from "@/components/ui/link-index";
@@ -20,6 +21,48 @@ async function fetchArticles(page: number, perPage: number) {
     skip: (page - 1) * perPage,
     take: perPage,
   });
+}
+
+/**
+ * Commercial landing pages, stored as articles with a `hub/` slug prefix
+ * (best-hotels/tokyo, things-to-do/bali, where-to-stay/rome).
+ *
+ * These carry the highest commercial intent on the site but are invisible:
+ * /articles lists by publishedAt and none of them are linked from any hub, so
+ * a crawl only ever reaches them through the sitemap. Grouping them by intent
+ * gives them an entry point and turns them into a browsable commercial
+ * directory rather than orphaned pages.
+ */
+async function fetchCommercialHubs() {
+  try {
+    return await prisma.article.findMany({
+      where: { status: "PUBLISHED", slug: { startsWith: "hub/" } },
+      select: { title: true, slug: true, excerpt: true },
+      orderBy: { title: "asc" },
+    });
+  } catch (error) {
+    rethrowIfDatabaseUnavailable(error);
+    return [];
+  }
+}
+
+function groupHubs(hubs: { title: string; slug: string; excerpt: string | null }[]) {
+  const groups = new Map<string, { title: string; slug: string; excerpt: string | null }[]>();
+
+  for (const hub of hubs) {
+    // hub/best-hotels/tokyo -> "Best hotels"
+    const intent = hub.slug.split("/")[1] ?? "Other";
+    const label = intent
+      .split("-")
+      .map((w) => (w ? w[0].toUpperCase() + w.slice(1) : w))
+      .join(" ");
+
+    const list = groups.get(label) ?? [];
+    list.push(hub);
+    groups.set(label, list);
+  }
+
+  return [...groups.entries()].sort(([a], [b]) => a.localeCompare(b));
 }
 
 export async function generateMetadata({
@@ -69,7 +112,7 @@ export default async function ArticlesIndex({
   const requested = Number(pageParam ?? "1");
   const currentPage = Number.isFinite(requested) && requested >= 1 ? Math.floor(requested) : 1;
 
-  const [total, articles, allArticles] = await Promise.all([
+  const [total, articles, allArticles, commercialHubs] = await Promise.all([
     (async () => {
       try {
         return await prisma.article.count({ where: { status: "PUBLISHED" } });
@@ -80,7 +123,10 @@ export default async function ArticlesIndex({
     })(),
     fetchArticles(currentPage, PER_PAGE).catch(() => [] as Awaited<ReturnType<typeof fetchArticles>>),
     fetchAllArticleLinks(),
+    fetchCommercialHubs(),
   ]);
+
+  const hubGroups = groupHubs(commercialHubs);
 
   const totalPages = Math.max(1, Math.ceil(total / PER_PAGE));
 
@@ -125,6 +171,46 @@ export default async function ArticlesIndex({
         ))}
       </div>
       <Pagination currentPage={currentPage} totalPages={totalPages} basePath="/articles" />
+
+      {hubGroups.length > 0 ? (
+        <section className="mt-16 border-t border-line pt-10" aria-labelledby="commercial-hubs">
+          <h2 id="commercial-hubs" className="text-xl font-semibold text-ink md:text-2xl">
+            Book by destination
+          </h2>
+          <p className="mt-2 max-w-2xl text-sm text-ink-soft">
+            Shortlists by intent, so you can go straight to what you need to book.
+          </p>
+
+          <div className="mt-8 space-y-10">
+            {hubGroups.map(([label, hubs]) => (
+              <div key={label}>
+                <h3 className="text-sm font-semibold uppercase tracking-wide text-ink-muted">
+                  {label}
+                </h3>
+                <div className="mt-3 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                  {hubs.map((hub) => (
+                    <Link
+                      key={hub.slug}
+                      href={`/articles/${hub.slug}`}
+                      className="group rounded-2xl border border-line bg-white p-5 shadow-sm transition-colors hover:border-brand/40"
+                    >
+                      <span className="text-base font-semibold text-ink group-hover:text-brand">
+                        {hub.title}
+                      </span>
+                      {hub.excerpt ? (
+                        <span className="mt-1.5 block text-sm leading-relaxed text-ink-soft">
+                          {hub.excerpt}
+                        </span>
+                      ) : null}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      ) : null}
+
       <LinkIndex
         title={`Every guide (${allArticles.length})`}
         description="The complete library, indexable in one pass."
