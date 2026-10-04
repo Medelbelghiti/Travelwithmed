@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { BedDouble, Plane, Ticket, Signal, ShieldCheck, Flame } from "lucide-react";
+import { BedDouble, Plane, Ticket, Signal, ShieldCheck, Flame, Star } from "lucide-react";
 import type { AffiliateCategory } from "@prisma/client";
 import { parseContentBlocks } from "@/lib/content";
 import { resolveAffiliateLink, AFFILIATE_CTA_LABELS } from "@/lib/affiliate";
@@ -8,6 +8,7 @@ import { AffiliateButton } from "@/components/affiliate/affiliate-button";
 import { HotelCard } from "@/components/affiliate/hotel-card";
 import { ActivityCard } from "@/components/affiliate/activity-card";
 import { GearCard } from "@/components/affiliate/gear-card";
+import { AffiliateModule } from "@/components/affiliate/affiliate-module";
 import { AffiliateDisclosure } from "@/components/affiliate/disclosure";
 import { getProducts, isShopEnabled, formatMoney } from "@/lib/fourthwall";
 import { PosterLeadMagnet, type PosterProduct } from "@/components/shop/poster-lead-magnet";
@@ -292,26 +293,87 @@ export async function ContentRenderer({ content, articleId, destinationId }: Ren
         if (products.length > 0) {
           hasAffiliateBlocks = true;
           rendered.push(
-            <div key={key} className="my-8">
-              {block.title && <h3>{block.title}</h3>}
-              <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-                {products.map((product) => (
-                  <GearCard
-                    key={product.id}
-                    product={{
-                      id: product.id,
-                      name: product.name,
-                      image: product.image,
-                      brand: product.brand,
-                      description: product.description,
-                      priceRange: product.priceRange,
-                      rating: product.rating,
-                      bestFor: product.bestFor,
-                      pros: (product.pros as string[] | null) ?? null,
-                      affiliateLinkId: product.affiliateLinks[0]?.id ?? null,
-                    }}
-                  />
-                ))}
+            <div key={key} className="my-10">
+              {block.title && <h2>{block.title}</h2>}
+
+              {/*
+               * A single comparison table instead of a card grid.
+               *
+               * Cards ask the reader to evaluate one offer at a time and give
+               * them nothing to compare against, so they default to the first
+               * CTA. A table puts the trade-off next to the price (our score,
+               * best-for, pros, cons), which is what actually makes someone
+               * pick. The first row is expanded into a full AffiliateModule
+               * because the top-rated option is the one most people take, and
+               * it deserves the editorial framing.
+               */}
+              <div className="mt-5 space-y-4">
+                {products.map((product, index) => {
+                  const linkId = product.affiliateLinks[0]?.id;
+                  const pros = (product.pros as string[] | null) ?? null;
+                  const cons = (product.cons as string[] | null) ?? null;
+
+                  if (index === 0 && linkId) {
+                    return (
+                      <AffiliateModule
+                        key={product.id}
+                        linkId={linkId}
+                        name={product.name}
+                        rating={product.rating}
+                        bestFor={product.bestFor}
+                        verdict={product.description}
+                        pros={pros}
+                        cons={cons}
+                        category={product.category}
+                        provider={product.brand}
+                        placement={articleId}
+                        ctaLabel="See prices"
+                      />
+                    );
+                  }
+
+                  return (
+                    <div
+                      key={product.id}
+                      className="grid gap-4 rounded-2xl border border-line bg-white p-5 shadow-sm sm:grid-cols-[1fr_auto] sm:items-center"
+                    >
+                      <div className="min-w-0">
+                        <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                          <h3 className="text-base font-semibold text-ink">{product.name}</h3>
+                          {product.rating ? (
+                            <span className="inline-flex items-center gap-1 text-sm text-ink-soft">
+                              <Star className="h-4 w-4 fill-amber-400 text-amber-400" aria-hidden />
+                              <span className="font-semibold text-ink">{product.rating.toFixed(1)}</span>
+                              <span className="text-ink-muted">/5</span>
+                            </span>
+                          ) : null}
+                        </div>
+                        {product.bestFor ? (
+                          <p className="mt-1 text-sm text-ink-soft">
+                            <span className="font-semibold text-ink">Best for: </span>
+                            {product.bestFor}
+                          </p>
+                        ) : product.description ? (
+                          <p className="mt-1 text-sm text-ink-soft">{product.description}</p>
+                        ) : null}
+                        {product.priceRange ? (
+                          <p className="mt-1 text-sm font-medium text-ink">{product.priceRange}</p>
+                        ) : null}
+                      </div>
+
+                      {linkId ? (
+                        <AffiliateButton
+                          linkId={linkId}
+                          label={product.priceRange ? "See prices" : "Check prices"}
+                          variant="outline"
+                          placement={articleId}
+                          category={product.category}
+                          provider={product.brand}
+                        />
+                      ) : null}
+                    </div>
+                  );
+                })}
               </div>
             </div>,
           );

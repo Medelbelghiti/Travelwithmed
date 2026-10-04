@@ -10,9 +10,9 @@ export interface AffiliateButtonProps {
   size?: "sm" | "md" | "lg";
   className?: string;
   external?: boolean;
-  category?: string;
-  provider?: string;
-  destination?: string;
+  category?: string | null;
+  provider?: string | null;
+  destination?: string | null;
 }
 
 const base =
@@ -46,7 +46,6 @@ export function AffiliateButton({
   const href = `/out/${linkId}${placement ? `?placement=${encodeURIComponent(placement)}` : ""}`;
   const rel = external ? "noopener noreferrer sponsored" : "sponsored";
   const target = external ? "_blank" : undefined;
-
   return (
     <Link
       href={href}
