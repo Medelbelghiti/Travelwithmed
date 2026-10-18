@@ -23,7 +23,7 @@ import { NewsletterCta } from "@/components/newsletter-cta";
 import { prisma } from "@/lib/prisma";
 import { faqSchema, touristDestinationSchema } from "@/lib/seo";
 import { absoluteUrl } from "@/lib/utils";
-import { HUB_TYPES, type HubType } from "@/lib/hubs";
+import { availableHubTypes } from "@/lib/hubs";
 
 type DestinationWithRelations = Prisma.DestinationGetPayload<{
   include: {
@@ -87,6 +87,13 @@ export async function DestinationDetail({ destination }: DestinationDetailProps)
     transfers: destination.affiliateLinks.find((l) => l.category === "AIRPORT_TRANSFERS"),
   };
 
+  // Only link the hubs that resolve. The hub route 404s without hotels or
+  // activities, so an unconditional grid shipped links to dead pages.
+  const visibleHubTypes = availableHubTypes({
+    hotels: destination.hotels,
+    activities: destination.activities,
+  });
+
   const infoSections = [
     { key: "bestTimeToVisit", label: "Best time to visit", icon: Calendar, content: destination.bestTimeToVisit },
     { key: "howToGetThere", label: "How to get there", icon: Plane, content: destination.howToGetThere },
@@ -142,11 +149,15 @@ export async function DestinationDetail({ destination }: DestinationDetailProps)
           </p>
         </section>
 
-        {/* City guides (hub pages) */}
-        <section className="mb-14">
-          <SectionHeading eyebrow="Destination guides" title={`Plan ${destination.name} with these guides`} />
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {(Object.values(HUB_TYPES) as HubType[]).map((hubType) => (
+        {/* City guides (hub pages)
+            Rendered only for hubs that actually resolve: the hub route serves
+            404 when a destination has no hotels/activities, so an unconditional
+            grid here shipped 22 links to 404 pages. */}
+        {visibleHubTypes.length > 0 && (
+          <section className="mb-14">
+            <SectionHeading eyebrow="Destination guides" title={`Plan ${destination.name} with these guides`} />
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              {visibleHubTypes.map((hubType) => (
               <Link
                 key={hubType.slug}
                 href={`/articles/hub/${hubType.slug}/${destination.slug}`}
@@ -162,9 +173,10 @@ export async function DestinationDetail({ destination }: DestinationDetailProps)
                   Read the guide <ArrowRight className="h-3.5 w-3.5" aria-hidden />
                 </span>
               </Link>
-            ))}
-          </div>
-        </section>
+              ))}
+            </div>
+          </section>
+        )}
 
         {/* Info grid */}
         <section className="mb-14">

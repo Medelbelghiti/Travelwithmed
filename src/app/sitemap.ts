@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { reportDatabaseUnavailable } from "@/lib/db-errors";
 import { siteConfig } from "@/lib/site";
 import { isShopEnabled } from "@/lib/fourthwall";
-import type { HubTypeSlug } from "@/lib/hubs";
+import { HUB_TYPES_BY_DATA } from "@/lib/hubs";
 
 export const dynamic = "force-dynamic";
 
@@ -61,8 +61,8 @@ const fetchDynamicPaths = unstable_cache(
     const activityHubs = new Set(
       activityGroups.map((g) => g.destinationId).filter((id): id is string => Boolean(id)),
     );
-    const HOTEL_HUB_TYPES: HubTypeSlug[] = ["best-hotels", "where-to-stay"];
-    const TOUR_HUB_TYPES: HubTypeSlug[] = ["best-tours", "things-to-do"];
+    const HOTEL_HUB_TYPES = HUB_TYPES_BY_DATA.hotels;
+    const TOUR_HUB_TYPES = HUB_TYPES_BY_DATA.activities;
 
     const hubs: PathEntry[] = [];
     for (const d of destinations) {

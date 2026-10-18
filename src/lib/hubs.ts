@@ -58,3 +58,38 @@ export const HUB_TYPES: Record<HubTypeSlug, HubType> = {
 export function isHubTypeSlug(value: string): value is HubTypeSlug {
   return value in HUB_TYPES;
 }
+
+/**
+ * Hub types grouped by the data they need to return HTTP 200.
+ *
+ * The hub page deliberately serves 404 when a destination has no hotels
+ * (hub/[type]/[city]/page.tsx) or no activities, so that a thin hub is never
+ * indexed. Anywhere these links are rendered must apply the same condition,
+ * otherwise the site ships links that 404 - which is what the destination
+ * detail page was doing for every destination without inventory.
+ *
+ * The sitemap already applies this filter independently; both call sites must
+ * agree or the sitemap and the rendered links drift apart.
+ */
+export const HUB_TYPES_BY_DATA = {
+  hotels: ["best-hotels", "where-to-stay"] as HubTypeSlug[],
+  activities: ["best-tours", "things-to-do"] as HubTypeSlug[],
+};
+
+/** True when the hub page for this type would return 200 for the destination. */
+export function isHubAvailable(
+  type: HubTypeSlug,
+  data: { hotels: unknown[]; activities: unknown[] },
+): boolean {
+  if (HUB_TYPES_BY_DATA.hotels.includes(type)) return data.hotels.length > 0;
+  return data.activities.length > 0;
+}
+
+/** The subset of hub types that are actually reachable for this destination. */
+export function availableHubTypes(
+  data: { hotels: unknown[]; activities: unknown[] },
+): HubType[] {
+  return (Object.values(HUB_TYPES) as HubType[]).filter((t) =>
+    isHubAvailable(t.slug, data),
+  );
+}
