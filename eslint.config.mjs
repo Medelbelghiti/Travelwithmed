@@ -16,6 +16,8 @@ const eslintConfig = defineConfig([
     "start.js",
     // Throwaway audit working directory (caches, one-off crawl scripts).
     ".audit/**",
+    // Scratch output from scripts/extract-docx.ps1 (parsed source documents).
+    "tmp/**",
   ]),
 ]);
 
