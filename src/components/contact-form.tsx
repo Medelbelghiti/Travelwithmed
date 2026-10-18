@@ -56,13 +56,13 @@ export function ContactForm() {
           <label htmlFor="contact-name" className="mb-1.5 block text-sm font-medium text-ink-soft">
             Name
           </label>
-          <input id="contact-name" name="name" required value={form.name} onChange={handleChange} className={inputClass} placeholder="Your name" />
+          <input id="contact-name" name="name" required aria-invalid={status === "error"} aria-describedby={status === "error" ? "contact-error" : undefined} autoComplete="name" value={form.name} onChange={handleChange} className={inputClass} placeholder="Your name" />
         </div>
         <div>
           <label htmlFor="contact-email" className="mb-1.5 block text-sm font-medium text-ink-soft">
             Email
           </label>
-          <input id="contact-email" name="email" type="email" required value={form.email} onChange={handleChange} className={inputClass} placeholder="you@example.com" />
+          <input id="contact-email" name="email" type="email" required aria-invalid={status === "error"} aria-describedby={status === "error" ? "contact-error" : undefined} autoComplete="email" value={form.email} onChange={handleChange} className={inputClass} placeholder="you@example.com" />
         </div>
       </div>
       <div className="mt-4">
@@ -82,9 +82,13 @@ export function ContactForm() {
         <label htmlFor="contact-message" className="mb-1.5 block text-sm font-medium text-ink-soft">
           Message
         </label>
-        <textarea id="contact-message" name="message" required value={form.message} onChange={handleChange} rows={6} className={inputClass} placeholder="How can we help?" />
+        <textarea id="contact-message" name="message" required aria-invalid={status === "error"} aria-describedby={status === "error" ? "contact-error" : undefined} value={form.message} onChange={handleChange} rows={6} className={inputClass} placeholder="How can we help?" />
       </div>
-      {status === "error" && <p className="mt-3 text-sm text-danger">{error}</p>}
+      {status === "error" && (
+        <p id="contact-error" role="alert" className="mt-3 text-sm text-danger">
+          {error}
+        </p>
+      )}
       <button
         type="submit"
         disabled={status === "loading"}

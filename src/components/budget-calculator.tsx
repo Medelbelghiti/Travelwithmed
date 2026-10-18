@@ -123,18 +123,19 @@ export function BudgetCalculator() {
 
           <div className="flex items-center justify-between rounded-2xl bg-sand px-4 py-3">
             <div>
-              <p className="font-medium text-ink">Include international flights?</p>
-              <p className="text-xs text-ink-muted">Estimate per person round trip ({formatCurrency(flightEstimate, "USD")})</p>
+              <p id="budget-flights-label" className="font-medium text-ink">Include international flights?</p>
+              <p id="budget-flights-hint" className="text-xs text-ink-muted">Estimate per person round trip ({formatCurrency(flightEstimate, "USD")})</p>
             </div>
             <div className="flex items-center gap-2">
-              <input type="range" min={300} max={3000} step={50} value={flightEstimate} onChange={(e) => setFlightEstimate(Number(e.target.value))} disabled={!includeFlights} className="w-28 accent-brand disabled:opacity-40" />
+              <input type="range" min={300} max={3000} step={50} value={flightEstimate} onChange={(e) => setFlightEstimate(Number(e.target.value))} disabled={!includeFlights} aria-labelledby="budget-flights-label budget-flights-hint" className="w-28 accent-brand disabled:opacity-40" />
               <button
                 onClick={() => setIncludeFlights((v) => !v)}
                 role="switch"
                 aria-checked={includeFlights}
+                aria-labelledby="budget-flights-label"
                 className={`relative h-6 w-11 rounded-full transition-colors ${includeFlights ? "bg-brand" : "bg-line"}`}
               >
-                <span className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform ${includeFlights ? "translate-x-5" : "translate-x-0.5"}`} />
+                <span className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform ${includeFlights ? "translate-x-5" : "translate-x-0.5"}`} aria-hidden />
               </button>
             </div>
           </div>

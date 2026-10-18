@@ -79,9 +79,10 @@ export function NewsletterForm({
           First name
         </label>
         <input
-          id="newsletter-name"
-          type="text"
-          value={firstName}
+            id="newsletter-name"
+            type="text"
+            autoComplete="given-name"
+            value={firstName}
           onChange={(e) => setFirstName(e.target.value)}
           placeholder="Your name"
           className="w-full rounded-xl border border-line bg-white px-4 py-2.5 text-sm outline-none transition-colors focus:border-brand"
@@ -92,10 +93,11 @@ export function NewsletterForm({
           Email
         </label>
         <input
-          id="newsletter-email"
-          type="email"
-          required
-          value={email}
+            id="newsletter-email"
+            type="email"
+            required
+            autoComplete="email"
+            value={email}
           onChange={(e) => setEmail(e.target.value)}
           aria-invalid={status === "error"}
           aria-describedby={status === "error" ? "newsletter-status" : undefined}

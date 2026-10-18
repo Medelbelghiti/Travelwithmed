@@ -200,11 +200,12 @@ export function HotelsFilter({ hotels }: { hotels: Hotel[] }) {
               setSearch(e.target.value);
               setShowAll(true);
             }}
-            placeholder="Search hotels by name, city, destination..."
+              placeholder="Search hotels by name, city, destination..."
+              aria-label="Search hotels"
             className="w-full rounded-xl border border-line bg-white py-2.5 pl-10 pr-10 text-sm text-ink placeholder:text-ink-muted focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
           />
           {search && (
-            <button onClick={() => { setSearch(""); setShowAll(false); }} className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-muted hover:text-ink">
+              <button onClick={() => { setSearch(""); setShowAll(false); }} aria-label="Clear hotel search" className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-muted hover:text-ink">
               <X className="h-4 w-4" />
             </button>
           )}
