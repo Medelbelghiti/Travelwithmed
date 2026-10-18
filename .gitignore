@@ -48,3 +48,6 @@ prisma/dev.db*
 
 # Throwaway audit working directory (crawls, caches, one-off scripts)
 .audit/
+
+# local scratch files
+/tmp/
