@@ -262,19 +262,33 @@ export async function resolveAffiliateLink(params: {
     });
     if (articleLink) return articleLink;
   }
-  if (destinationId) {
+  // Destination, then its parents (city -> country -> region). Previously the
+  // next step was "any link in the category by priority", and destination
+  // links carry the highest priority, so a Kyoto guide could get Athens' eSIM
+  // link. Walking the parent chain keeps the link about the right place.
+  let currentId: string | null | undefined = destinationId;
+  for (let depth = 0; currentId && depth < 4; depth++) {
     const destinationLink = await prisma.affiliateLink.findFirst({
-      where: { active: true, category, destinationId },
+      where: { active: true, category, destinationId: currentId },
       include: { article: { select: { slug: true, title: true } } },
       orderBy: [{ priority: "desc" }, { clickCount: "desc" }],
     });
     if (destinationLink) return destinationLink;
+    const parent: { parentId: string | null } | null = await prisma.destination.findUnique({
+      where: { id: currentId },
+      select: { parentId: true },
+    });
+    currentId = parent?.parentId;
   }
-  return prisma.affiliateLink.findFirst({
-    where: { active: true, category },
+  // Site-wide links only: never another destination's link, and never a
+  // site-wide link that searches for one specific place.
+  const globals = await prisma.affiliateLink.findMany({
+    where: { active: true, category, destinationId: null, articleId: null },
     include: { article: { select: { slug: true, title: true } } },
     orderBy: [{ priority: "desc" }, { clickCount: "desc" }],
+    take: 10,
   });
+  return globals.find((l) => !/[?&](q|ss|query)=/.test(l.targetUrl)) ?? globals[0] ?? null;
 }
 
 /** General default CTA suggestion for a category. */

@@ -22,6 +22,7 @@ import { TravelpayoutsProgramGrid } from "@/components/affiliate/travelpayouts-p
 import { NewsletterCta } from "@/components/newsletter-cta";
 import { prisma } from "@/lib/prisma";
 import { cachedQuery } from "@/lib/cache";
+import { pickCategoryLink, type FallbackLink } from "@/lib/affiliate-fallback";
 import { faqSchema, touristDestinationSchema } from "@/lib/seo";
 import { absoluteUrl } from "@/lib/utils";
 import { HUB_TYPES, type HubType } from "@/lib/hubs";
@@ -53,15 +54,25 @@ const fetchRelated = cachedQuery(async (parentId: string | null) =>
 );
 
 function buildParentChain(destination: DestinationWithRelations) {
-  const chain: { name: string; slug: string }[] = [];
-  let current: { name: string; slug: string; parent?: { name: string; slug: string } | null } | null = destination;
+  const chain: { id: string; name: string; slug: string }[] = [];
+  let current: { id: string; name: string; slug: string; parent?: { id: string; name: string; slug: string } | null } | null = destination;
   while (current) {
-    chain.unshift({ name: current.name, slug: current.slug });
+    chain.unshift({ id: current.id, name: current.name, slug: current.slug });
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     current = (current as any).parent ?? null;
   }
   return chain;
 }
+
+const fetchFallbackLinks = cachedQuery(
+  async (ancestorIds: string[]): Promise<FallbackLink[]> =>
+    prisma.affiliateLink.findMany({
+      where: { active: true, OR: [{ destinationId: null }, { destinationId: { in: ancestorIds } }] },
+      select: { id: true, category: true, destinationId: true, targetUrl: true, priority: true },
+      orderBy: [{ priority: "desc" }, { clickCount: "desc" }],
+    }),
+  ["destination-fallback-links"],
+);
 
 export async function DestinationDetail({ destination }: DestinationDetailProps) {
   const chain = buildParentChain(destination);
@@ -78,15 +89,31 @@ export async function DestinationDetail({ destination }: DestinationDetailProps)
     related = [];
   }
 
-  // Category-based affiliate links for planning sections
+  // Category-based affiliate links for planning sections. Most destinations
+  // only carry a few links of their own, which left the "Plan the practical
+  // stuff" block empty or half-empty. Fall back to the nearest ancestor
+  // (city -> country -> region), then to a site-wide generic link.
+  const ancestorIds = chain
+    .slice(0, -1)
+    .reverse()
+    .map((c) => (c as { id?: string }).id)
+    .filter((id): id is string => Boolean(id));
+  let fallbackLinks: Awaited<ReturnType<typeof fetchFallbackLinks>> = [];
+  try {
+    fallbackLinks = await fetchFallbackLinks(ancestorIds);
+  } catch {
+    fallbackLinks = [];
+  }
+  const pick = (category: string) =>
+    pickCategoryLink(category, destination.affiliateLinks, ancestorIds, fallbackLinks);
   const categoryLinks = {
-    hotels: destination.affiliateLinks.find((l) => l.category === "HOTELS"),
-    flights: destination.affiliateLinks.find((l) => l.category === "FLIGHTS"),
-    activities: destination.affiliateLinks.find((l) => l.category === "ACTIVITIES"),
-    insurance: destination.affiliateLinks.find((l) => l.category === "INSURANCE"),
-    esim: destination.affiliateLinks.find((l) => l.category === "ESIM"),
-    carRental: destination.affiliateLinks.find((l) => l.category === "CAR_RENTAL"),
-    transfers: destination.affiliateLinks.find((l) => l.category === "AIRPORT_TRANSFERS"),
+    hotels: pick("HOTELS"),
+    flights: pick("FLIGHTS"),
+    activities: pick("ACTIVITIES"),
+    insurance: pick("INSURANCE"),
+    esim: pick("ESIM"),
+    carRental: pick("CAR_RENTAL"),
+    transfers: pick("AIRPORT_TRANSFERS"),
   };
 
   const infoSections = [
