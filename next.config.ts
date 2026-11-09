@@ -51,6 +51,9 @@ const nextConfig: NextConfig = {
   },
   async redirects() {
     return [
+      // "Maya Chen" was a placeholder byline, not a real person. Guides are
+      // credited to the editorial team instead.
+      { source: "/authors/maya-chen", destination: "/authors/editorial-team", permanent: true },
       // Paris activities seeded twice (31 Aug and 3 Sep). The older, incomplete
       // records are deactivated; keep their URLs alive for links and search.
       {

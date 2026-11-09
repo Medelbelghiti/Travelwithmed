@@ -194,7 +194,7 @@ export function HotelsHub({ hub }: { hub: HotelsHubData }) {
             <SectionHeading
               eyebrow={hubType.eyebrow}
               title={`Recommended ${hubType.slug === "where-to-stay" ? "hotels by area" : "hotels"}`}
-              description={`Independently reviewed stays in ${destination.name} — the ones our editors would actually book.`}
+              description={`Well-located stays in ${destination.name}, compared on area, price level and traveller ratings.`}
             />
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {hotels.map((hotel) => (

@@ -87,9 +87,10 @@ export default function AboutPage() {
         <div className="rounded-3xl bg-brand-dark p-8 text-white">
           <h2 className="text-2xl text-white">How we research</h2>
           <p className="mt-3 leading-relaxed text-white/75">
-            Our editors visit destinations where possible, and clearly mark guides that are research-led.
-            We verify prices, hours and practicalities, update content regularly, and correct errors promptly.
-            If we can&apos;t verify something, we say so.
+            Our guides are research-led: we work from official sources, partner data and traveller reviews,
+            and only describe a place first-hand when someone on the team has been there. We check prices,
+            hours and practicalities against those sources and correct errors promptly. If we can&apos;t
+            verify something, we say so.
           </p>
         </div>
       </div>

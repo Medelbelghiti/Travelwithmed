@@ -203,7 +203,7 @@ export function ToursHub({ hub }: { hub: ToursHubData }) {
               description={
                 isThingsToDo
                   ? `Our editors' pick of the ${destination.name} experiences every traveller should consider.`
-                  : `Hand-picked guided tours and day trips in ${destination.name} — rated by travellers, vetted by our editors.`
+                  : `Guided tours and day trips in ${destination.name}, selected using traveller ratings and partner data.`
               }
             />
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
