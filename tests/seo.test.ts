@@ -151,3 +151,22 @@ describe("buildMetaTitle", () => {
     );
   });
 });
+
+import { isTeamAuthor, articleSchema, personSchema } from "../src/lib/seo";
+
+describe("team authorship", () => {
+  it("recognises team bylines", () => {
+    assert.equal(isTeamAuthor("Riversmag Editorial Team"), true);
+    assert.equal(isTeamAuthor("Riversmag Editors"), true);
+    assert.equal(isTeamAuthor("Jane Doe"), false);
+    assert.equal(isTeamAuthor(null), false);
+  });
+
+  it("marks a team byline up as an Organization, never a Person", () => {
+    const a = articleSchema({ title: "t", url: "https://riversmag.com/a", authorName: "Riversmag Editorial Team", authorPath: "/authors/editorial-team" });
+    assert.equal((a.author as { "@type": string })["@type"], "Organization");
+    const p = personSchema({ name: "Riversmag Editorial Team", path: "/authors/editorial-team", jobTitle: "x" });
+    assert.equal(p["@type"], "Organization");
+    assert.equal((p as Record<string, unknown>).jobTitle, undefined);
+  });
+});

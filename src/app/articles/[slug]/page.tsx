@@ -274,7 +274,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
           </div>
 
           <p className="mt-5 text-sm text-ink-muted">
-            Independently researched and reviewed by our editorial team, then checked for accuracy.{" "}
+            Researched by the Riversmag editorial team from official sources, partner data and traveller reviews.{" "}
             <a href="/editorial-policy" className="text-brand underline underline-offset-2 hover:opacity-80">
               Editorial standards
             </a>

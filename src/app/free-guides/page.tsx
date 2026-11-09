@@ -43,7 +43,7 @@ const GUIDES = [
   {
     slug: "free-packing-checklist",
     title: "The Ultimate Carry-On Packing Checklist",
-    blurb: "Never over-pack again. A field-tested checklist built for one-bag and carry-on travellers.",
+    blurb: "Never over-pack again. A practical checklist built for one-bag and carry-on travellers.",
     points: ["Docs & wallet", "Carry-on essentials", "Clothing by climate", "Print-ready"],
     tag: "Checklist",
   },
@@ -59,7 +59,7 @@ export default function FreeGuidesPage() {
         </div>
         <h1 className="text-4xl md:text-5xl">Free travel printables</h1>
         <p className="mt-4 text-lg text-ink-soft">
-          Grab the same checklists and itineraries our editors use to plan trips. Built to print, built to travel.
+          Free checklists and itineraries to plan your trip. Built to print, built to travel.
         </p>
       </div>
 

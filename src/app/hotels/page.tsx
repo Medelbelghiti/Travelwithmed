@@ -10,7 +10,7 @@ import { SectionHeading } from "@/components/ui/card";
 export const metadata = buildMetadata({
   title: "Hotels",
   description:
-    "Honest hotel reviews, neighbourhood guides and price comparisons — hand-picked stays with real pros and cons.",
+    "Hotel guides, neighbourhood advice and price comparisons for the destinations we cover.",
   canonicalPath: "/hotels",
 });
 

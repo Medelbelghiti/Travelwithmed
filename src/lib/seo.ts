@@ -191,7 +191,11 @@ export function articleSchema(params: {
     image: image ? absoluteUrl(image) : undefined,
     mainEntityOfPage: { "@type": "WebPage", "@id": url },
     author: authorName
-      ? { "@type": "Person", name: authorName, ...(authorPath ? { url: absoluteUrl(authorPath) } : {}) }
+      ? {
+          "@type": isTeamAuthor(authorName) ? "Organization" : "Person",
+          name: authorName,
+          ...(authorPath ? { url: absoluteUrl(authorPath) } : {}),
+        }
       : { "@type": "Organization", name: siteConfig.name },
     publisher: {
       "@type": "Organization",
@@ -201,6 +205,15 @@ export function articleSchema(params: {
     datePublished: publishedTime ? new Date(publishedTime).toISOString() : undefined,
     dateModified: modifiedTime ? new Date(modifiedTime).toISOString() : undefined,
   };
+}
+
+/**
+ * A byline like "Riversmag Editorial Team" is an organisation, not a person.
+ * Marking it up as a Person would invent an individual, which is both
+ * misleading and against Google's guidance on author markup.
+ */
+export function isTeamAuthor(name: string | null | undefined): boolean {
+  return !!name && /\b(team|editors|editorial|staff|desk)\b/i.test(name);
 }
 
 /** Social profile URLs from Author.socialLinks (object of urls or array). */
@@ -222,18 +235,21 @@ export function personSchema(params: {
   knowsAbout?: string | null;
   sameAs?: string[];
 }) {
+  const isTeam = isTeamAuthor(params.name);
   return {
     "@context": "https://schema.org",
-    "@type": "Person",
+    "@type": isTeam ? "Organization" : "Person",
     name: params.name,
     url: absoluteUrl(params.path),
     description: params.description ?? undefined,
     image: params.image ? absoluteUrl(params.image) : undefined,
-    jobTitle: params.jobTitle ?? undefined,
+    jobTitle: isTeam ? undefined : (params.jobTitle ?? undefined),
     knowsAbout: params.knowsAbout
       ? params.knowsAbout.split(",").map((s) => s.trim()).filter(Boolean)
       : undefined,
-    worksFor: { "@type": "Organization", name: siteConfig.name, url: siteConfig.url },
+    ...(isTeam
+      ? { parentOrganization: { "@type": "Organization", name: siteConfig.name, url: siteConfig.url } }
+      : { worksFor: { "@type": "Organization", name: siteConfig.name, url: siteConfig.url } }),
     sameAs: params.sameAs && params.sameAs.length > 0 ? params.sameAs : undefined,
   };
 }

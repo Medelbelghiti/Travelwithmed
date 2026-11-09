@@ -503,8 +503,8 @@ export default async function HomePage() {
           <h2 className="text-3xl md:text-4xl">About {siteConfig.name}</h2>
           <p className="mx-auto mt-5 max-w-2xl leading-relaxed text-ink-soft">
             {siteConfig.name} is an independent travel media brand on a mission to help you plan smarter and
-            travel better. Our editors research destinations first-hand, compare hotels, tours and gear, and
-            publish honest guides so you can spend less time scrolling and more time travelling.
+            travel better. We research destinations from official sources, partner data and traveller reviews,
+            compare hotels, tours and gear, and publish practical guides so you can spend less time scrolling and more time travelling.
           </p>
           <p className="mt-4 text-lg font-medium text-brand-dark">{siteConfig.tagline}</p>
           <Link
