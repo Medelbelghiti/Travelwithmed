@@ -2,7 +2,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/auth";
 import { siteConfig } from "@/lib/site";
-import { buildClickReport, parsePeriod, periodWindow, PERIODS, type LinkInfo, type Ranked } from "@/lib/click-report";
+import { buildClickReport, isBotUserAgent, parsePeriod, periodWindow, PERIODS, type LinkInfo, type Ranked } from "@/lib/click-report";
 
 export const dynamic = "force-dynamic";
 
@@ -59,11 +59,13 @@ export default async function AdminAnalyticsPage({
   const [rows, previousCount, subscriberTotal, subscriberNew, recentClicks] = await Promise.all([
     prisma.affiliateClick.findMany({
       where: { createdAt: { gte: since } },
-      select: { createdAt: true, referrer: true, placement: true, affiliateLinkId: true },
+      select: { createdAt: true, referrer: true, placement: true, affiliateLinkId: true, userAgent: true },
       orderBy: { createdAt: "desc" },
       take: MAX_ROWS,
     }),
-    prisma.affiliateClick.count({ where: { createdAt: { gte: previousSince, lt: since } } }),
+    prisma.affiliateClick
+      .findMany({ where: { createdAt: { gte: previousSince, lt: since } }, select: { userAgent: true }, take: MAX_ROWS })
+      .then((prev) => prev.filter((r) => !isBotUserAgent(r.userAgent)).length),
     prisma.newsletterSubscriber.count({ where: { status: "SUBSCRIBED" } }),
     prisma.newsletterSubscriber.count({ where: { status: "SUBSCRIBED", createdAt: { gte: since } } }),
     prisma.affiliateClick.findMany({
@@ -114,7 +116,11 @@ export default async function AdminAnalyticsPage({
       </div>
 
       <div className="mt-6 grid grid-cols-2 gap-4 md:grid-cols-4">
-        <StatCard label="Affiliate clicks" value={report.total.toLocaleString()} hint={trend} />
+        <StatCard
+          label="Affiliate clicks (humans)"
+          value={report.total.toLocaleString()}
+          hint={`${trend} · ${report.botClicks.toLocaleString()} bot clicks excluded`}
+        />
         <StatCard label="Clicks per day" value={(report.total / days).toFixed(1)} hint={`average over ${days} days`} />
         <StatCard label="New subscribers" value={subscriberNew.toLocaleString()} hint={`last ${days} days`} />
         <StatCard label="Active subscribers" value={subscriberTotal.toLocaleString()} hint="all time" />

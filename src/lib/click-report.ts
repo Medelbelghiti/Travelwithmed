@@ -5,10 +5,22 @@
 
 export type ClickRow = {
   createdAt: Date;
+  userAgent?: string | null;
   referrer: string | null;
   placement: string | null;
   affiliateLinkId: string;
 };
+
+// Crawlers, link previewers, monitoring and headless tools that follow /out
+// links. robots.txt disallows /out/, but plenty of bots ignore it.
+const BOT_UA =
+  /bot|crawl|spider|slurp|preview|fetch|scrape|monitor|uptime|lighthouse|headless|phantom|puppeteer|playwright|selenium|python-requests|python-urllib|aiohttp|httpx|curl|wget|go-http|java\/|okhttp|axios|node-fetch|undici|libwww|facebookexternalhit|whatsapp|telegram|discord|slack|skype|embedly|bingpreview|semrush|ahrefs|mj12|dotbot|petal|yandex|baidu|bytespider|gptbot|claude|perplexity|ccbot|amazonbot|applebot/i;
+
+/** True for known bots and for clicks with no user agent at all. */
+export function isBotUserAgent(userAgent: string | null | undefined): boolean {
+  if (!userAgent || userAgent.trim().length < 10) return true;
+  return BOT_UA.test(userAgent);
+}
 
 export type LinkInfo = { partnerName: string; category: string };
 
@@ -75,10 +87,12 @@ export function dailySeries(rows: { createdAt: Date }[], days: number, now = new
   return [...series.entries()].map(([day, count]) => ({ day, count }));
 }
 
-export function buildClickReport(rows: ClickRow[], links: Map<string, LinkInfo>, siteHost: string, days: number, now = new Date()) {
+export function buildClickReport(allRows: ClickRow[], links: Map<string, LinkInfo>, siteHost: string, days: number, now = new Date()) {
+  const rows = allRows.filter((r) => !isBotUserAgent(r.userAgent));
   const info = (id: string) => links.get(id) ?? { partnerName: "Unknown partner", category: "OTHER" };
   return {
     total: rows.length,
+    botClicks: allRows.length - rows.length,
     byPartner: rank(rows.map((r) => info(r.affiliateLinkId).partnerName)),
     byCategory: rank(rows.map((r) => info(r.affiliateLinkId).category.toLowerCase())),
     byPlacement: rank(rows.map((r) => placementLabel(r.placement))),
