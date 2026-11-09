@@ -2,6 +2,7 @@ import { DestinationDetail } from "@/components/destination/destination-detail";
 import { notFound, permanentRedirect } from "next/navigation";
 import { rethrowIfDatabaseUnavailable } from "@/lib/db-errors";
 import { prisma } from "@/lib/prisma";
+import { cachedQuery } from "@/lib/cache";
 import { buildMetadata, articleSchema } from "@/lib/seo";
 import { absoluteUrl } from "@/lib/utils";
 
@@ -12,10 +13,7 @@ export async function generateMetadata({ params }: { params: Promise<{ path: str
   const slug = path[path.length - 1];
   let destination: { name: string; tagline: string | null; coverImage: string | null; seoMetadata: { title: string | null; description: string | null; canonicalUrl: string | null; ogImage: string | null; keywords: string | null } | null } | null = null;
   try {
-    destination = await prisma.destination.findUnique({
-      where: { slug },
-      include: { seoMetadata: true },
-    });
+    destination = await fetchDestinationMeta(slug);
   } catch (error) {
     rethrowIfDatabaseUnavailable(error);
     destination = null;
@@ -84,8 +82,13 @@ export default async function DestinationCatchAll({
   );
 }
 
-async function fetchDestination(slug: string) {
-  return prisma.destination.findUnique({
+const fetchDestinationMeta = cachedQuery(
+  async (slug: string) => prisma.destination.findUnique({ where: { slug }, include: { seoMetadata: true } }),
+  ["destination-meta"],
+);
+
+const fetchDestination = cachedQuery(async (slug: string) =>
+  prisma.destination.findUnique({
     where: { slug },
     include: {
       parent: {
@@ -105,5 +108,6 @@ async function fetchDestination(slug: string) {
       faqItems: true,
       seoMetadata: true,
     },
-  });
-}
+  }),
+  ["destination"],
+);

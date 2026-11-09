@@ -21,8 +21,9 @@ const fetchDynamicPaths = unstable_cache(
     hotels: PathEntry[];
     activities: PathEntry[];
     hubs: PathEntry[];
+    authors: PathEntry[];
   }> => {
-    const [destinations, articles, itineraries, hotels, activities, hotelGroups, activityGroups] = await Promise.all([
+    const [destinations, articles, itineraries, hotels, activities, hotelGroups, activityGroups, authors] = await Promise.all([
       prisma.destination.findMany({
         where: { isActive: true },
         select: { id: true, slug: true, updatedAt: true, type: true },
@@ -52,6 +53,11 @@ const fetchDynamicPaths = unstable_cache(
         by: ["destinationId"],
         where: { isActive: true, destinationId: { not: null } },
         _count: { _all: true },
+      }),
+      // Only authors with published work: an empty author page is noindex.
+      prisma.author.findMany({
+        where: { isActive: true, articles: { some: { status: "PUBLISHED" } } },
+        select: { slug: true, updatedAt: true },
       }),
     ]);
 
@@ -100,6 +106,7 @@ const fetchDynamicPaths = unstable_cache(
         lastModified: a.updatedAt,
       })),
       hubs,
+      authors: authors.map((a): PathEntry => ({ path: `/authors/${a.slug}`, lastModified: a.updatedAt })),
     };
   },
   ["sitemap", "dynamic-paths"],
@@ -113,6 +120,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   let hotels: PathEntry[] = [];
   let activities: PathEntry[] = [];
   let hubs: PathEntry[] = [];
+  let authors: PathEntry[] = [];
   const staticPaths: PathEntry[] = [
     { path: "" },
     { path: "/destinations" },
@@ -150,6 +158,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     hotels = result.hotels;
     activities = result.activities;
     hubs = result.hubs;
+    authors = result.authors;
   } catch (error) {
     // A partial sitemap beats no sitemap: static paths still get listed.
     // Log it so a dead database is visible instead of silent.
@@ -178,5 +187,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...dynamicEntries(itineraries, 0.7),
     ...dynamicEntries(hotels, 0.7),
     ...dynamicEntries(activities, 0.7),
+    ...dynamicEntries(authors, 0.5),
   ];
 }

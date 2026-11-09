@@ -10,6 +10,8 @@ import { AffiliateButton } from "@/components/affiliate/affiliate-button";
 import { AffiliateDisclosure } from "@/components/affiliate/disclosure";
 import { buildMetadata, hotelSchema, breadcrumbSchema, itemListSchema } from "@/lib/seo";
 import { absoluteUrl } from "@/lib/utils";
+import { selectQuickPicks } from "@/lib/quick-picks";
+import { QuickPicks } from "@/components/hub/quick-picks";
 
 type HotelRow = Prisma.HotelGetPayload<{
   include: { affiliateLinks: { where: { active: boolean }; take: number } };
@@ -76,6 +78,18 @@ export function HotelsHub({ hub }: { hub: HotelsHubData }) {
   const { hubType, destination, hotels, activities, itineraries } = hub;
   const crumbs = buildCrumbsFor(destination, hubType);
   const cityUrl = `/destinations/${destination.slug}`;
+  const quickPicks = selectQuickPicks(
+    hotels.map((h) => ({
+      id: h.id,
+      name: h.name,
+      href: `/hotels/${h.slug}`,
+      rating: h.guestRating,
+      priceRange: h.priceRange,
+      affiliateLinkId: h.affiliateLinks[0]?.id ?? null,
+      detail: h.bestFor,
+    })),
+    { best: "Best overall", value: "Best value", premium: "Best for a splurge" },
+  );
 
   const hotelJsonLd = hotels.slice(0, 8).map((h) =>
     hotelSchema({
@@ -128,6 +142,15 @@ export function HotelsHub({ hub }: { hub: HotelsHubData }) {
       </div>
 
       <div className="container-x py-14">
+        <QuickPicks
+          title={`Our quick picks in ${destination.name}`}
+          picks={quickPicks}
+          placement={`${hubType.slug}-${destination.slug}`}
+          category="HOTELS"
+          destination={destination.name}
+          ctaLabel="Check prices"
+        />
+
         {destination.coverImage && (
           <Image
             src={destination.coverImage}
@@ -187,6 +210,7 @@ export function HotelsHub({ hub }: { hub: HotelsHubData }) {
                     priceRange: hotel.priceRange,
                     bestFor: hotel.bestFor,
                     affiliateLinkId: hotel.affiliateLinks[0]?.id ?? null,
+                    href: `/hotels/${hotel.slug}`,
                   }}
                 />
               ))}

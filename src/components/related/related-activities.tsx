@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { cachedQuery } from "@/lib/cache";
 import { SectionHeading } from "@/components/ui/card";
 import { ActivityCard } from "@/components/affiliate/activity-card";
 
@@ -9,8 +10,8 @@ interface RelatedActivitiesProps {
   limit?: number;
 }
 
-async function fetchRelatedActivities(destinationId: string, excludeId?: string, limit = 6) {
-  return prisma.activity.findMany({
+const fetchRelatedActivities = cachedQuery(async (destinationId: string, excludeId?: string, limit?: number) =>
+  prisma.activity.findMany({
     where: {
       isActive: true,
       destinationId,
@@ -18,9 +19,10 @@ async function fetchRelatedActivities(destinationId: string, excludeId?: string,
     },
     include: { affiliateLinks: { where: { active: true }, take: 1 } },
     orderBy: [{ rating: "desc" }],
-    take: limit,
-  });
-}
+    take: limit ?? 6,
+  }),
+  ["fetch-related-activities"],
+);
 
 export async function RelatedActivities({
   destinationId,

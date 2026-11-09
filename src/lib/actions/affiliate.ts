@@ -1,6 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { revalidateContent } from "@/lib/cache";
 import { z } from "zod";
 import { requireRole } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -89,6 +90,7 @@ export async function saveAffiliateLinkAction(prev: { error?: string } | void, f
     } else {
       await prisma.affiliateLink.create({ data });
     }
+    revalidateContent();
     redirect("/admin/affiliate-links");
   } catch (error) {
     if ((error as Error & { digest?: string })?.digest || (error as Error)?.message?.includes("NEXT_REDIRECT")) throw error;

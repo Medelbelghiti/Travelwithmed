@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Calendar, Clock, RefreshCw, User } from "lucide-react";
 import { prisma } from "@/lib/prisma";
+import { cachedQuery } from "@/lib/cache";
 import { rethrowIfDatabaseUnavailable } from "@/lib/db-errors";
 import { buildMetadata, articleSchema } from "@/lib/seo";
 import { parseContentBlocks, readingTimeFromBlocks, tocAnchorId } from "@/lib/content";
@@ -20,39 +21,43 @@ type ArticlePageProps = {
   params: Promise<{ slug: string }>;
 };
 
-async function fetchArticle(slug: string) {
-  return prisma.article.findUnique({
+const fetchArticle = cachedQuery(async (slug: string) =>
+  prisma.article.findUnique({
     where: { slug },
     include: { author: true, destination: true, faqItems: true },
-  });
-}
+  }),
+  ["article"],
+);
 
-async function fetchRelatedArticles(articleId: string) {
-  return prisma.relatedArticle.findMany({
+const fetchRelatedArticles = cachedQuery(async (articleId: string) =>
+  prisma.relatedArticle.findMany({
     // Status filter matches fetchRelatedByDestination: a RelatedArticle row can
     // point at a DRAFT, and rendering one would put a 404 link on a live page.
     where: { articleId, relatedArticle: { status: "PUBLISHED" } },
     include: { relatedArticle: { include: { author: true } } },
     orderBy: { relevanceScore: "desc" },
     take: 3,
-  });
-}
+  }),
+  ["article-related"],
+);
 
-async function fetchRelatedByDestination(destinationId: string, currentId: string) {
-  return prisma.article.findMany({
+const fetchRelatedByDestination = cachedQuery(async (destinationId: string, currentId: string) =>
+  prisma.article.findMany({
     where: { status: "PUBLISHED", destinationId, id: { not: currentId } },
     include: { author: true },
     take: 3,
-  });
-}
+  }),
+  ["article-related-destination"],
+);
 
-async function fetchHotelLinks(destinationId: string) {
-  return prisma.affiliateLink.findMany({
+const fetchHotelLinks = cachedQuery(async (destinationId: string) =>
+  prisma.affiliateLink.findMany({
     where: { active: true, category: "HOTELS", destinationId },
     take: 3,
     include: { article: { select: { slug: true, title: true } } },
-  });
-}
+  }),
+  ["article-hotel-links"],
+);
 
 export async function generateMetadata({ params }: ArticlePageProps) {
   const { slug } = await params;
@@ -73,17 +78,25 @@ export async function generateMetadata({ params }: ArticlePageProps) {
     ogType: "article",
     publishedTime: article.publishedAt?.toISOString(),
     modifiedTime: article.updatedDate?.toISOString() ?? article.updatedAt.toISOString(),
-    authors: article.author?.name ? [article.author.name] : undefined,
+    authors: (article.author?.name ?? article.authorName) ? [(article.author?.name ?? article.authorName)!] : undefined,
     noindex: !article.allowIndexing,
   });
 }
 
-async function fetchArticleMeta(slug: string) {
-  return prisma.article.findUnique({
+// Many articles carry only a free-text authorName. Resolve it to the Author
+// record so the byline links to the author page and the bio box renders.
+const fetchAuthorByName = cachedQuery(
+  async (name: string) => prisma.author.findFirst({ where: { name, isActive: true } }),
+  ["author-by-name"],
+);
+
+const fetchArticleMeta = cachedQuery(async (slug: string) =>
+  prisma.article.findUnique({
     where: { slug },
     include: { author: true, seoMetadata: true },
-  });
-}
+  }),
+  ["article-meta"],
+);
 
 export default async function ArticlePage({ params }: ArticlePageProps) {
   const { slug } = await params;
@@ -114,6 +127,12 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
     recommendedHotelLinks = [];
   }
 
+  let author = article.author;
+  if (!author && article.authorName) {
+    author = await fetchAuthorByName(article.authorName).catch(() => null);
+  }
+  const authorPath = author?.isActive ? `/authors/${author.slug}` : null;
+
   const blocks = parseContentBlocks(article.content);
   // Always derive reading time from the content actually rendered: the stored
   // readingTimeMinutes is stale for seeded/imported articles (it read "1 min"
@@ -132,7 +151,8 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
       image: article.coverImage,
       publishedTime: article.publishedAt,
       modifiedTime: article.updatedDate ?? article.updatedAt,
-      authorName: article.author?.name ?? article.authorName ?? null,
+      authorName: author?.name ?? article.authorName ?? null,
+      authorPath,
     }),
   ];
   const faqBlocks = blocks.filter((b) => b.type === "faq");
@@ -225,7 +245,13 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
             <span className="inline-flex items-center gap-1.5">
               <User className="h-4 w-4" aria-hidden />
               <span className="font-medium text-ink">Written by</span>
-              {article.author?.name ?? article.authorName ?? "Riversmag Editors"}
+              {author && authorPath ? (
+                <Link href={authorPath} className="hover:text-brand underline-offset-2 hover:underline">
+                  {author.name}
+                </Link>
+              ) : (
+                (author?.name ?? article.authorName ?? "Riversmag Editors")
+              )}
             </span>
             {article.publishedAt && (
               <span className="inline-flex items-center gap-1.5">
@@ -330,18 +356,23 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
               </nav>
             )}
 
-            {article.author?.bio && (
+            {author?.bio && (
               <div className="rounded-2xl border border-line bg-white p-5 shadow-sm">
                 <div className="flex items-center gap-3">
                   <span className="flex h-10 w-10 items-center justify-center rounded-full bg-brand-light font-semibold text-brand-dark">
-                    {article.author.name[0]}
+                    {author.name[0]}
                   </span>
                   <div>
-                    <p className="font-semibold text-ink">Written by {article.author.name}</p>
-                    <p className="text-xs text-ink-muted">{article.author.role ?? "Travel writer"}</p>
+                    <p className="font-semibold text-ink">Written by {author.name}</p>
+                    <p className="text-xs text-ink-muted">{author.role ?? "Travel writer"}</p>
                   </div>
                 </div>
-                <p className="mt-3 line-clamp-4 text-sm leading-relaxed text-ink-soft">{article.author.bio}</p>
+                <p className="mt-3 line-clamp-4 text-sm leading-relaxed text-ink-soft">{author.bio}</p>
+                {authorPath && (
+                  <Link href={authorPath} className="mt-3 inline-block text-sm font-semibold text-brand hover:underline">
+                    More from {author.name}
+                  </Link>
+                )}
               </div>
             )}
 

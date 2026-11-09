@@ -1,6 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { revalidateContent } from "@/lib/cache";
 import { requireRole } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { slugify } from "@/lib/utils";
@@ -59,6 +60,7 @@ export async function saveDestinationAction(prev: { error?: string } | void, for
       if (exists) return { error: "A destination with this slug already exists." };
       await prisma.destination.create({ data });
     }
+    revalidateContent();
     redirect("/admin/destinations");
   } catch (error) {
     if ((error as Error & { digest?: string })?.digest || (error as Error)?.message?.includes("NEXT_REDIRECT")) throw error;

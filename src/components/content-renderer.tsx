@@ -4,6 +4,7 @@ import type { AffiliateCategory } from "@prisma/client";
 import { parseContentBlocks, tocAnchorId } from "@/lib/content";
 import { resolveAffiliateLink, AFFILIATE_CTA_LABELS } from "@/lib/affiliate";
 import { prisma } from "@/lib/prisma";
+import { cachedQuery } from "@/lib/cache";
 import { AffiliateButton } from "@/components/affiliate/affiliate-button";
 import { AffiliateModule } from "@/components/affiliate/affiliate-module";
 import { getProducts, isShopEnabled, formatMoney } from "@/lib/fourthwall";
@@ -16,8 +17,8 @@ interface RendererProps {
   destinationSlug?: string | null;
 }
 
-async function fetchBlockHotels(block: { destinationId?: string }, destinationId?: string | null) {
-  return prisma.hotel.findMany({
+const fetchBlockHotels = cachedQuery(async (block: { destinationId?: string }, destinationId?: string | null) =>
+  prisma.hotel.findMany({
     where: {
       isActive: true,
       ...(block.destinationId ? { destinationId: block.destinationId } : {}),
@@ -26,11 +27,12 @@ async function fetchBlockHotels(block: { destinationId?: string }, destinationId
     include: { affiliateLinks: { where: { active: true }, take: 1 } },
     orderBy: [{ guestRating: "desc" }],
     take: 3,
-  });
-}
+  }),
+  ["fetch-block-hotels"],
+);
 
-async function fetchBlockActivities(block: { destinationId?: string }, destinationId?: string | null) {
-  return prisma.activity.findMany({
+const fetchBlockActivities = cachedQuery(async (block: { destinationId?: string }, destinationId?: string | null) =>
+  prisma.activity.findMany({
     where: {
       isActive: true,
       ...(block.destinationId ? { destinationId: block.destinationId } : {}),
@@ -39,17 +41,19 @@ async function fetchBlockActivities(block: { destinationId?: string }, destinati
     include: { affiliateLinks: { where: { active: true }, take: 1 } },
     orderBy: [{ rating: "desc" }],
     take: 3,
-  });
-}
+  }),
+  ["fetch-block-activities"],
+);
 
-async function fetchBlockProducts(block: { category?: string }) {
-  return prisma.product.findMany({
+const fetchBlockProducts = cachedQuery(async (block: { category?: string }) =>
+  prisma.product.findMany({
     where: { isActive: true, ...(block.category ? { category: block.category } : {}) },
     include: { affiliateLinks: { where: { active: true }, take: 1 } },
     orderBy: [{ rating: "desc" }],
     take: 3,
-  });
-}
+  }),
+  ["fetch-block-products"],
+);
 
 export async function ContentRenderer({ content, articleId, destinationId }: RendererProps) {
   const blocks = parseContentBlocks(content);

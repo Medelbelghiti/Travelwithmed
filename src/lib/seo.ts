@@ -7,7 +7,7 @@ export interface SeoProps {
   description?: string;
   canonicalPath?: string;
   ogImage?: string;
-  ogType?: "website" | "article";
+  ogType?: "website" | "article" | "profile";
   publishedTime?: string;
   modifiedTime?: string;
   authors?: string[];
@@ -179,8 +179,10 @@ export function articleSchema(params: {
   publishedTime?: Date | string | null;
   modifiedTime?: Date | string | null;
   authorName?: string | null;
+  /** Site path of the author page, e.g. /authors/maya-chen. */
+  authorPath?: string | null;
 }) {
-  const { title, description, url, image, publishedTime, modifiedTime, authorName } = params;
+  const { title, description, url, image, publishedTime, modifiedTime, authorName, authorPath } = params;
   return {
     "@context": "https://schema.org",
     "@type": "Article",
@@ -189,7 +191,7 @@ export function articleSchema(params: {
     image: image ? absoluteUrl(image) : undefined,
     mainEntityOfPage: { "@type": "WebPage", "@id": url },
     author: authorName
-      ? { "@type": "Person", name: authorName }
+      ? { "@type": "Person", name: authorName, ...(authorPath ? { url: absoluteUrl(authorPath) } : {}) }
       : { "@type": "Organization", name: siteConfig.name },
     publisher: {
       "@type": "Organization",
@@ -198,6 +200,41 @@ export function articleSchema(params: {
     },
     datePublished: publishedTime ? new Date(publishedTime).toISOString() : undefined,
     dateModified: modifiedTime ? new Date(modifiedTime).toISOString() : undefined,
+  };
+}
+
+/** Social profile URLs from Author.socialLinks (object of urls or array). */
+export function authorSameAs(socialLinks: unknown): string[] {
+  const values = Array.isArray(socialLinks)
+    ? socialLinks
+    : socialLinks && typeof socialLinks === "object"
+      ? Object.values(socialLinks as Record<string, unknown>)
+      : [];
+  return values.filter((v): v is string => typeof v === "string" && /^https:\/\//.test(v));
+}
+
+export function personSchema(params: {
+  name: string;
+  path: string;
+  description?: string | null;
+  image?: string | null;
+  jobTitle?: string | null;
+  knowsAbout?: string | null;
+  sameAs?: string[];
+}) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "Person",
+    name: params.name,
+    url: absoluteUrl(params.path),
+    description: params.description ?? undefined,
+    image: params.image ? absoluteUrl(params.image) : undefined,
+    jobTitle: params.jobTitle ?? undefined,
+    knowsAbout: params.knowsAbout
+      ? params.knowsAbout.split(",").map((s) => s.trim()).filter(Boolean)
+      : undefined,
+    worksFor: { "@type": "Organization", name: siteConfig.name, url: siteConfig.url },
+    sameAs: params.sameAs && params.sameAs.length > 0 ? params.sameAs : undefined,
   };
 }
 
