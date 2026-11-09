@@ -68,6 +68,9 @@ export const metadata: Metadata = {
     follow: true,
     googleBot: { index: true, follow: true, "max-image-preview": "large" },
   },
+  // Google Search Console ownership (URL-prefix property https://riversmag.com/).
+  // The matching file public/googlef008d094b0bb8844.html is a second method.
+  verification: { google: "1uGAYhrVcKhjqITTOty2tCP2Lv_y8F8Nb-3gnaoJ0Ks" },
 };
 
 export const viewport: Viewport = {
