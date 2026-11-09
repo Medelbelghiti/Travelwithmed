@@ -1,9 +1,10 @@
 import { prisma } from "@/lib/prisma";
+import { cachedQuery } from "@/lib/cache";
 import { SectionHeading } from "@/components/ui/card";
 import { ArticleCard } from "@/components/article-card";
 
-async function fetchRelatedGuides(destinationId: string, excludeId?: string, limit = 3) {
-  return prisma.article.findMany({
+const fetchRelatedGuides = cachedQuery(async (destinationId: string, excludeId?: string, limit?: number) =>
+  prisma.article.findMany({
     where: {
       status: "PUBLISHED",
       destinationId,
@@ -11,9 +12,10 @@ async function fetchRelatedGuides(destinationId: string, excludeId?: string, lim
     },
     include: { author: true },
     orderBy: { publishedAt: "desc" },
-    take: limit,
-  });
-}
+    take: limit ?? 3,
+  }),
+  ["fetch-related-guides"],
+);
 
 interface RelatedGuidesProps {
   destinationId?: string | null;

@@ -1,6 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { revalidateContent } from "@/lib/cache";
 import { requireRole } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { slugify } from "@/lib/utils";
@@ -71,9 +72,11 @@ export async function saveArticleAction(prev: ArticleFormState, formData: FormDa
       } else {
         await prisma.article.update({ where: { id }, data });
       }
+      revalidateContent();
       redirect(`/admin/articles`);
     } else {
       await prisma.article.create({ data });
+      revalidateContent();
       redirect("/admin/articles");
     }
   } catch (error) {

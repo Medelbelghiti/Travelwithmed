@@ -6,6 +6,8 @@ import type { HubType } from "@/lib/hubs";
 import { SectionHeading } from "@/components/ui/card";
 import { Breadcrumbs, buildCrumbs, JsonLdBreadcrumbs } from "@/components/ui/breadcrumbs";
 import { ActivityCard } from "@/components/affiliate/activity-card";
+import { selectQuickPicks } from "@/lib/quick-picks";
+import { QuickPicks } from "@/components/hub/quick-picks";
 import { AffiliateButton } from "@/components/affiliate/affiliate-button";
 import { AffiliateDisclosure } from "@/components/affiliate/disclosure";
 import { buildMetadata, breadcrumbSchema, itemListSchema } from "@/lib/seo";
@@ -134,6 +136,26 @@ export function ToursHub({ hub }: { hub: ToursHubData }) {
       </div>
 
       <div className="container-x py-14">
+        <QuickPicks
+          title={isThingsToDo ? `Top picks in ${destination.name}` : `Our quick picks: ${destination.name} tours`}
+          picks={selectQuickPicks(
+            activities.map((a) => ({
+              id: a.id,
+              name: a.name,
+              href: `/activities/${a.slug}`,
+              rating: a.rating,
+              priceRange: a.priceRange,
+              affiliateLinkId: a.affiliateLinks[0]?.id ?? null,
+              detail: a.duration,
+            })),
+            { best: "Top rated", value: "Best value" },
+          )}
+          placement={`${hubType.slug}-${destination.slug}`}
+          category="ACTIVITIES"
+          destination={destination.name}
+          ctaLabel="Check availability"
+        />
+
         {destination.coverImage && (
           <Image
             src={destination.coverImage}

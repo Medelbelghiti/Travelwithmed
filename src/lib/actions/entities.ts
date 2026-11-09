@@ -1,6 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { revalidateContent } from "@/lib/cache";
 import { Prisma } from "@prisma/client";
 import { requireRole } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -28,6 +29,7 @@ export async function saveCategoryAction(prev: { error?: string } | void, formDa
     } else {
       await prisma.category.create({ data });
     }
+    revalidateContent();
     redirect("/admin/categories");
   } catch (error) {
     if ((error as Error & { digest?: string })?.digest || (error as Error)?.message?.includes("NEXT_REDIRECT")) throw error;
@@ -59,6 +61,7 @@ export async function saveAuthorAction(prev: { error?: string } | void, formData
     } else {
       await prisma.author.create({ data });
     }
+    revalidateContent();
     redirect("/admin/authors");
   } catch (error) {
     if ((error as Error & { digest?: string })?.digest || (error as Error)?.message?.includes("NEXT_REDIRECT")) throw error;
@@ -96,6 +99,7 @@ export async function saveHotelAction(prev: { error?: string } | void, formData:
     } else {
       await prisma.hotel.create({ data });
     }
+    revalidateContent();
     redirect("/admin/hotels");
   } catch (error) {
     if ((error as Error & { digest?: string })?.digest || (error as Error)?.message?.includes("NEXT_REDIRECT")) throw error;
@@ -149,6 +153,7 @@ export async function saveActivityAction(prev: { error?: string } | void, formDa
     } else {
       await prisma.activity.create({ data });
     }
+    revalidateContent();
     redirect("/admin/activities");
   } catch (error) {
     if ((error as Error & { digest?: string })?.digest || (error as Error)?.message?.includes("NEXT_REDIRECT")) throw error;
@@ -186,6 +191,7 @@ export async function saveEsimProviderAction(prev: { error?: string } | void, fo
     } else {
       await prisma.esimProvider.create({ data });
     }
+    revalidateContent();
     redirect("/admin/esim-providers");
   } catch (error) {
     if ((error as Error & { digest?: string })?.digest || (error as Error)?.message?.includes("NEXT_REDIRECT")) throw error;
@@ -229,6 +235,7 @@ export async function saveEsimPlanAction(formData: FormData) {
     } else {
       await prisma.esimPlan.create({ data });
     }
+    revalidateContent();
     redirect(`/admin/esim-providers/${providerId}`);
   } catch (error) {
     if ((error as Error & { digest?: string })?.digest || (error as Error)?.message?.includes("NEXT_REDIRECT")) throw error;
@@ -245,6 +252,7 @@ export async function toggleEsimPlanAction(formData: FormData) {
     const plan = await prisma.esimPlan.findUnique({ where: { id } });
     if (!plan) throw new Error("Plan not found.");
     await prisma.esimPlan.update({ where: { id }, data: { isActive: !plan.isActive } });
+    revalidateContent();
     redirect(`/admin/esim-providers/${providerId}`);
   } catch (error) {
     if ((error as Error & { digest?: string })?.digest || (error as Error)?.message?.includes("NEXT_REDIRECT")) throw error;
@@ -259,6 +267,7 @@ export async function deleteEsimPlanAction(formData: FormData) {
     const providerId = s(formData.get("providerId"));
     if (!id) throw new Error("Plan is required.");
     await prisma.esimPlan.delete({ where: { id } });
+    revalidateContent();
     redirect(`/admin/esim-providers/${providerId}`);
   } catch (error) {
     if ((error as Error & { digest?: string })?.digest || (error as Error)?.message?.includes("NEXT_REDIRECT")) throw error;
@@ -293,6 +302,7 @@ export async function saveProductAction(prev: { error?: string } | void, formDat
     } else {
       await prisma.product.create({ data });
     }
+    revalidateContent();
     redirect("/admin/products");
   } catch (error) {
     if ((error as Error & { digest?: string })?.digest || (error as Error)?.message?.includes("NEXT_REDIRECT")) throw error;

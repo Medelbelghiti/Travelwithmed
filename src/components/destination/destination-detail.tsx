@@ -21,6 +21,7 @@ import { AffiliateDisclosure } from "@/components/affiliate/disclosure";
 import { TravelpayoutsProgramGrid } from "@/components/affiliate/travelpayouts-programs";
 import { NewsletterCta } from "@/components/newsletter-cta";
 import { prisma } from "@/lib/prisma";
+import { cachedQuery } from "@/lib/cache";
 import { faqSchema, touristDestinationSchema } from "@/lib/seo";
 import { absoluteUrl } from "@/lib/utils";
 import { HUB_TYPES, type HubType } from "@/lib/hubs";
@@ -42,13 +43,14 @@ export interface DestinationDetailProps {
   destination: DestinationWithRelations;
 }
 
-async function fetchRelated(parentId: string | null) {
-  return prisma.destination.findMany({
+const fetchRelated = cachedQuery(async (parentId: string | null) =>
+  prisma.destination.findMany({
     where: { isActive: true, parentId: parentId ?? undefined },
     orderBy: { sortOrder: "asc" },
     take: 8,
-  });
-}
+  }),
+  ["fetch-related"],
+);
 
 function buildParentChain(destination: DestinationWithRelations) {
   const chain: { name: string; slug: string }[] = [];

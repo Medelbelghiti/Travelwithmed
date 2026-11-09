@@ -1,6 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { revalidateContent } from "@/lib/cache";
 import { requireRole } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
@@ -21,6 +22,7 @@ export async function saveSettingAction(prev: { error?: string } | void, formDat
       update: { value, isSecret },
       create: { key, value, isSecret },
     });
+    revalidateContent();
     redirect("/admin/settings");
   } catch (error) {
     if ((error as Error & { digest?: string })?.digest || (error as Error)?.message?.includes("NEXT_REDIRECT")) throw error;
@@ -34,6 +36,7 @@ export async function deleteSettingAction(prev: { error?: string } | void, formD
     const key = s(formData.get("key"));
     if (!key) return { error: "Key is required." };
     await prisma.setting.delete({ where: { key } });
+    revalidateContent();
     redirect("/admin/settings");
   } catch (error) {
     if ((error as Error & { digest?: string })?.digest || (error as Error)?.message?.includes("NEXT_REDIRECT")) throw error;
@@ -56,6 +59,7 @@ export async function saveMediaAction(prev: { error?: string } | void, formData:
     await prisma.media.create({
       data: { url, altText: alt, caption, credit, format },
     });
+    revalidateContent();
     redirect("/admin/media");
   } catch (error) {
     if ((error as Error & { digest?: string })?.digest || (error as Error)?.message?.includes("NEXT_REDIRECT")) throw error;

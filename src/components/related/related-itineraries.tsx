@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { CalendarDays } from "lucide-react";
 import { prisma } from "@/lib/prisma";
+import { cachedQuery } from "@/lib/cache";
 import { SectionHeading } from "@/components/ui/card";
 
 interface RelatedItinerariesProps {
@@ -9,17 +10,18 @@ interface RelatedItinerariesProps {
   excludeId?: string;
 }
 
-async function fetchRelatedItineraries(destinationId: string, excludeId?: string, limit = 3) {
-  return prisma.itinerary.findMany({
+const fetchRelatedItineraries = cachedQuery(async (destinationId: string, excludeId?: string, limit?: number) =>
+  prisma.itinerary.findMany({
     where: {
       isActive: true,
       destinationId,
       ...(excludeId ? { id: { not: excludeId } } : {}),
     },
     orderBy: { publishedAt: "desc" },
-    take: limit,
-  });
-}
+    take: limit ?? 3,
+  }),
+  ["fetch-related-itineraries"],
+);
 
 export async function RelatedItineraries({
   destinationId,
