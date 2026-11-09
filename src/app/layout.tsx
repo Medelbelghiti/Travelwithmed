@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, Playfair_Display } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
@@ -13,16 +13,23 @@ import { siteConfig } from "@/lib/site";
 import { websiteSchema, organizationSchema } from "@/lib/seo";
 import { isShopEnabled } from "@/lib/fourthwall";
 
-const inter = Inter({
+// Self-hosted variable fonts (latin subset, from @fontsource-variable, OFL).
+// next/font/google downloaded these from fonts.googleapis.com at build time, so
+// any network hiccup on the build host failed the whole deployment.
+const inter = localFont({
+  src: "../fonts/inter-latin-wght-normal.woff2",
   variable: "--font-inter",
-  subsets: ["latin"],
+  weight: "100 900",
   display: "swap",
+  fallback: ["ui-sans-serif", "system-ui", "sans-serif"],
 });
 
-const playfair = Playfair_Display({
+const playfair = localFont({
+  src: "../fonts/playfair-display-latin-wght-normal.woff2",
   variable: "--font-playfair",
-  subsets: ["latin"],
+  weight: "400 900",
   display: "swap",
+  fallback: ["Georgia", "Times New Roman", "serif"],
 });
 
 export const metadata: Metadata = {

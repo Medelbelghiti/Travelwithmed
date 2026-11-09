@@ -394,6 +394,7 @@ export default async function HomePage() {
                     priceRange: hotel.priceRange,
                     bestFor: hotel.bestFor,
                     affiliateLinkId: hotel.affiliateLinks[0]?.id ?? null,
+                    href: `/hotels/${hotel.slug}`,
                   }}
                 />
               ))}

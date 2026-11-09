@@ -55,7 +55,11 @@ export async function GET(
   // Fallback: look up link target directly without tracking.
   // The URL is re-validated so a malformed or non-http(s) target can never
   // become an open redirect; unverifiable ID target URLs fall back home.
-  const link = await prisma.affiliateLink.findUnique({ where: { id } });
+  // A database outage must degrade to "send the reader home", never a 500.
+  const link = await prisma.affiliateLink.findUnique({ where: { id } }).catch((error) => {
+    console.error("Affiliate fallback lookup failed", error);
+    return null;
+  });
   const safeTarget = link?.active ? resolveAffiliateTargetUrl(link.targetUrl) : null;
   if (safeTarget) {
     return NextResponse.redirect(safeTarget, { status: 302 });

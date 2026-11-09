@@ -75,6 +75,17 @@ function parseLegacyContent(content: string): ContentBlock[] {
   return blocks;
 }
 
+/** Anchor id for the n-th h2 of an article: shared by the renderer and the TOC. */
+export function tocAnchorId(h2Position: number): string {
+  return `section-${h2Position}`;
+}
+
+/** Reading time from the rendered text, ~220 words per minute, never below 1. */
+export function readingTimeFromBlocks(blocks: ContentBlock[]): number {
+  const words = blocksToText(blocks).trim().split(/\s+/).filter(Boolean).length;
+  return Math.max(1, Math.ceil(words / 220));
+}
+
 export function blocksToText(blocks: ContentBlock[]): string {
   const texts = blocks.map((b) => {
     switch (b.type) {
