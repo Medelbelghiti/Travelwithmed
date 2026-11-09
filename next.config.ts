@@ -51,6 +51,18 @@ const nextConfig: NextConfig = {
   },
   async redirects() {
     return [
+      // Paris activities seeded twice (31 Aug and 3 Sep). The older, incomplete
+      // records are deactivated; keep their URLs alive for links and search.
+      {
+        source: "/activities/louvre-skip-the-line-guided-tour",
+        destination: "/activities/louvre-skip-line-guided-tour",
+        permanent: true,
+      },
+      {
+        source: "/activities/seine-river-evening-cruise",
+        destination: "/activities/seine-river-cruise",
+        permanent: true,
+      },
       {
         source: "/:path*",
         has: [{ type: "host", value: "www.riversmag.com" }],
