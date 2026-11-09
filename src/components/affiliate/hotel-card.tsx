@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import { MapPin, Star } from "lucide-react";
 import { AffiliateButton } from "./affiliate-button";
 import { cn } from "@/lib/utils";
@@ -14,10 +15,12 @@ export interface HotelCardData {
   bestFor?: string | null;
   affiliateLinkId?: string | null;
   ctaLabel?: string;
+  /** Internal review page; when set the hotel name links to it. */
+  href?: string | null;
 }
 
 export function HotelCard({ hotel, className }: { hotel: HotelCardData; className?: string }) {
-  const { name, image, location, rating, priceRange, bestFor, affiliateLinkId, ctaLabel } = hotel;
+  const { name, image, location, rating, priceRange, bestFor, affiliateLinkId, ctaLabel, href } = hotel;
 
   return (
     <div
@@ -50,7 +53,15 @@ export function HotelCard({ hotel, className }: { hotel: HotelCardData; classNam
       </div>
 
       <div className="flex flex-1 flex-col p-5">
-        <h3 className="font-serif text-lg font-semibold text-ink leading-snug">{name}</h3>
+        <h3 className="font-serif text-lg font-semibold text-ink leading-snug">
+          {href ? (
+            <Link href={href} className="hover:text-brand focus-visible:text-brand">
+              {name}
+            </Link>
+          ) : (
+            name
+          )}
+        </h3>
         {location && (
           <p className="mt-1 flex items-center gap-1 text-sm text-ink-muted">
             <MapPin className="h-3.5 w-3.5" aria-hidden />

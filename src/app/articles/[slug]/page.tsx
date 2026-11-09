@@ -5,7 +5,7 @@ import { Calendar, Clock, RefreshCw, User } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { rethrowIfDatabaseUnavailable } from "@/lib/db-errors";
 import { buildMetadata, articleSchema } from "@/lib/seo";
-import { parseContentBlocks, blocksToText } from "@/lib/content";
+import { parseContentBlocks, readingTimeFromBlocks, tocAnchorId } from "@/lib/content";
 import { ContentRenderer } from "@/components/content-renderer";
 import { ArticleCard, ARTICLE_TYPE_LABELS } from "@/components/article-card";
 import { Badge } from "@/components/ui/badge";
@@ -115,7 +115,10 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
   }
 
   const blocks = parseContentBlocks(article.content);
-  const wordCount = blocksToText(blocks).trim().split(/\s+/).length || article.wordCount || 1;
+  // Always derive reading time from the content actually rendered: the stored
+  // readingTimeMinutes is stale for seeded/imported articles (it read "1 min"
+  // on 700-word guides). The stored value is only a fallback for empty content.
+  const readingMinutes = blocks.length > 0 ? readingTimeFromBlocks(blocks) : article.readingTimeMinutes || 1;
 
   const relatedArticles = [...related.map((r) => r.relatedArticle), ...relatedByDestination]
     .filter((a, i, arr) => arr.findIndex((x) => x.id === a.id) === i)
@@ -169,12 +172,18 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
         name: "Guides",
         item: `${siteConfig.url}/articles`,
       },
+      {
+        "@type": "ListItem",
+        position: article.destination ? 4 : 3,
+        name: article.title,
+        item: absoluteUrl(`/articles/${article.slug}`),
+      },
     ],
   });
 
   const tableOfContents = blocks
     .filter((b) => b.type === "h2")
-    .map((b, i) => ({ title: b.text, id: `section-${i}` }));
+    .map((b, i) => ({ title: b.text, id: tocAnchorId(i) }));
 
   return (
     <article className="pb-16">
@@ -187,7 +196,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
               <li>
                 <Link href="/" className="hover:text-brand">Home</Link>
               </li>
-              <li>/</li>
+              <li aria-hidden="true">/</li>
               {article.destination && (
                 <>
                   <li>
@@ -195,10 +204,16 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
                       {article.destination.name}
                     </Link>
                   </li>
-                  <li>/</li>
+                  <li aria-hidden="true">/</li>
                 </>
               )}
-              <li className="font-medium text-ink">Guides</li>
+              <li>
+                <Link href="/articles" className="hover:text-brand">Guides</Link>
+              </li>
+              <li aria-hidden="true">/</li>
+              <li className="font-medium text-ink" aria-current="page">
+                <span className="line-clamp-1">{article.title}</span>
+              </li>
             </ol>
           </nav>
 
@@ -228,7 +243,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
             </span>
             <span className="inline-flex items-center gap-1.5">
               <Clock className="h-4 w-4" aria-hidden />
-              {article.readingTimeMinutes || Math.max(1, Math.ceil(wordCount / 220))} min read
+              {readingMinutes} min read
             </span>
           </div>
 
@@ -302,7 +317,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
           <div className="sticky top-24 space-y-6">
             {tableOfContents.length > 0 && (
               <nav className="rounded-2xl border border-line bg-white p-5 shadow-sm" aria-label="Table of contents">
-                <h4 className="text-sm font-bold uppercase tracking-wider text-ink-muted">On this page</h4>
+                <h2 className="font-sans text-sm font-bold uppercase tracking-wider text-ink-muted">On this page</h2>
                 <ul className="mt-3 space-y-2">
                   {tableOfContents.map((item) => (
                     <li key={item.id}>
@@ -322,7 +337,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
                     {article.author.name[0]}
                   </span>
                   <div>
-                    <h4 className="font-semibold text-ink">Written by {article.author.name}</h4>
+                    <p className="font-semibold text-ink">Written by {article.author.name}</p>
                     <p className="text-xs text-ink-muted">{article.author.role ?? "Travel writer"}</p>
                   </div>
                 </div>
@@ -332,7 +347,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
 
             {recommendedHotelLinks.length > 0 && (
               <div className="rounded-2xl bg-brand-dark p-5 text-white">
-                <h4 className="text-white">Plan your stay</h4>
+                <p className="text-lg font-semibold text-white">Plan your stay</p>
                 <p className="mt-1 text-sm text-white/70">
                   Compare prices across booking platforms for {article.destination?.name}.
                 </p>

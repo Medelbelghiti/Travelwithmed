@@ -1,12 +1,11 @@
 import Image from "next/image";
 import { BedDouble, Plane, Ticket, Signal, ShieldCheck, Flame, Star } from "lucide-react";
 import type { AffiliateCategory } from "@prisma/client";
-import { parseContentBlocks } from "@/lib/content";
+import { parseContentBlocks, tocAnchorId } from "@/lib/content";
 import { resolveAffiliateLink, AFFILIATE_CTA_LABELS } from "@/lib/affiliate";
 import { prisma } from "@/lib/prisma";
 import { AffiliateButton } from "@/components/affiliate/affiliate-button";
 import { AffiliateModule } from "@/components/affiliate/affiliate-module";
-import { AffiliateDisclosure } from "@/components/affiliate/disclosure";
 import { getProducts, isShopEnabled, formatMoney } from "@/lib/fourthwall";
 import { PosterLeadMagnet, type PosterProduct } from "@/components/shop/poster-lead-magnet";
 
@@ -57,7 +56,6 @@ export async function ContentRenderer({ content, articleId, destinationId }: Ren
   if (blocks.length === 0) return null;
 
   const rendered = [];
-  let hasAffiliateBlocks = false;
 
   // An "affiliate_link" block stores a concrete link id, so it bypasses
   // resolveAffiliateLink and therefore the `active: true` filter every other CTA
@@ -80,6 +78,10 @@ export async function ContentRenderer({ content, articleId, destinationId }: Ren
     for (const row of active) activeExplicitLinkIds.add(row.id);
   }
 
+  // Table-of-contents anchors are numbered by h2 position (see tocAnchorId),
+  // not by block position, so the TOC built on the article page links to them.
+  let h2Index = 0;
+
   for (let i = 0; i < blocks.length; i++) {
     const block = blocks[i];
     const key = `${block.type}-${i}`;
@@ -89,7 +91,11 @@ export async function ContentRenderer({ content, articleId, destinationId }: Ren
         rendered.push(<p key={key} className="prose-riversmag">{block.text}</p>);
         break;
       case "h2":
-        rendered.push(<h2 key={key} id={`section-${i}`}>{block.text}</h2>);
+        rendered.push(
+          <h2 key={key} id={tocAnchorId(h2Index++)} className="scroll-mt-24">
+            {block.text}
+          </h2>,
+        );
         break;
       case "h3":
         rendered.push(<h3 key={key}>{block.text}</h3>);
@@ -170,7 +176,6 @@ export async function ContentRenderer({ content, articleId, destinationId }: Ren
           link = null;
         }
         if (link) {
-          hasAffiliateBlocks = true;
           rendered.push(
             <AffiliateCtaBand
               key={key}
@@ -189,7 +194,6 @@ export async function ContentRenderer({ content, articleId, destinationId }: Ren
               <AffiliateButton linkId={block.linkId} label={block.label ?? "Check prices"} placement={articleId} />
             </p>,
           );
-          hasAffiliateBlocks = true;
         }
         break;
       }
@@ -219,7 +223,6 @@ export async function ContentRenderer({ content, articleId, destinationId }: Ren
           hotels = [];
         }
         if (hotels.length > 0) {
-          hasAffiliateBlocks = true;
           rendered.push(
             <div key={key} className="my-10">
               {block.title && <h2>{block.title}</h2>}
@@ -323,7 +326,6 @@ export async function ContentRenderer({ content, articleId, destinationId }: Ren
           activities = [];
         }
         if (activities.length > 0) {
-          hasAffiliateBlocks = true;
           rendered.push(
             <div key={key} className="my-10">
               {block.title && <h2>{block.title}</h2>}
@@ -405,7 +407,6 @@ export async function ContentRenderer({ content, articleId, destinationId }: Ren
           products = [];
         }
         if (products.length > 0) {
-          hasAffiliateBlocks = true;
           rendered.push(
             <div key={key} className="my-10">
               {block.title && <h2>{block.title}</h2>}
@@ -539,7 +540,6 @@ export async function ContentRenderer({ content, articleId, destinationId }: Ren
   return (
     <div className="prose-riversmag">
       {rendered}
-      {hasAffiliateBlocks && <AffiliateDisclosure />}
     </div>
   );
 }

@@ -7,7 +7,7 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const rawTitle = searchParams.get("title") ?? `${siteConfig.name} — Travel Guides & Smart Recommendations`;
   const title = rawTitle.slice(0, 110);
-  const tagline = searchParams.get("type") ?? siteConfig.tagline;
+  const tagline = (searchParams.get("type") ?? siteConfig.tagline).slice(0, 80);
 
   return new ImageResponse(
     (
@@ -98,6 +98,12 @@ export async function GET(request: Request) {
         </div>
       </div>
     ),
-    { width: 1200, height: 630 },
+    {
+      width: 1200,
+      height: 630,
+      // The image is a pure function of the query string, so let browsers and
+      // CDNs keep it: every social crawler hit used to re-render it from scratch.
+      headers: { "Cache-Control": "public, max-age=86400, s-maxage=604800, stale-while-revalidate=86400" },
+    },
   );
 }
